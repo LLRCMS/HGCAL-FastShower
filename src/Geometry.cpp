@@ -413,6 +413,8 @@ void Geometry::constructFromParameters(bool debug, int layer_id, int display_lay
     Parameters::Geometry::Type itype(parameters_.type);
     double zlayer = parameters_.layers_z[layer_id]; // else offset from the layer z position
     setZlayer(zlayer);
+    int klayer(layer_id);
+    setLayer(klayer);
 
     string part = setHgcalPart(layer_id); //EE,FH,BH
 
@@ -666,15 +668,14 @@ void Geometry::constructFromParameters(bool debug, int layer_id, int display_lay
 void Geometry::print() {
     cout << "Printing the geometry : " << endl;
     if (klayer_ != -1)
-        cout<<"the layer plane is "<<klayer_<<" at z position "<<parameters_.layers_z[klayer_]<<endl;
+        cout<<"the layer plane is "<<klayer_<< " at z position "<<parameters_.layers_z[klayer_]<<endl;
     else
         cout << "All the layer plane are simulated at the corresponding z position " << endl;
     for (Cell cell : *cells_) {
-        // const auto& cell = id_cell.second;
-        cout << "new cell with indices " <<
-          "("<< cell.getIIndex() << "," << cell.getJIndex() << cell.getLayer() << ")" <<
+        cout << "new cell with indices " << 
+        "("<< cell.getIIndex() << ", " << cell.getJIndex() << ", " << cell.getLayer() << ")" <<
           " and position " << 
-          "("<<cell.getX() << "," << cell.getY() << cell.getLayer() << ")" << endl;
+          "("<<cell.getX() << ", " << cell.getY() << ", "<< cell.getLayer() << ")" << endl;
     }
 }
 
@@ -701,52 +702,6 @@ void Geometry::draw(const Parameters::Display& params) {
     //polygon->SetLineWidth(1);
     ////polygon->Draw();
   //} 
-}
-
-const TVectorD& Geometry::getPosition(int i, int j, int k) const {
-    // This will throw an exception if the cell is not found
-    // return cells_.getPosition();
-}
-
-const Cell& Geometry::closestCell(double x, double y) const {
-    // // beware that this function does not explicit check that the point is within
-    // // the cell, therefore if the cell grid is too small it will return
-    // // the closest cell (as the name indicates)
-
-    // // here we implement the a temporary bruteforce function for the more general geometry read from the json file
-    // // this needs to be optimize for timing efficiency
-
-    // // to test time spent here
-    // //return *cells_.begin();
-
-    // double r2min = numeric_limits<double>::max();
-    // auto icfound = cells_.cend();
-
-    // for (auto ic=cells_.cbegin();ic!=cells_.cend();ic++) {
-    //     double xcell = ic->second.getPosition()(0);
-    //     double ycell = ic->second.getPosition()(1);
-    //     // now compute the distances and take the smallest one
-    //     double r2 = (xcell-x)*(xcell-x) + (ycell-y)*(ycell-y);
-    //     if (r2<r2min) {
-    //         r2min=r2;
-    //         icfound=ic;
-    //     }
-    // }
-
-    // if (icfound==cells_.cend()) {
-    //     // FIXME: do we want to throw an exception?
-    //     throw string("Didn't find closest cell");
-    //     //cout << "[Geometry::closestCell] Cell not found!! x, y " <<x << " " << y << endl;
-    // }
-
-    // return icfound->second;
-}
-
-TVectorD Geometry::positionInCell(const TVectorD& pos) const {
-    TVectorD relativeposition(2);
-    relativeposition(0)=pos(0)-closestCell(pos(0),pos(1)).getPosition()(0);
-    relativeposition(1)=pos(1)-closestCell(pos(0),pos(1)).getPosition()(1);
-    return relativeposition;
 }
 
 bool Geometry::isInCell(const TVectorD& position, const Cell& cell) const {

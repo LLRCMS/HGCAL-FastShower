@@ -40,10 +40,7 @@ class Geometry {
     int* ijWindows(int zone, double* xs, double* ys, double side, Parameters::Geometry::Type itype);
     double* XYrPhi(int i, int j, double side, Parameters::Geometry::Type itype, double* xs, double* ys, double zone);
 
-    const Cell& closestCell(double x, double y) const; // the cell that contains the point
     bool isInCell(const TVectorD& position, const Cell& cell) const; // test if a point is within a cell
-    TVectorD positionInCell(const TVectorD& position) const; // relative position within the cell
-    const TVectorD& getPosition(int i, int j, int k) const; // position of cell i,j
 
     // getters
     std::vector< Cell>* getCells() const {return cells_;}
