@@ -93,44 +93,45 @@ void Generator::simulate() {
         else
             geometry_.constructFromJson(parameters_.general().debug, layer_id);
     }
+    // geometry_.print();
 
     // // if (unsigned(layer_id) == display_layer) {
     // for (int layer_id = layer_min; layer_id < 1; layer_id++) {
-        TH2Poly* geometry_histo = (TH2Poly*)geometry_.cellHistogram()->Clone("geometry");
-        geometry_histo->Write();
+    TH2Poly* geometry_histo = (TH2Poly*)geometry_.cellHistogram()->Clone("geometry");
+    geometry_histo->Write();
 
-        std::string hName;
+    std::string hName;
+    for (Cell c : cell_collection[1]) {
+        int i = c.getIIndex();
+        int j = c.getJIndex();
+        int k = c.getLayer();
+
+        hName="hCellEnergy_[";
+        hName += std::to_string(i);
+        hName += ",";
+        hName += std::to_string(j);
+        hName += ",";
+        hName += std::to_string(k);
+        hName += "]";
+        hCellEnergyMap.emplace(c.getId(), TH1F(hName.c_str(),"Energy in cell [i,j,k])",100,0.,100.));
+    }
+
+    if (parameters_.display().events > 0) {
         for (Cell c : cell_collection[1]) {
             int i = c.getIIndex();
             int j = c.getJIndex();
             int k = c.getLayer();
 
-            hName="hCellEnergy_[";
+            hName="hCellEnergyEvt[";
             hName += std::to_string(i);
             hName += ",";
             hName += std::to_string(j);
             hName += ",";
             hName += std::to_string(k);
             hName += "]";
-            hCellEnergyMap.emplace(c.getId(), TH1F(hName.c_str(),"Energy in cell [i,j,k])",100,0.,100.));
+            hCellEnergyEvtMap.emplace(c.getId(),TH1F(hName.c_str(),"Event Energy in cell [i,j,k])",100,0.,100.));
         }
-
-        if (parameters_.display().events > 0) {
-            for (Cell c : cell_collection[1]) {
-                int i = c.getIIndex();
-                int j = c.getJIndex();
-                int k = c.getLayer();
-
-                hName="hCellEnergyEvt[";
-                hName += std::to_string(i);
-                hName += ",";
-                hName += std::to_string(j);
-                hName += ",";
-                hName += std::to_string(k);
-                hName += "]";
-                hCellEnergyEvtMap.emplace(c.getId(),TH1F(hName.c_str(),"Event Energy in cell [i,j,k])",100,0.,100.));
-            }
-        }
+    }
     // }
     cout << "Done !"<<endl;
 
@@ -379,8 +380,6 @@ void Generator::simulate() {
                     // first cell found
                     Cell& cell = *closestCells;
 
-                    // cout << "pos "<<pos(0)<<" "<<pos(1)<<", cell "<<cell.getX()<<" "<< cell.getY()<<endl;
-
                     bool isincell = geometry_.isInCell(pos, cell);
 
                     double enoise;
@@ -412,9 +411,9 @@ void Generator::simulate() {
            // //  hPhiProfile.Fill(phi_shower,real_energy);
            // //  hSpotEnergy.Fill(real_energy);
 
-            cout << "simulated energy " << energygen << endl;
-            cout << "simulated energy inside cells " << energygenincells << endl;
-            cout << "reconstructed energy inside cells (includes noise) " << energyrec << endl;
+            // cout << "simulated energy " << energygen << endl;
+            // cout << "simulated energy inside cells " << energygenincells << endl;
+            // cout << "reconstructed energy inside cells (includes noise) " << energyrec << endl;
  
             // std::unique_ptr<ShowerShape> aShowerShape;
             // if (parameters_.geometry().type!=Parameters::Geometry::Type::Triangles) { // hexagons
@@ -445,7 +444,7 @@ void Generator::simulate() {
             // // fill global histograms
             // hEnergySum.Fill(energyrec,1.);
             // hEnergyGen.Fill(energygen,1.);
-            // output_.fillTree(event, geometry_);
+            // output_.fillTree(event, cell_collection[layer_id]);
         }
     }
 
@@ -463,7 +462,6 @@ void Generator::simulate() {
     }
 
     t.Stop();
-
 
     cout<<endl;
     cout<< "---------> Simulation information : "<<endl;
@@ -512,13 +510,13 @@ std::unique_ptr<TCanvas> Generator::display(const std::unordered_map<uint32_t,TH
     TH2Poly* energy_map = (TH2Poly*)geometry_.cellHistogram()->Clone(std::string("test"+std::to_string(ievt)).c_str());
     //geometry_.draw(parameters_.display());
 
-    for (const auto& id_hist : hCellEnergyEvtMap) {
-        const auto& cell = geometry_.getCells()->at(id_hist.first);
+    for (auto& hist : hCellEnergyEvtMap) {
+        Cell cell = geometry_.getCells()->at(hist.first);
         // print mean energies
-        double enrj = id_hist.second.GetMean();
-        energy_map->Fill(cell.getPosition()(0), cell.getPosition()(1), enrj);
+        double enrj = hist.second.GetMean();
+        energy_map->Fill(cell.getX(), cell.getY(), enrj);
         // FIXME: no sprintf
-        sprintf(str,"%4.1f",id_hist.second.GetMean());
+        sprintf(str,"%4.1f",hist.second.GetMean());
         // Calling Draw makes the current pad take the ownership of the object
         // So raw pointers are used, and the objects are deleted when the pad is deleted (here c1)
         //TText* t = new TText(cell.getPosition()(0)*scale+xdisplayoffset, 
