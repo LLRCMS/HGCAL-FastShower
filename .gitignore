@@ -1,0 +1,7 @@
+# ignore the pdf file corresponding to plot
+# write the name of each file
+*.pyc
+*.pdf
+*.root
+*.json
+.*xml
