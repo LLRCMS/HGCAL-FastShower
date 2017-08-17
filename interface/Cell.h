@@ -28,6 +28,7 @@ class Cell {
 
     double getX();
     double getY();
+    double getZ();
     int getIIndex();
     int getJIndex();
     int getLayer();
@@ -45,6 +46,7 @@ class Cell {
 
     double x_;
     double y_;
+    double z_;
 };
 
 #endif

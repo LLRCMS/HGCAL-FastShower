@@ -26,6 +26,7 @@ Cell::Cell(TVectorD&& position, std::vector<TVectorD>&& vertices, int i_index, i
   id_ = Cell::id(i_index_, j_index_, k_index_);
   x_ = this->getPosition()(0);
   y_ = this->getPosition()(1);
+  z_ = this->getPosition()(2);
 }
 
 double Cell::getX(){
@@ -34,6 +35,10 @@ double Cell::getX(){
 
 double Cell::getY(){
     return y_;
+}
+
+double Cell::getZ(){
+    return z_;
 }
 
 int Cell::getIIndex(){
@@ -55,7 +60,7 @@ uint32_t Cell::getId(){
 
 bool Cell::cell_exist(std::vector<Cell> cells) {
 
-    int cell_id = this->getId();
+    uint32_t cell_id = this->getId();
     for (Cell cell: cells) {
         if(cell_id == cell.getId()) {
             throw std::string("Warning : This cell is already include in the geometry");
