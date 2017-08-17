@@ -4,7 +4,6 @@
 
 #include <string>
 #include <vector>
-#include <unordered_map>
 #include "TVectorD.h"
 #include "TMatrixD.h"
 #include "TH2Poly.h"
@@ -25,64 +24,61 @@ class Geometry {
 
   public:
 
-    Geometry(const Parameters::Geometry& params):
-      parameters_(params){}
-    ~Geometry() {}
+    Geometry(const Parameters::Geometry& params):parameters_(params){}
+    ~Geometry();
 
-    // FIXME: can simplify the interface by having one single public construct method
-    // construct parametrised geometry, default grid 11x11, ie +-5 around the central cell
-    void constructFromParameters(bool); 
-    // construct geometry from json file
-    void constructFromJson(bool);
+    void constructFromParameters(bool, int, int);
+    void constructFromJson(bool, int);
+
+
+    double* dimensions(double side);
+    double** hexagonoffset(double side);
+    // // double* triangleoffset(double a1, double a2, double a3);
+    double* derivative(double side, Parameters::Geometry::Type itype);
+    double** dxdyFirstZone(double* xs, double* ys);
+    double** dxdySecondZone(double* xs, double* ys);
+    int* ijWindows(int zone, double* xs, double* ys, double side, Parameters::Geometry::Type itype);
+    double* XYrPhi(int i, int j, double side, Parameters::Geometry::Type itype, double* xs, double* ys, double zone);
 
     const Cell& closestCell(double x, double y) const; // the cell that contains the point
     bool isInCell(const TVectorD& position, const Cell& cell) const; // test if a point is within a cell
-    //bool isInRealCell(TVectorD position, Cell cell); // to apply further mouse bite or virtual dead region 
     TVectorD positionInCell(const TVectorD& position) const; // relative position within the cell
-
-    const TVectorD& getPosition(int i, int j) const; // position of cell i,j
-
-    //vect<Cell> getNeighbours (int i, radius r); // not yet implemented
-    //vect<Cell> getFirstNeighbours (int i); // not yet implemented
-    //vect<Cell> getSecondNeighbours (int i); // not yet implemented
+    const TVectorD& getPosition(int i, int j, int k) const; // position of cell i,j
 
     // getters
-    const std::unordered_map<uint32_t, Cell>& getCells() const {return cells_;}
+    std::vector< Cell>* getCells() const {return cells_;}
     int getLayer() const {return klayer_;}
     double getZlayer() const {return zlayer_;}
-    Parameters::Geometry::Type getType() const {return itype_;} 
+    // Parameters::Geometry::Type getType() const {return itype_;}
 
-    double a() const {return a_;}
-    double asqrt3() const {return asqrt3_;}
-    double aover2() const {return aover2_;}
-    double a3over2() const {return a3over2_;}
-    double asqrt3over2() const {return asqrt3over2_;}
 
     const std::unique_ptr<TH2Poly>& cellHistogram() const {return cell_histogram_;}
     void draw(const Parameters::Display& params);
     void print();
 
+
+
   private:
 
     void setLayer(int klayer);
+    std::string setHgcalPart(int klayer);
     void setZlayer(double zlayer) {zlayer_ = zlayer;}
-    void setType (Parameters::Geometry::Type itype) {itype_=itype;}
+    // void setType (Parameters::Geometry::Type itype) {itype_=itype;}
 
-    std::unordered_map<uint32_t, Cell> cells_;
+    std::vector<Cell>* cells_;
     int klayer_;
     double zlayer_;
     Parameters::Geometry::Type itype_; // cell type
-    double a_;
-    double asqrt3_;
-    double aover2_;
-    double a3over2_;
-    double asqrt3over2_;
     const Parameters::Geometry& parameters_;
 
     std::unique_ptr<TH2Poly> cell_histogram_;
+    int i_cell_first;
+    int j_cell_first;
+    int i_cell_second;
+    int j_cell_second;
+    int i_cell_third;
+    int j_cell_third;
 
 };
-
-
 
 #endif

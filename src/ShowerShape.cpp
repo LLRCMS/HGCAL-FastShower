@@ -53,6 +53,6 @@ ShowerShape::ShowerShape(const std::unordered_map<uint32_t,double>& enrjMap,
 
 double ShowerShape::firstNeighboors() {
 
-  return firstNeighboors(imax_,jmax_);
+  return firstNeighboors(imax_,jmax_,k);
 
 }

@@ -1,3 +1,5 @@
+#include <iostream>
+
 
 #ifndef __HGCalSimulation_FastShower_ShowerParametrization_h__
 #define __HGCalSimulation_FastShower_ShowerParametrization_h__
@@ -8,101 +10,134 @@
 #include "HGCalSimulation/FastShower/interface/Parameters.h"
 #endif
 
+using namespace std;
 
 class ShowerParametrization {
 
-   // Electromagnetic shower parametrization 
-   // values from G. Grindhammer et al., hep-ex/0001020
-   // adapted for HGCAL TP geometry
+    // Electromagnetic shower parametrization 
+    // values from G. Grindhammer et al., hep-ex/0001020
+    // adapted for HGCAL TP geometry
 
-  public:
+    public:
 
     ShowerParametrization() {}
     ShowerParametrization(const Parameters::Shower& params):
-     radiationLength_(params.radiation_length),
-     moliereRadius_(params.moliere_radius),
-     criticalEnergy_(params.critical_energy),
-     alpha_(params.alpha) 
-    {
+        moliereRadius_(params.moliere_radius),
+        interaction_length_(params.interaction_length) {
 
-      const auto& longitudinal_params = params.longitudinal_parameters;
-      // FIXME: throw excetion if parameter doesn't exist. Should make sure that it is properly caught
-      meant0_ = longitudinal_params.at("meant0");
-      meant1_ = longitudinal_params.at("meant1");
-      meanalpha0_ = longitudinal_params.at("meanalpha0");
-      meanalpha1_ = longitudinal_params.at("meanalpha1");
-      sigmalnt0_ = longitudinal_params.at("sigmalnt0");
-      sigmalnt1_ = longitudinal_params.at("sigmalnt1");
-      sigmalnalpha0_ = longitudinal_params.at("sigmalnalpha0");
-      sigmalnalpha1_ = longitudinal_params.at("sigmalnalpha1");
-      corrlnalphalnt0_ = longitudinal_params.at("corrlnalphalnt0");
-      corrlnalphalnt1_ = longitudinal_params.at("corrlnalphalnt1");  
+        // FIXME: can compute the normalized profile in python
+        if(params.radiation_length.size()!=52)
+            throw std::string("The size of shower_radiation_length should be equals to the layer number");
+        std::copy_n(params.radiation_length.begin(), radLength_.size(), radLength_.begin());
 
-      // FIXME: can compute the normalized profile in python
-      if(params.layers_energy.size()!=28) throw std::string("The size of shower_layers_energy should be 28");
-      std::copy_n(params.layers_energy.begin(), layerProfile_.size(), layerProfile_.begin());
-      double total_weight=0.;
-      for (unsigned i=0;i<layerProfile_.size();i++) total_weight = total_weight + layerProfile_[i];
-      for (unsigned i=0;i<layerProfile_.size();i++) layerProfile_[i] = layerProfile_[i]/total_weight;
-      // transverse parameters
-      // exponential parameter set from TP studies, 90% containment in 2.3cm at layer 15
-      //r0layer15_ = 2.3/std::log(10.);  
-      r0layer15_ = moliereRadius_/std::log(10.);  
-      const auto& transverse_params = params.transverse_parameters;
-      // FIXME: throw excetion if parameter doesn't exist. Should make sure that it is properly caught
-      a0_ = transverse_params.at("a0"); 
-      a1_ = transverse_params.at("a1");
-      a2_ = transverse_params.at("a2");
+        typedef map<int, std::vector<double>>::const_iterator MapIterator;
+        for (MapIterator iter = params.map_layers_energy.begin(); iter != params.map_layers_energy.end(); iter++) {
+            if(iter->second.size()!=52)
+                throw std::string("The size of shower_layers_energy should be equals to the layer number");
+
+            double total_weight=0.;
+            typedef std::vector<double>::const_iterator ListIterator;
+            for (ListIterator list_iter = iter->second.begin(); list_iter != iter->second.end(); list_iter++) {
+                total_weight += *list_iter;
+            }
+            std::vector<double> new_list = iter->second;
+            std::transform(new_list.begin(), new_list.end(), new_list.begin(),
+                   std::bind2nd(std::divides<double>(),total_weight));
+            layerProfile_[iter->first] = new_list;
+        }
+
+        for (MapIterator iter = params.map_alpha.begin(); iter != params.map_alpha.end(); iter++) {
+            alpha_[iter->first] = iter->second;
+        }
+
+        // transverse parameters
+        // exponential parameter set from TP studies, 90% containment at Rm for electro.
+        // 95% containment at lambdaI for hadro
+        r0layer_Electro_ = moliereRadius_/std::log(10.);
+        r0layer_Hadro_ = interaction_length_/std::log(5.);
+        const auto& transverse_params_electro = params.transverse_parameters_electro;
+        // FIXME: find better way to implement transverse parameters
+        a0_electro = transverse_params_electro.at("a0");
+        a1_electro = transverse_params_electro.at("a1");
+        a2_electro = transverse_params_electro.at("a2");
+
+        const auto& transverse_params_hadro = params.transverse_parameters_hadro;
+        a0_hadro = transverse_params_hadro.at("a0");
+        a1_hadro = transverse_params_hadro.at("a1");
+        a2_hadro = transverse_params_hadro.at("a2");
+
+        tot_layer_Electro = 28.;
+        tot_layer_Hadro = 24.;
     }
+
     ~ShowerParametrization() {}
 
     // average medium
-    double getRadiationLength() const {return radiationLength_;}
     double getMoliereRadius() const {return moliereRadius_;}
-    double getCriticalEnergy() const {return criticalEnergy_;}
+    double getInteractionLength() const {return interaction_length_;}
 
-    // longitudinal
-    double meanT(double lny) const {return meant0_+meant1_*lny;}
-    double meanAlpha(double lny) const {return meanalpha0_+meanalpha1_*lny;}
-    double sigmaLnT(double lny) const {return 1./(sigmalnt0_+sigmalnt1_*lny);}
-    double sigmaLnAlpha(double lny) const {return 1./(sigmalnalpha0_+sigmalnalpha1_*lny);}
-    double correlationAlphaT(double lny) const {return corrlnalphalnt0_+corrlnalphalnt1_*lny;}        
-    const std::array<double,28>& getLayerProfile() const {return layerProfile_;}
+
+    std::array<double,52>& getLayerProfile(int pdgid) {
+        map<int, std::vector<double>>::const_iterator pos = layerProfile_.find(pdgid);
+        if (pos == layerProfile_.end()) {
+            cout << "pdgid doesn't exist"<<endl;
+        } else {
+            int index = 0;
+            typedef std::vector<double>::const_iterator ListIterator;
+            for (ListIterator list_iter = pos->second.begin(); list_iter != pos->second.end(); list_iter++){
+                partLayerProfile_[index] = *list_iter;
+                index++;
+            }
+        }
+        return partLayerProfile_;
+    }
+
+    const std::array<double,52>& getRadiationLength() const {return radLength_;}
+
     // transversal
-    double r0(int klayer) {return klayer==-1 ? r0layer15_ : (a0_ + a1_*klayer + a2_*klayer*klayer)*r0layer15_/28.;}
+    double r0_electro_(int klayer, int pdgid) {return (a0_electro + a1_electro*klayer + a2_electro*klayer*klayer)*r0layer_Electro_/tot_layer_Electro;}
+    double r0_hadro_(int klayer, int pdgid) {return (a0_hadro + a1_hadro*klayer + a2_hadro*klayer*klayer)*r0layer_Hadro_/tot_layer_Hadro;}
 
     // fluctuations
-    double spotEnergy() {return alpha_*alpha_;}
-    
-  private:
-  
-    // average medium parameters
-    double radiationLength_; // in cm
-    double moliereRadius_;   // in cm 
-    double criticalEnergy_;  // in MeV 
+    std::array<double,3> spotEnergy(int pdgid) {
+        map<int, std::vector<double>>::const_iterator pos = alpha_.find(pdgid);
+        if (pos == alpha_.end()) {
+            cout << "pdgid doesn't exist"<<endl;
+        } else {
+            int index = 0;
+            typedef std::vector<double>::const_iterator ListIterator;
+            for (ListIterator list_iter = pos->second.begin(); list_iter != pos->second.end(); list_iter++){
+                alphasquare_[index] = (*list_iter)*(*list_iter);
+                index++;
+            }
+        }
+        return alphasquare_;}
 
-    // longitudinal parametrisation
-    double meant0_;
-    double meant1_;
-    double meanalpha0_;
-    double meanalpha1_;
-    double sigmalnt0_;
-    double sigmalnt1_;
-    double sigmalnalpha0_;
-    double sigmalnalpha1_;
-    double corrlnalphalnt0_;
-    double corrlnalphalnt1_;
-    std::array<double,28> layerProfile_;
-    
-    // transverse parametrisation
-    double r0layer15_;
-    double a0_;
-    double a1_;
-    double a2_;
+    private:
+        // average medium parameters
+        std::array<double,52> radLength_;
+        std::map<int, std::vector<double>> layerProfile_;
+        std::array<double,52> partLayerProfile_;
 
-    // for fluctuation
-    double alpha_; // the stochastic coefiscient in GeV^1/2
-    
+        double moliereRadius_;   // in cm 
+        double interaction_length_;  // in cm
+
+        int tot_layer_Electro;
+        int tot_layer_Hadro;
+
+        // transverse parametrisation
+        double r0layer_Electro_;
+        double r0layer_Hadro_;
+        double a0_hadro;
+        double a1_hadro;
+        double a2_hadro;
+        double a0_electro;
+        double a1_electro;
+        double a2_electro;
+
+        // for fluctuation
+        std::map<int, std::vector<double>> alpha_;
+        std::array<double,3> alphasquare_; // the stochastic coefficient in GeV^1/2
 };
 
 #endif

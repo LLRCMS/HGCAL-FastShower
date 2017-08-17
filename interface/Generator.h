@@ -23,23 +23,31 @@
 
 class Generator {
 
-  public:
-    Generator(const Parameters&);
-    ~Generator() {};
+    public:
+        Generator(const Parameters&);
+        ~Generator();
 
-    void simulate();
-    //void display(Geometry& geometry, std::map<Cell,TH1F*,CellComp>& hCellEnergyEvtMap, int ievt=0);
-    std::unique_ptr<TCanvas> display(const std::unordered_map<uint32_t,TH1F>& hCellEnergyEvtMap, int ievt=0);
+        void simulate();
+
+        // void display(Geometry& geometry, std::map<Cell,TH1F*,CellComp>& hCellEnergyEvtMap, int ievt=0);
+        std::unique_ptr<TCanvas> display(const std::unordered_map<uint32_t,TH1F>& hCellEnergyEvtMap, int ievt=0);
+
+        const std::array<double,52>& getMipEnergy() const {return mip_energy_;}
+        const std::array<double,52>& getSampling() const {return sampling_;}
+        const std::array<double,52>& getNoiseSigma() const {return noise_sigma_;}
 
 
-  private:
-    TRandom3 gun_;
-    Geometry geometry_;
-    OutputService output_;
-    ShowerParametrization shower_;
-    const Parameters& parameters_;
-    
+    private:
+        TRandom3 gun_;
+        Geometry geometry_;
+        OutputService output_;
+        const Parameters& parameters_;
+        ShowerParametrization shower_;
 
+
+        std::array<double,52> mip_energy_;
+        std::array<double,52> sampling_;
+        std::array<double,52> noise_sigma_;
 };
 
 

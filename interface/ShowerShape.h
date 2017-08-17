@@ -24,17 +24,18 @@ class ShowerShape {
     int imax() {return imax_;}
     int jmax() {return jmax_;}
     double firstNeighboors();
-    virtual double firstNeighboors(int i, int j)=0;
+    virtual double firstNeighboors(int i, int j, int k)=0;
     double energySum() {return energySum_;} // total energy
 
   protected:
   
-    const std::unordered_map<uint32_t,double>& enrjMap_;  
+    const std::unordered_map<uint32_t,double>& enrjMap_;
     const std::unordered_map<uint32_t,Cell>& cellMap_;  // cell 1D indexing
     const Cell* maxCell_; // hotest cell
     double maxE1_; // hotest cell energy
     int imax_; // hotest cell i index
     int jmax_; // hotest cell j index
+    int k;
     double energySum_;
   
 };

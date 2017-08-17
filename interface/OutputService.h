@@ -16,34 +16,36 @@
 #endif
 
 
-class OutputService
-{
-  public:
-    OutputService(const std::string&);
-    ~OutputService();
+class OutputService {
+    public:
+        OutputService(const std::string&);
+        ~OutputService();
 
-    void fillTree(const Event&, const Geometry&);
+        void fillTree(const Event&, const Geometry&);
+        void clear();
 
-  private:
-    std::unique_ptr<TFile> file_;
-    TTree* tree_; // the tree is owned by file_ and deleted when the file is closed
 
-    // tree branches
-    unsigned run_;
-    unsigned event_;
-    float gen_energy_;
-    float gen_eta_;
-    float gen_phi_;
-    unsigned cell_n_;
-    std::vector<float> cell_energy_;
-    std::vector<float> cell_x_;
-    std::vector<float> cell_y_;
-    std::vector<float> cell_z_;
-    std::vector<float> cell_eta_;
-    std::vector<float> cell_phi_;
+    private:
+        std::unique_ptr<TFile> file_;
+        TTree* tree_; // the tree is owned by file_ and deleted when the file is closed
 
-    void clear();
+        // tree branches
+        unsigned run_;
+        unsigned event_;
+        unsigned npart_;
+        unsigned cell_n_;
 
+        std::vector<float> PDGid_;
+        std::vector<float> thick_;
+        std::vector<float> gen_energy_;
+        std::vector<float> gen_eta_;
+        std::vector<float> gen_phi_;
+        std::vector<float> cell_energy_;
+        std::vector<float> cell_x_;
+        std::vector<float> cell_y_;
+        std::vector<float> cell_z_;
+        std::vector<float> cell_eta_;
+        std::vector<float> cell_phi_;
 
 };
 

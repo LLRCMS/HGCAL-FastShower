@@ -18,7 +18,7 @@ class ShowerShapeHexagon: public ShowerShape {
         const std::unordered_map<uint32_t,Cell>& cellMap): ShowerShape(enrjMap, cellMap) {}
     ~ShowerShapeHexagon() {}
 
-    double firstNeighboors(int i, int j);
+    double firstNeighboors(int i, int j, int k);
 
   private:
   

@@ -4,4 +4,7 @@
 *.pdf
 *.root
 *.json
-.*xml
+*.xml
+*.exe
+*.py
+*.txt

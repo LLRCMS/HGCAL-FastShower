@@ -7,64 +7,61 @@
 #include "HGCalSimulation/FastShower/interface/Cell.h"
 #endif
 
+#include <vector>
 
-uint32_t Cell::id(uint16_t i, uint16_t j)
-{
-  uint32_t id = 0;
-  id |= i;
-  id |= (j<<16);
-  return id;
+uint32_t Cell::id(uint16_t i, uint16_t j, uint16_t k) {
+    // id format = kk0iii0jjj
+    return (k+1)*100000000 + i*10000 + j;
 }
 
 
-//Cell::Cell(const Cell& cell):
-  //position_(cell.getPosition()),
-  //vertices_(cell.getVertices()),
-  //orientation_(cell.getOrientation()),
-  //i_index_(cell.getIIndex()),
-  //j_index_(cell.getJIndex()),
-//{
-//}
-
-//Cell& Cell::operator=(const Cell& cell) { 
-  //if (this != &cell) {
-    //delete position_;
-    //position_ = new TVectorD(2);
-    //(*position_)(0)=(cell.getPosition())(0); 
-    //(*position_)(1)=(cell.getPosition())(1); 
-    //vertices_ = new std::vector<TVectorD *>;
-    //for (unsigned int i=0;i<cell.getVertices().size();i++) {
-      //TVectorD *vertex = new TVectorD(2);
-      //(*vertex)(0)=(*cell.getVertices()[i])(0);
-      //(*vertex)(1)=(*cell.getVertices()[i])(1);
-      //vertices_->push_back(vertex);
-    //}  
-    //for (unsigned int i=0;i<cell.getVertices().size();i++) {
-      //delete cell.getVertices()[i];
-    //}
-    //orientation_ = cell.getOrientation();
-    //i_index_ = cell.getIIndex();
-    //j_index_ = cell.getJIndex();  
-  //}
-  //return *this;
-
-//}
-
-Cell::Cell(TVectorD&& position, std::vector<TVectorD>&& vertices, double orientation, int i_index, int j_index):
+Cell::Cell(TVectorD&& position, std::vector<TVectorD>&& vertices, int i_index, int j_index, int k_index):
   position_(std::move(position)),
-  vertices_(std::move(vertices)),
-  orientation_(orientation)
+  vertices_(std::move(vertices))
 {
-  if(i_index<std::numeric_limits<int16_t>::min() ||
-      i_index>std::numeric_limits<int16_t>::max() ||
-      j_index<std::numeric_limits<int16_t>::min() ||
-      j_index>std::numeric_limits<int16_t>::max()
-    )
-  {
-    throw std::string("Cell index outside of 16bits integer limits");
-  }
+
   i_index_ = (int16_t)i_index;
   j_index_ = (int16_t)j_index;
-  id_ = Cell::id(i_index_, j_index_);
+  k_index_ = (int16_t)k_index;
+  id_ = Cell::id(i_index_, j_index_, k_index_);
+  x_ = this->getPosition()(0);
+  y_ = this->getPosition()(1);
 }
 
+double Cell::getX(){
+    return x_;
+}
+
+double Cell::getY(){
+    return y_;
+}
+
+int Cell::getIIndex(){
+    return i_index_;
+}
+
+int Cell::getJIndex(){
+    return j_index_;
+}
+
+int Cell::getLayer(){
+    return k_index_;
+}
+
+uint32_t Cell::getId(){
+    return id_;
+}
+
+
+bool Cell::cell_exist(std::vector<Cell> cells) {
+
+    int cell_id = this->getId();
+    for (Cell cell: cells) {
+        if(cell_id == cell.getId()) {
+            throw std::string("Warning : This cell is already include in the geometry");
+            return true;
+        }
+        else
+            return false;
+    }
+}
