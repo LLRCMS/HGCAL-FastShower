@@ -32,7 +32,6 @@ OutputService::OutputService(const std::string& file_name):
       tree_->Branch("cell_z", &cell_z_);
       tree_->Branch("cell_eta", &cell_eta_);
       tree_->Branch("cell_phi", &cell_phi_);
-      // tree_->Branch("geometry", &geometry_histo);
 }
 
 OutputService::~OutputService() {
@@ -41,27 +40,35 @@ OutputService::~OutputService() {
 }
 
 
-void OutputService::fillTree(const Event& event, const Geometry& geometry) {
+void OutputService::fillTree(const Event& event, std::vector<Cell> cell_collection) {
     clear();
     run_ = event.run();
     event_ = event.event();
     npart_ = event.npart();
 
-    for(const auto& id_hit : event.hits()) {
+    for(auto& hit : event.hits()) {
+
         // skip zero and negative energies
-        if(id_hit.second<=0.)
+        if(hit.second<=0.)
             continue;
 
-        const auto& cell = geometry.getCells()->at(id_hit.first);
-        double x = cell.getPosition()(0);
-        double y = cell.getPosition()(1);
-        double z = cell.getPosition()(2);
+        Cell* cell;
+        for (Cell c : cell_collection){
+            if (c.getId() == hit.first) {
+                cell = &c;
+                break;
+            }
+       }
+
+        double x = cell->getX();
+        double y = cell->getY();
+        double z = cell->getZ();
         double r = std::sqrt(x*x + y*y);
         double theta = std::atan(r/z);
         double eta = -std::log(std::tan(theta/2.));
         double phi = std::copysign(std::acos(x/r),y);
 
-        cell_energy_.emplace_back(id_hit.second);
+        cell_energy_.emplace_back(hit.second);
         cell_x_.emplace_back(x);
         cell_y_.emplace_back(y);
         cell_z_.emplace_back(z);
@@ -70,20 +77,19 @@ void OutputService::fillTree(const Event& event, const Geometry& geometry) {
     }
     cell_n_ = cell_energy_.size();
 
-
-    for(const auto& id_part : event.gen_en()) {
-        if(id_part.second<=0.)
+    for(auto& part : event.gen_en()) {
+        if(part.second<=0.)
             continue;
-        gen_energy_.emplace_back(id_part.second);
+        gen_energy_.emplace_back(part.second);
     }
-    for(const auto& id_part : event.gen_eta())
-        gen_eta_.emplace_back(id_part.second);
-    for(const auto& id_part : event.gen_phi())
-        gen_phi_.emplace_back(id_part.second);
-    for(const auto& id_part : event.pdg_id())
-        PDGid_.emplace_back(id_part.second);
-    for(const auto& id_part : event.thick())
-        thick_.emplace_back(id_part.second);
+    for(auto& part : event.gen_eta())
+        gen_eta_.emplace_back(part.second);
+    for(auto& part : event.gen_phi())
+        gen_phi_.emplace_back(part.second);
+    for(auto& part : event.pdg_id())
+        PDGid_.emplace_back(part.second);
+    for(auto& part : event.thick())
+        thick_.emplace_back(part.second);
 
     tree_->Fill();
 }

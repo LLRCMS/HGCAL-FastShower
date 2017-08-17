@@ -21,7 +21,7 @@ class OutputService {
         OutputService(const std::string&);
         ~OutputService();
 
-        void fillTree(const Event&, const Geometry&);
+        void fillTree(const Event&, const std::vector<Cell>);
         void clear();
 
 
