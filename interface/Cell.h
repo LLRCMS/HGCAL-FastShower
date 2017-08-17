@@ -34,8 +34,6 @@ class Cell {
     int getLayer();
     uint32_t getId();
 
-    bool cell_exist(std::vector<Cell> cells);
-
   private:
     TVectorD position_; // centre position in absolute coordinates
     std::vector<TVectorD> vertices_; // vertices positions in absolute coordinates

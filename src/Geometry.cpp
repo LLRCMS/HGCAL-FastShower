@@ -21,9 +21,6 @@ using namespace std;
 
 
 Geometry::~Geometry(){
-    // if(cells_ != nullptr) {
-    //     delete cells_;
-    // }
 }
 
 
@@ -407,9 +404,6 @@ void Geometry::constructFromJson(bool debug, int layer_id) {
 void Geometry::constructFromParameters(bool debug, int layer_id, int display_layer) {
   // a tesselation of the plane with polygons
 
-    if (parameters_.layer!=-1)
-        cells_ = nullptr;
-
     Parameters::Geometry::Type itype(parameters_.type);
     double zlayer = parameters_.layers_z[layer_id]; // else offset from the layer z position
     setZlayer(zlayer);
@@ -552,9 +546,15 @@ void Geometry::constructFromParameters(bool debug, int layer_id, int display_lay
                 }
             }
 
-            Cell c = Cell(move(position),move(vertices), real_i, real_j, layer_id);
-            if (!c.cell_exist(*cells_))
-                cells_->push_back(c);
+            auto c = cells_.emplace(
+                Cell::id(real_i, real_j, layer_id),
+                Cell(std::move(position), std::move(vertices), real_i, real_j, layer_id));
+            if(!c.second) {
+                cout << "Warning: Cell with indices" << real_i << " "
+                        << real_j << ", "<< layer_id
+                        << " already exists (id="<<Cell::id(real_i, real_j, layer_id) << ")\n";
+                cout << "Warning: This may indicate a bug in the id definition\n";
+            }
 
             real_j++;
         }
@@ -634,9 +634,16 @@ void Geometry::constructFromParameters(bool debug, int layer_id, int display_lay
                 }
             }
 
-            Cell c = Cell(move(position),move(vertices), real_i+real_i2, real_j+real_j2, layer_id);
-            if (!c.cell_exist(*cells_))
-                cells_->push_back(c);
+            auto c = cells_.emplace(
+                Cell::id(real_i + real_i2, real_j + real_j2, layer_id),
+                Cell(move(position), move(vertices), real_i + real_i2, real_j + real_j2, layer_id)
+            );
+            if(!c.second) {
+                cout << "Warning: Cell with indices" << real_i + real_i2<< " " <<
+                            real_j +real_j2 << ", "<<layer_id<<
+                            " already exists (id="<<Cell::id(real_i + real_i2,real_j2+real_j, layer_id) << ")\n";
+                cout << "Warning: This may indicate a bug in the id definition\n";
+            }
             real_j2++;
         }
         real_i2++;
@@ -650,8 +657,8 @@ void Geometry::constructFromParameters(bool debug, int layer_id, int display_lay
 
         // take ownership of the histogram
         cell_histogram_->SetDirectory(0);
-        for (Cell cell : *cells_) {
-            // const auto& cell = id_cell.second;
+        for (auto& c : cells_) {
+            auto& cell = c.second;
             vector<double> binsx, binsy;
             for (const auto& vertex : cell.getVertices()) {
                 binsx.emplace_back(vertex(0));
@@ -671,11 +678,11 @@ void Geometry::print() {
         cout<<"the layer plane is "<<klayer_<< " at z position "<<parameters_.layers_z[klayer_]<<endl;
     else
         cout << "All the layer plane are simulated at the corresponding z position " << endl;
-    for (Cell cell : *cells_) {
+    for (auto& cell : cells_) {
         cout << "new cell with indices " << 
-        "("<< cell.getIIndex() << ", " << cell.getJIndex() << ", " << cell.getLayer() << ")" <<
+        "("<< cell.second.getIIndex() << ", " << cell.second.getJIndex() << ", " << cell.second.getLayer() << ")" <<
           " and position " << 
-          "("<<cell.getX() << ", " << cell.getY() << ", "<< cell.getLayer() << ")" << endl;
+          "("<<cell.second.getX() << ", " << cell.second.getY() << ", "<< cell.second.getLayer() << ")" << endl;
     }
 }
 

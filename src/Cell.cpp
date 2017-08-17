@@ -9,15 +9,20 @@
 
 #include <vector>
 
+
 uint32_t Cell::id(uint16_t i, uint16_t j, uint16_t k) {
     // id format = kk0iii0jjj
     return (k+1)*100000000 + i*10000 + j;
 }
 
 
-Cell::Cell(TVectorD&& position, std::vector<TVectorD>&& vertices, int i_index, int j_index, int k_index):
-  position_(std::move(position)),
-  vertices_(std::move(vertices))
+Cell::Cell(TVectorD&& position,
+           std::vector<TVectorD>&& vertices,
+           int i_index,
+           int j_index,
+           int k_index):
+            position_(std::move(position)),
+            vertices_(std::move(vertices))
 {
 
   i_index_ = (int16_t)i_index;
@@ -55,18 +60,4 @@ int Cell::getLayer(){
 
 uint32_t Cell::getId(){
     return id_;
-}
-
-
-bool Cell::cell_exist(std::vector<Cell> cells) {
-
-    uint32_t cell_id = this->getId();
-    for (Cell cell: cells) {
-        if(cell_id == cell.getId()) {
-            throw std::string("Warning : This cell is already include in the geometry");
-            return true;
-        }
-        else
-            return false;
-    }
 }

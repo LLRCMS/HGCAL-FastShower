@@ -4,6 +4,7 @@
 
 #include <string>
 #include <vector>
+#include <unordered_map>
 #include "TVectorD.h"
 #include "TMatrixD.h"
 #include "TH2Poly.h"
@@ -43,7 +44,7 @@ class Geometry {
     bool isInCell(const TVectorD& position, const Cell& cell) const; // test if a point is within a cell
 
     // getters
-    std::vector< Cell>* getCells() const {return cells_;}
+    std::unordered_map<uint32_t, Cell> getCells() const {return cells_;}
     int getLayer() const {return klayer_;}
     double getZlayer() const {return zlayer_;}
     // Parameters::Geometry::Type getType() const {return itype_;}
@@ -62,19 +63,22 @@ class Geometry {
     void setZlayer(double zlayer) {zlayer_ = zlayer;}
     // void setType (Parameters::Geometry::Type itype) {itype_=itype;}
 
-    std::vector<Cell>* cells_;
+    // std::vector<Cell>* cells_;
     int klayer_;
     double zlayer_;
     Parameters::Geometry::Type itype_; // cell type
     const Parameters::Geometry& parameters_;
 
-    std::unique_ptr<TH2Poly> cell_histogram_;
     int i_cell_first;
     int j_cell_first;
     int i_cell_second;
     int j_cell_second;
     int i_cell_third;
     int j_cell_third;
+
+    std::unordered_map<uint32_t, Cell> cells_;
+    std::unique_ptr<TH2Poly> cell_histogram_;
+
 
 };
 

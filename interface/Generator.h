@@ -2,6 +2,8 @@
 #define __HGCalSimulation_FastShower_Generator_h__
 
 #include <map>
+#include <unordered_map>
+
 #include "TH1F.h"
 #include "TRandom3.h"
 #include "TCanvas.h"
