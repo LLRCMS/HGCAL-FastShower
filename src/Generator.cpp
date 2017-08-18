@@ -88,7 +88,8 @@ void Generator::simulate() {
     // // Map to collect all cells and used it in the outputservice for example
     std::unordered_map<uint32_t, Cell> cell_map_collection;
 
-    for (int layer_id = layer_min; layer_id < 2; layer_id++) {
+    for (int layer_id = layer_min; layer_id < layer_max; layer_id++) {
+        cout << "=====> Layer " <<layer_id+1 << " / "<< layer_max << '\r' << flush;
         if (parameters_.geometry().type!=Parameters::Geometry::Type::External) {
             geometry_.constructFromParameters(parameters_.general().debug, layer_id, display_layer);
 
@@ -153,7 +154,7 @@ void Generator::simulate() {
     if (parameters_.generation().noise) {
         cout << "Noise calibration ..."<<endl;
 
-        for(int layer_id = 0; layer_id < 2; layer_id++) {
+        for(int layer_id = layer_min; layer_id < layer_max; layer_id++) {
 
             double sigma_noise = getNoiseSigma()[layer_id];
             double mip = getMipEnergy()[layer_id];
@@ -168,7 +169,9 @@ void Generator::simulate() {
     double hit_outside_geom = 0.;
     double tot_hits = 0;
 
-    for (int layer_id = layer_min; layer_id < 2; layer_id++) {
+    std::unordered_map<int, Tree*> tree_map;
+
+    for (int layer_id = layer_min; layer_id < layer_max; layer_id++) {
 
         std::vector<double > cell_x;
         std::vector<double > cell_y;
@@ -241,68 +244,73 @@ void Generator::simulate() {
             }
         }
 
-        for (unsigned iev=1; iev <= nevents; iev++) {
-            cout << "================ Simulating event: " << iev << " ================" << endl;
+        tree_map.insert({layer_id, tree});
+    }
 
-            // initialize event
-            Event event(0, iev); // default run number =0
+    for (unsigned iev=1; iev <= nevents; iev++) {
+        cout << "================ Simulating event: " << iev << " ================" << endl;
 
-            energygen = 0.;
-            energygenincells = 0.;
-            energyrec = 0.;
+        // initialize event
+        Event event(0, iev); // default run number =0
 
-            // Particles generation
-            unsigned npart = parameters_.general().part_type.size();
-            event.setnPart(npart);
+        energygen = 0.;
+        energygenincells = 0.;
+        energyrec = 0.;
 
-            for (int ip : parameters_.general().part_type) {
+        // Particles generation
+        unsigned npart = parameters_.general().part_type.size();
+        event.setnPart(npart);
 
-                // particle incidents parameters
-                double eta_incident, phi_incident;
-                double energy_incident;
-                if (parameters_.generation().eta_fluctuation)
-                    eta_incident = gun_.Uniform(parameters_.generation().eta_range_min, parameters_.generation().eta_range_max);
-                else
-                    eta_incident = parameters_.generation().incident_eta;
-                if (parameters_.generation().phi_fluctuation)
-                    phi_incident = gun_.Uniform(parameters_.generation().phi_range_min, parameters_.generation().phi_range_max);
-                else
-                    phi_incident = parameters_.generation().incident_phi;
+        for (int ip : parameters_.general().part_type) {
 
-                if (parameters_.generation().fluctuation_energy) {
-                    double rand_energy = gun_.Uniform(parameters_.generation().E_range_min, parameters_.generation().E_range_max);
-                    if (parameters_.generation().gun_type == "E")
-                        energy_incident = rand_energy;
-                    else{
-                        energy_incident = rand_energy*((exp(eta_incident*eta_incident)+1)/(exp(eta_incident*eta_incident)-1));
-                    }
+            // particle incidents parameters
+            double eta_incident, phi_incident;
+            double energy_incident;
+            if (parameters_.generation().eta_fluctuation)
+                eta_incident = gun_.Uniform(parameters_.generation().eta_range_min, parameters_.generation().eta_range_max);
+            else
+                eta_incident = parameters_.generation().incident_eta;
+            if (parameters_.generation().phi_fluctuation)
+                phi_incident = gun_.Uniform(parameters_.generation().phi_range_min, parameters_.generation().phi_range_max);
+            else
+                phi_incident = parameters_.generation().incident_phi;
+
+            if (parameters_.generation().fluctuation_energy) {
+                double rand_energy = gun_.Uniform(parameters_.generation().E_range_min, parameters_.generation().E_range_max);
+                if (parameters_.generation().gun_type == "E")
+                    energy_incident = rand_energy;
+                else{
+                    energy_incident = rand_energy*((exp(eta_incident*eta_incident)+1)/(exp(eta_incident*eta_incident)-1));
                 }
-                else {
-                    if (parameters_.generation().gun_type == "E")
-                        energy_incident = parameters_.generation().energy;
-                    else
-                        energy_incident = parameters_.generation().energy*((exp(eta_incident*eta_incident)+1)/(exp(eta_incident*eta_incident)-1));
-                }
+            }
+            else {
+                if (parameters_.generation().gun_type == "E")
+                    energy_incident = parameters_.generation().energy;
+                else
+                    energy_incident = parameters_.generation().energy*((exp(eta_incident*eta_incident)+1)/(exp(eta_incident*eta_incident)-1));
+            }
+
+            int position = &ip-&parameters_.general().part_type[0];
+            event.fillGenEn(position, energy_incident);
+            event.fillGenEta(position, eta_incident);
+            event.fillGenPhi(position, phi_incident);
+            event.fillPDGid(position, ip);
+
+            // Number of hits
+            // as the hits are not generated yet, the energy is computed with the smaller energy
+            // resolution in order to have the bigger number of hits per events
+            // energy spot
+            // no fluctuations: fixed energy = 1. / nhitspergev
+            // fluctuations: alpha/sqrt(E) -> Poissonian nbr hits of energy 1/alpha^2
+            // where alpha is the stochastic term of the resolution
+
+            for (int layer_id = layer_min; layer_id < layer_max; layer_id++) {
 
                 // incident direction
                 double thetainc = 2.*std::atan(std::exp(-eta_incident));
-                double r = geometry_.getZlayer()*tan(thetainc); 
+                double r = parameters_.geometry().layers_z[layer_id]*tan(thetainc); 
                 double incident_x = r*cos(phi_incident);
                 double incident_y = r*sin(phi_incident);
-
-                int position = &ip-&parameters_.general().part_type[0];
-                event.fillGenEn(position, energy_incident);
-                event.fillGenEta(position, eta_incident);
-                event.fillGenPhi(position, phi_incident);
-                event.fillPDGid(position, ip);
-
-                // Number of hits
-                // as the hits are not generated yet, the energy is computed with the smaller energy
-                // resolution in order to have the bigger number of hits per events
-                // energy spot
-                // no fluctuations: fixed energy = 1. / nhitspergev
-                // fluctuations: alpha/sqrt(E) -> Poissonian nbr hits of energy 1/alpha^2
-                // where alpha is the stochastic term of the resolution
 
                 double r0_electro = aShowerParametrization.r0_electro_(layer_id, ip);
                 double r0_hadro = aShowerParametrization.r0_hadro_(layer_id, ip);
@@ -371,7 +379,7 @@ void Generator::simulate() {
                     double rmin = numeric_limits<double>::max();
                     Cell* closestCells;
 
-                    std::vector<Cell*>* leafCells = tree->getLeaf(float(x), float(y))->getCells();
+                    std::vector<Cell*>* leafCells = tree_map[layer_id]->getLeaf(float(x), float(y))->getCells();
 
                     for (Cell* leafCell : *leafCells) {
                         double leafCell_x = leafCell->getX();
@@ -417,48 +425,50 @@ void Generator::simulate() {
                     }
                 }
             }
-
-           // // // fill shower histograms
-           // //  hTransverseProfile.Fill(r_shower,real_energy);
-           // //  hPhiProfile.Fill(phi_shower,real_energy);
-           // //  hSpotEnergy.Fill(real_energy);
-
-            cout << "simulated energy " << energygen << endl;
-            cout << "simulated energy inside cells " << energygenincells << endl;
-            cout << "reconstructed energy inside cells (includes noise) " << energyrec << endl;
- 
-            // std::unique_ptr<ShowerShape> aShowerShape;
-            // if (parameters_.geometry().type!=Parameters::Geometry::Type::Triangles) { // hexagons
-            //     aShowerShape.reset(new ShowerShapeHexagon(event.hits(), geometry_.getCells()));
-            // }
-            // else { // triangles
-            //     aShowerShape.reset(new ShowerShapeTriangle(event.hits(), geometry_.getCells()));
-            // }
-            // cout << "cell max i,j " << aShowerShape->maxCell()->getIIndex() << " "
-            //      << aShowerShape->maxCell()->getJIndex()<<" with energy "<<aShowerShape->maxE1()<<endl;
-            // cout << "energy in first neighboors " << aShowerShape->firstNeighboors() << endl;
-
-            // if (!hCellEnergyMap.empty() && !hCellEnergyEvtMap.empty()) {
-            //     for (const auto& id_energy : event.hits()) {
-            //         hCellEnergyMap.at(id_energy.first).Fill(id_energy.second);
-            //     }
-
-            //     // if requested display a few events
-            //     if (iev<=parameters_.display().events) {
-            //         for (const auto& id_energy : event.hits()) {
-            //             hCellEnergyEvtMap.at(id_energy.first).Reset();
-            //             hCellEnergyEvtMap.at(id_energy.first).Fill(id_energy.second);
-            //         }
-            //         canvas.emplace_back(display(hCellEnergyEvtMap,iev));
-            //     }
-            // }
-
-            // // fill global histograms
-            // hEnergySum.Fill(energyrec,1.);
-            // hEnergyGen.Fill(energygen,1.);
-            output_.fillTree(event, geometry_);
         }
+
+       // // // fill shower histograms
+       // //  hTransverseProfile.Fill(r_shower,real_energy);
+       // //  hPhiProfile.Fill(phi_shower,real_energy);
+       // //  hSpotEnergy.Fill(real_energy);
+
+        cout << "simulated energy " << energygen << endl;
+        cout << "simulated energy inside cells " << energygenincells << endl;
+        cout << "reconstructed energy inside cells (includes noise) " << energyrec << endl;
+
+        // std::unique_ptr<ShowerShape> aShowerShape;
+        // if (parameters_.geometry().type!=Parameters::Geometry::Type::Triangles) { // hexagons
+        //     aShowerShape.reset(new ShowerShapeHexagon(event.hits(), geometry_.getCells()));
+        // }
+        // else { // triangles
+        //     aShowerShape.reset(new ShowerShapeTriangle(event.hits(), geometry_.getCells()));
+        // }
+        // cout << "cell max i,j " << aShowerShape->maxCell()->getIIndex() << " "
+        //      << aShowerShape->maxCell()->getJIndex()<<" with energy "<<aShowerShape->maxE1()<<endl;
+        // cout << "energy in first neighboors " << aShowerShape->firstNeighboors() << endl;
+
+        // if (!hCellEnergyMap.empty() && !hCellEnergyEvtMap.empty()) {
+        //     for (const auto& id_energy : event.hits()) {
+        //         hCellEnergyMap.at(id_energy.first).Fill(id_energy.second);
+        //     }
+
+        //     // if requested display a few events
+        //     if (iev<=parameters_.display().events) {
+        //         for (const auto& id_energy : event.hits()) {
+        //             hCellEnergyEvtMap.at(id_energy.first).Reset();
+        //             hCellEnergyEvtMap.at(id_energy.first).Fill(id_energy.second);
+        //         }
+        //         canvas.emplace_back(display(hCellEnergyEvtMap,iev));
+        //     }
+        // }
+
+        // // fill global histograms
+        // hEnergySum.Fill(energyrec,1.);
+        // hEnergyGen.Fill(energygen,1.);
+        output_.fillTree(event, geometry_);
     }
+
+    // output_.saveTree();
 
     // // Exporting histograms to file
     // hEnergyGen.Write();
