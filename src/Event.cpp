@@ -41,9 +41,7 @@ void Event::fillPDGid(uint32_t id, int PDGid) {
 }
 
 void Event::fillThick(uint32_t id, int thick) {
-    auto itr_insert = thick_.emplace(id, thick);
-    // if id already inserted, add the phi
-    if(!itr_insert.second) itr_insert.first->second += thick;
+    thick_.emplace(id, thick);
 }
 
 void Event::setnPart(uint32_t part) {
