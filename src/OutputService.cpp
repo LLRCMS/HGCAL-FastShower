@@ -1,4 +1,4 @@
-#ifdef STANDALONE
+#;ifdef STANDALONE
 #include "OutputService.h"
 #else
 #include "HGCalSimulation/FastShower/interface/OutputService.h"
@@ -36,8 +36,6 @@ OutputService::OutputService(const std::string& file_name):
 }
 
 OutputService::~OutputService() {
-    tree_->Write();
-    file_->Close();
 }
 
 
@@ -52,23 +50,23 @@ void OutputService::fillTree(const Event& event, const Geometry& geometry) {
         if(id_hit.second<=0.)
             continue;
 
-        auto& cell = geometry.getCells().at(id_hit.first);
-        double x = cell.getX();
-        double y = cell.getY();
-        double z = cell.getZ();
-        double r = std::sqrt(x*x + y*y);
-        double theta = std::atan(r/z);
-        double eta = -std::log(std::tan(theta/2.));
-        double phi = std::copysign(std::acos(x/r),y);
+        // auto& cell = geometry.getCells().at(id_hit.first);
+        // double x = cell.getX();
+        // double y = cell.getY();
+        // double z = cell.getZ();
+        // double r = std::sqrt(x*x + y*y);
+        // double theta = std::atan(r/z);
+        // double eta = -std::log(std::tan(theta/2.));
+        // double phi = std::copysign(std::acos(x/r),y);
 
-        cell_energy_.emplace_back(id_hit.second);
-        cell_x_.emplace_back(x);
-        cell_y_.emplace_back(y);
-        cell_z_.emplace_back(z);
-        cell_eta_.emplace_back(eta);
-        cell_phi_.emplace_back(phi);
+        // cell_energy_.emplace_back(id_hit.second);
+        // cell_x_.emplace_back(x);
+        // cell_y_.emplace_back(y);
+        // cell_z_.emplace_back(z);
+        // cell_eta_.emplace_back(eta);
+        // cell_phi_.emplace_back(phi);
     }
-    cell_n_ = cell_energy_.size();
+    // cell_n_ = cell_energy_.size();
 
 
     for(const auto& id_part : event.gen_en()) {
@@ -88,6 +86,10 @@ void OutputService::fillTree(const Event& event, const Geometry& geometry) {
     tree_->Fill();
 }
 
+void OutputService::saveTree(){
+    tree_->Write();
+    file_->Close();
+}
 
 void OutputService::clear() {
     run_ = 0;

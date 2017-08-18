@@ -22,6 +22,7 @@ class OutputService {
         ~OutputService();
 
         void fillTree(const Event&, const Geometry&);
+        void saveTree();
         void clear();
 
 
