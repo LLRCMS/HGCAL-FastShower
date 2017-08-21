@@ -211,10 +211,10 @@ void Generator::simulate() {
             else
                 side = parameters_.geometry().large_cell_side;
 
-            Point* cornerA = new Point(x_c - float(side*sqrt(3)/2), y_c + float(side));
-            Point* cornerB = new Point(x_c + float(side*sqrt(3)/2), y_c + float(side));
-            Point* cornerC = new Point(x_c + float(side*sqrt(3)/2), y_c - float(side));
-            Point* cornerD = new Point(x_c - float(side*sqrt(3)/2), y_c - float(side));
+            Point* cornerA = new Point(x_c - float(side), y_c + float(side));
+            Point* cornerB = new Point(x_c + float(side), y_c + float(side));
+            Point* cornerC = new Point(x_c + float(side), y_c - float(side));
+            Point* cornerD = new Point(x_c - float(side), y_c - float(side));
 
             std::set<Tree*> alreadyAdded;
 
