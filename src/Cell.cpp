@@ -34,15 +34,15 @@ Cell::Cell(TVectorD&& position,
   z_ = this->getPosition()(2);
 }
 
-double Cell::getX(){
+double Cell::getX() const {
     return x_;
 }
 
-double Cell::getY(){
+double Cell::getY() const{
     return y_;
 }
 
-double Cell::getZ(){
+double Cell::getZ() const{
     return z_;
 }
 
@@ -58,6 +58,6 @@ int Cell::getLayer(){
     return k_index_;
 }
 
-uint32_t Cell::getId(){
+uint32_t Cell::getId() const{
     return id_;
 }

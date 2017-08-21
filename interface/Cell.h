@@ -26,13 +26,13 @@ class Cell {
     const std::vector<TVectorD>& getVertices() const {return vertices_;}
 
 
-    double getX();
-    double getY();
-    double getZ();
+    double getX() const;
+    double getY() const;
+    double getZ() const;
     int getIIndex();
     int getJIndex();
     int getLayer();
-    uint32_t getId();
+    uint32_t getId() const;
 
   private:
     TVectorD position_; // centre position in absolute coordinates
