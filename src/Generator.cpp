@@ -199,13 +199,13 @@ void Generator::simulate() {
 
         Tree* tree = new Tree(plan, 5);
         float x_c, y_c;
+        double side;
         for(Cell& c : cell_collection[layer_id]) {
 
             x_c = float(c.getX());
             y_c = float(c.getY());
             float cell_radius = sqrt((x_c*x_c)+(y_c-y_c));
 
-            double side;
             if (cell_radius <= float(parameters_.geometry().limit_first_zone))
                 side = parameters_.geometry().small_cell_side;
             else
@@ -411,17 +411,19 @@ void Generator::simulate() {
                         hit_outside_geom++;
                     }
                     else {
+
+                        event.fillCells(closestCells->getId(), cell);
+
                         energyrec += real_energy;
                         energygenincells += real_energy;
+                        event.fillHit(closestCells->getId(), real_energy);
 
                         // loop on cells for the noise generation from the cells calibration
                         if (parameters_.generation().noise) {
                             enoise = gun_.Gaus(0., calibratednoise[layer_id]);
-                            event.fillHit(closestCells->getId(), enoise+real_energy);
+                            event.fillHit(closestCells->getId(), enoise);
                             energyrec += enoise;
                         }
-                        else
-                            event.fillHit(closestCells->getId(), real_energy);
                     }
                 }
             }
@@ -432,9 +434,9 @@ void Generator::simulate() {
        // //  hPhiProfile.Fill(phi_shower,real_energy);
        // //  hSpotEnergy.Fill(real_energy);
 
-        cout << "simulated energy " << energygen << endl;
-        cout << "simulated energy inside cells " << energygenincells << endl;
-        cout << "reconstructed energy inside cells (includes noise) " << energyrec << endl;
+        // cout << "simulated energy " << energygen << endl;
+        // cout << "simulated energy inside cells " << energygenincells << endl;
+        // cout << "reconstructed energy inside cells (includes noise) " << energyrec << endl;
 
         // std::unique_ptr<ShowerShape> aShowerShape;
         // if (parameters_.geometry().type!=Parameters::Geometry::Type::Triangles) { // hexagons
@@ -468,7 +470,7 @@ void Generator::simulate() {
         output_.fillTree(event, geometry_);
     }
 
-    // output_.saveTree();
+    output_.saveTree();
 
     // // Exporting histograms to file
     // hEnergyGen.Write();
