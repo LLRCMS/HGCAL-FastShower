@@ -83,8 +83,21 @@ double** Geometry::hexagonoffset(double side) {
     // pic on top
     double *dim = dimensions(side);
     return new double*[2] {
-      new double[6] {dim[1], dim[1], 0., -dim[1],-dim[1], 0},
-      new double[6] {-dim[2], dim[2], side, dim[2], -dim[2],-side}
+      new double[6] {dim[1]*cos(index_rotation*angle_) + dim[2]*sin(index_rotation*angle_),
+                     dim[1]*cos(index_rotation*angle_) - dim[2]*sin(index_rotation*angle_),
+                     -side*sin(index_rotation*angle_),
+                     -dim[1]*cos(index_rotation*angle_) - dim[2]*sin(index_rotation*angle_),
+                     -dim[1]*cos(index_rotation*angle_) + dim[2]*sin(index_rotation*angle_),
+                     side*sin(index_rotation*angle_)
+                    },
+
+      new double[6] {dim[1]*sin(index_rotation*angle_) - dim[2]*cos(index_rotation*angle_),
+                     dim[1]*sin(index_rotation*angle_) + dim[2]*cos(index_rotation*angle_),
+                     side*cos(index_rotation*angle_),
+                     -dim[1]*sin(index_rotation*angle_) + dim[2]*cos(index_rotation*angle_),
+                     -dim[1]*sin(index_rotation*angle_) - dim[2]*cos(index_rotation*angle_),
+                     -side*cos(index_rotation*angle_)
+                    }
     };
 
     // Hexagons flat side on top
@@ -199,13 +212,14 @@ double* Geometry::XYrPhi(int i, int j, double side, Parameters::Geometry::Type i
 
     double *der = derivative(side, itype);
     // peak on top
+    double x_bfrot, y_bfrot;
     if (zone == 1) {
-        xyrPhi[0] = xs[0] + i*der[0] + j*der[1];
-        xyrPhi[1] = ys[0] + j*der[2];
+        x_bfrot = xs[0] + i*der[0] + j*der[1];
+        y_bfrot = ys[0] + j*der[2];
     }
     else {
-        xyrPhi[0] = xs[3] + i*der[0] + j*der[1];
-        xyrPhi[1] = ys[3] + j*der[2];
+        x_bfrot = xs[3] + i*der[0] + j*der[1];
+        y_bfrot = ys[3] + j*der[2];
     }
     // //flat side on top
     // double x = xs[0] + i*dxdi;
@@ -215,8 +229,12 @@ double* Geometry::XYrPhi(int i, int j, double side, Parameters::Geometry::Type i
     // if(itype==Parameters::Geometry::Type::Triangles && i%2)
     //     y += asqrt3_/6.;
 
+    // rotation
+    xyrPhi[0] = x_bfrot*cos(index_rotation*angle_) - y_bfrot*sin(index_rotation*angle_);
+    xyrPhi[1] = x_bfrot*sin(index_rotation*angle_) + y_bfrot*cos(index_rotation*angle_);
+
     xyrPhi[2] = sqrt(xyrPhi[0]*xyrPhi[0] + xyrPhi[1]*xyrPhi[1]);
-    xyrPhi[3]= copysign(acos(xyrPhi[0]/xyrPhi[2]),xyrPhi[1]);
+    xyrPhi[3] = copysign(acos(xyrPhi[0]/xyrPhi[2]),xyrPhi[1]);
 
     return xyrPhi;
 }
@@ -423,6 +441,12 @@ void Geometry::constructFromParameters(bool debug, int layer_id, int display_lay
             cout << "with triangular cells " << endl;
     }
 
+    // Rotation angle (radian convertion)
+    angle_ = parameters_.angle*M_PI/180.;
+
+    // Get the rotation index : 6 hexagons rotations give the same hexagone
+    index_rotation = klayer_ % 6;
+
     // compute x,y positions of the global geometry window (in the eta-phi region)
     double theta_min = 2.*atan(exp(-parameters_.eta_max));
     double theta_max = 2.*atan(exp(-parameters_.eta_min));
@@ -434,10 +458,10 @@ void Geometry::constructFromParameters(bool debug, int layer_id, int display_lay
     // Define sub-zone in in this geometry windows : 100um, 200um, 300um
     double limit_first_zone = parameters_.limit_first_zone;
 
-    double x1 = r_min*cos(parameters_.phi_max);
-    double y1 = r_min*sin(parameters_.phi_max);
-    double x4 = r_min*cos((parameters_.phi_min+parameters_.phi_max)/2.);
-    double y4 = r_min*sin((parameters_.phi_min+parameters_.phi_max)/2.);
+    double x1 = r_min*cos(phi_max);
+    double y1 = r_min*sin(phi_max);
+    double x4 = r_min*cos((phi_min+phi_max)/2.);
+    double y4 = r_min*sin((phi_min+phi_max)/2.);
 
     // Compute x,y positions of the sub-zone in layer (100,200,300um)
     double denom = (2*x4*x4-((x4-x1)*(x4-x1)+(y4-y1)*(y4-y1)));
@@ -445,26 +469,26 @@ void Geometry::constructFromParameters(bool debug, int layer_id, int display_lay
     double ys_sup_first = sqrt((limit_first_zone*limit_first_zone)-(xs_sup_first *xs_sup_first));
 
     double xs[9]= {
-        r_min*cos(parameters_.phi_min),
+        r_min*cos(phi_min),
         x1,
         xs_sup_first,
         xs_sup_first,
         x4,
         limit_first_zone,
-        r_max*cos(parameters_.phi_max),
-        r_max*cos(parameters_.phi_min),
-        r_max*cos((parameters_.phi_min+parameters_.phi_max)/2.)
+        r_max*cos(phi_max),
+        r_max*cos(phi_min),
+        r_max*cos((phi_min+phi_max)/2.)
     };
     double ys[9] = {
-        r_min*sin(parameters_.phi_min),
+        r_min*sin(phi_min),
         y1,
         ys_sup_first,
         -ys_sup_first,
         y4,
         y4,
-        r_max*sin(parameters_.phi_max),
-        r_max*sin(parameters_.phi_min),
-        r_max*sin((parameters_.phi_min+parameters_.phi_max)/2.)
+        r_max*sin(phi_max),
+        r_max*sin(phi_min),
+        r_max*sin((phi_min+phi_max)/2.)
     };
 
     //For the output geometry TH1
@@ -481,15 +505,17 @@ void Geometry::constructFromParameters(bool debug, int layer_id, int display_lay
   // build cells inside the requested window
     int real_i = 0;
     int real_j = 0;
-    for (int i=windows1[0]; i<=windows1[1];i++) {
+    for (int i=windows1[0]-index_rotation*10; i<=(windows1[1])+index_rotation*2;i++) {
         real_j = 0;
-        for (int j=windows1[2]; j<=windows1[3];j++) {
+        for (int j=(windows1[2]-index_rotation*25); j<=windows1[3]-index_rotation*10;j++) {
 
             double *xyrPhi = XYrPhi(i, j, side1, itype, xs, ys,zone1);
 
             // check if cell is inside boundaries. If not, skip it
-            if(!(xyrPhi[2]>=r_min && xyrPhi[2]<=limit_first_zone &&
-              TVector2::Phi_mpi_pi(xyrPhi[3]-phi_min)>=0 && TVector2::Phi_mpi_pi(xyrPhi[3]-phi_max)<=0)) {
+            if(!(xyrPhi[2]>=r_min &&
+                 xyrPhi[2]<=limit_first_zone &&
+                 TVector2::Phi_mpi_pi(xyrPhi[3]-phi_min)>=0 &&
+                 TVector2::Phi_mpi_pi(xyrPhi[3]-phi_max)<=0)) {
                 continue;
             }
 
@@ -555,7 +581,6 @@ void Geometry::constructFromParameters(bool debug, int layer_id, int display_lay
                         << " already exists (id="<<Cell::id(real_i, real_j, layer_id) << ")\n";
                 cout << "Warning: This may indicate a bug in the id definition\n";
             }
-
             real_j++;
         }
         real_i++;
@@ -568,15 +593,17 @@ void Geometry::constructFromParameters(bool debug, int layer_id, int display_lay
   // build cells inside the requested window
     int real_i2 = 0;
     int real_j2 = 0;
-    for (int i=windows2[0]; i<=windows2[1];i++) {
+    for (int i=windows2[0]-index_rotation*4; i<=(windows2[1]+index_rotation*5) ;i++) {
         real_j2 = 0;
-        for (int j=windows2[2]; j<=windows2[3];j++) {
+        for (int j = (windows2[2]-index_rotation*40); j<=(windows2[3]-index_rotation*8);j++) {
 
             double *xyrPhi = XYrPhi(i, j, side2, itype, xs, ys, 2);
 
             // check if cell is inside boundaries. If not, skip it
-            if(!(xyrPhi[2]>=limit_first_zone && xyrPhi[2]<=r_max &&
-              TVector2::Phi_mpi_pi(xyrPhi[3]-phi_min)>=0 && TVector2::Phi_mpi_pi(xyrPhi[3]-phi_max)<=0)) {
+            if(!(xyrPhi[2]>=limit_first_zone &&
+                 xyrPhi[2]<=r_max &&
+                 TVector2::Phi_mpi_pi(xyrPhi[3]-phi_min)>=0 &&
+                 TVector2::Phi_mpi_pi(xyrPhi[3]-phi_max)<=0)) {
                 continue;
             }
 
@@ -649,8 +676,8 @@ void Geometry::constructFromParameters(bool debug, int layer_id, int display_lay
         real_i2++;
     }
 
-    // build histogram of cells for the selected layer
-    // if (display_layer!=-1 && layer_id == display_layer) {
+    // // build histogram of cells for the selected layer
+    // if (display_layer == layer_id) {
         cell_histogram_.reset(new TH2Poly("cells", "cells",
             x_min>0?x_min*0.9:x_min*1.1, x_max>0?x_max*1.1:x_max*0.9,
             y_min>0?y_min*0.9:y_min*1.1, y_max>0?y_max*1.1:y_max*0.9));
@@ -684,31 +711,6 @@ void Geometry::print() {
           " and position " << 
           "("<<cell.second.getX() << ", " << cell.second.getY() << ", "<< cell.second.getLayer() << ")" << endl;
     }
-}
-
-void Geometry::draw(const Parameters::Display& params) {
-  //cell_histogram_->Draw();
-
-  //array<double, 7> summitx, summity;
-  //for (const auto& id_cell : cells_) { 
-    //const auto& cell = id_cell.second;
-    //unsigned i=0;
-    //for (const auto& vertex : cell.getVertices()) {
-      //summitx[i]=vertex(0);
-      //summity[i]=vertex(1);
-      //i++;
-    //}
-    //unsigned nvertices = cell.getVertices().size();
-    //summitx[nvertices] = cell.getVertices()[0](0);
-    //summity[nvertices] = cell.getVertices()[0](1);
-    //// Calling Draw makes the current pad take the ownership of the object
-    //// So raw pointers are used, and the objects are deleted when the pad is deleted
-    //TPolyLine* polygon = new TPolyLine(nvertices+1,summitx.data(),summity.data());
-    //polygon->SetFillColor(38);
-    //polygon->SetLineColor(4);
-    //polygon->SetLineWidth(1);
-    ////polygon->Draw();
-  //} 
 }
 
 bool Geometry::isInCell(const TVectorD& position, const Cell& cell) const {

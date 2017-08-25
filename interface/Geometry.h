@@ -61,25 +61,21 @@ class Geometry {
     void setLayer(int klayer);
     std::string setHgcalPart(int klayer);
     void setZlayer(double zlayer) {zlayer_ = zlayer;}
-    // void setType (Parameters::Geometry::Type itype) {itype_=itype;}
 
-    // std::vector<Cell>* cells_;
-    int klayer_;
-    double zlayer_;
-    Parameters::Geometry::Type itype_; // cell type
-    const Parameters::Geometry& parameters_;
-
-    int i_cell_first;
-    int j_cell_first;
-    int i_cell_second;
-    int j_cell_second;
-    int i_cell_third;
-    int j_cell_third;
-
+    double angle_;
     std::unordered_map<uint32_t, Cell> cells_;
     std::unique_ptr<TH2Poly> cell_histogram_;
-
-
+    Parameters::Geometry::Type itype_; // cell type
+    int i_cell_first;
+    int i_cell_second;
+    int i_cell_third;
+    int index_rotation;
+    int j_cell_first;
+    int j_cell_second;
+    int j_cell_third;
+    int klayer_;
+    const Parameters::Geometry& parameters_;
+    double zlayer_;
 };
 
 #endif
