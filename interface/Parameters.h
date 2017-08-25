@@ -24,6 +24,7 @@ class Parameters {
             Geometry();
             Type type;
             int layer;
+            double angle;
             std::vector<double> layers_z;
             // internal infinite geometries
             double small_cell_side;

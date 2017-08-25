@@ -27,6 +27,7 @@ Parameters::Generation::calib_type_map_ = {
 Parameters::Geometry::Geometry():
     type(Type::Undefined),
     layer(-1),
+    angle(0),
     layers_z(0),
     small_cell_side(0),
     large_cell_side(0),
@@ -108,6 +109,7 @@ void Parameters::fillGeometry(const python::dict& dict) {
         throw std::string("Unknown type of geometry");
     geometry_.type = Geometry::type_map_.at(type);
     geometry_.layer = python::extract<int>(dict["geometry_layer"]);
+    geometry_.angle = python::extract<double>(dict["geometry_cell_rotation"]);
 
     python::list layers_z = python::extract<python::list>(dict["geometry_layers_z"]);
     geometry_.layers_z = toStdVector<double>(layers_z);
