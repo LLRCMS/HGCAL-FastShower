@@ -32,14 +32,13 @@ OutputService::OutputService(const std::string& file_name):
       tree_->Branch("cell_z", &cell_z_);
       tree_->Branch("cell_eta", &cell_eta_);
       tree_->Branch("cell_phi", &cell_phi_);
-      // tree_->Branch("geometry", &geometry_histo);
 }
 
 OutputService::~OutputService() {
 }
 
 
-void OutputService::fillTree(const Event& event, const Geometry& geometry) {
+void OutputService::fillTree(const Event& event) {
     clear();
     run_ = event.run();
     event_ = event.event();
