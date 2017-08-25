@@ -75,7 +75,8 @@ Parameters::Generation::Generation():
 }
 
 Parameters::Display::Display():
-    events(0) {
+    events(0),
+    layer(0) {
 }
 
 Parameters::Parameters() {
