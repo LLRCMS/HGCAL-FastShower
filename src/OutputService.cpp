@@ -16,23 +16,26 @@ OutputService::OutputService(const std::string& file_name):
     npart_(0),
     PDGid_(0),
     thick_(0),
-    cell_n_(0) {
+    cell_n_() {
       tree_->Branch("run", &run_, "run/i");
       tree_->Branch("event", &event_, "event/i");
       tree_->Branch("npart", &npart_, "npart/i");
+
       tree_->Branch("PDGid", &PDGid_);
-      tree_->Branch("thickness", &thick_);
       tree_->Branch("gen_energy", &gen_energy_);
       tree_->Branch("gen_eta", &gen_eta_);
       tree_->Branch("gen_phi", &gen_phi_);
+
       tree_->Branch("layer", &layer_);
+      tree_->Branch("thickness", &thick_);
       tree_->Branch("cell_n", &cell_n_, "cell_n/i");
-      tree_->Branch("cell_energy", &cell_energy_);
-      tree_->Branch("cell_x", &cell_x_);
-      tree_->Branch("cell_y", &cell_y_);
-      tree_->Branch("cell_z", &cell_z_);
-      tree_->Branch("cell_eta", &cell_eta_);
-      tree_->Branch("cell_phi", &cell_phi_);
+
+      tree_->Branch("energy", &cell_energy_);
+      tree_->Branch("x", &cell_x_);
+      tree_->Branch("y", &cell_y_);
+      tree_->Branch("z", &cell_z_);
+      tree_->Branch("eta", &cell_eta_);
+      tree_->Branch("phi", &cell_phi_);
 }
 
 OutputService::~OutputService() {
@@ -53,6 +56,7 @@ void OutputService::fillTree(const Event& event) {
     }
     cell_n_ = cell_energy_.size();
 
+    int n = 0;
     for(auto& c : event.cells()) {
         double x = c.second.getX();
         double y = c.second.getY();
@@ -70,8 +74,17 @@ void OutputService::fillTree(const Event& event) {
         cell_phi_.emplace_back(phi);
 
         double layer = c.second.getLayer();
+        cout << "hit number : "<<n++<<endl;
+        cout << "cellid"<<c.first<<"  layer : "<<layer<<endl;
         layer_.emplace_back(layer);
     }
+    int c_l = 0;
+    for (auto& l : layer_){
+        if (l == 2)
+            c_l++;
+        }
+    cout <<"element in layer 2 : "<<c_l<<endl;
+
 
     for(const auto& id_part : event.gen_en()) {
         if(id_part.second<=0.)
@@ -105,6 +118,7 @@ void OutputService::clear() {
     gen_energy_.clear();
     gen_eta_.clear();
     gen_phi_.clear();
+    layer_.clear();
     cell_n_ = 0;
     cell_energy_.clear();
     cell_x_.clear();
