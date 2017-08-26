@@ -62,6 +62,7 @@ void Generator::simulate() {
     double energygenincells=0.;
     double energyrec=0.;
 
+
     // Geometry
     cout<<"I'm building the geometry, please wait..." <<endl;
 
@@ -175,6 +176,15 @@ void Generator::simulate() {
     double hit_outside_geom = 0.;
     double tot_hits = 0;
 
+    // Histograms
+    TH1F *hTransverseProfile[layer_max-layer_min];
+    char* hTransProfName = new char[30];
+
+    for (int i = layer_min; i < layer_max; i++) {
+        sprintf(hTransProfName, "hTransverseProfile_%d", i);
+        hTransverseProfile[i] = new TH1F(hTransProfName, "Generated transverse profile (cm)",100,0.,20.);
+    }
+
     std::unordered_map<int, Tree*> tree_map;
 
     for (int layer_id = layer_min; layer_id < layer_max; layer_id++) {
@@ -253,6 +263,10 @@ void Generator::simulate() {
         tree_map.insert({layer_id, tree});
     }
 
+
+    int thick = 0;
+    int count_hit = 0;
+
     for (unsigned iev=1; iev <= nevents; iev++) {
         cout << "================ Simulating event: " << iev << " ================" << endl;
 
@@ -266,6 +280,7 @@ void Generator::simulate() {
         // Particles generation
         unsigned npart = parameters_.general().part_type.size();
         event.setnPart(npart);
+
 
         for (int ip : parameters_.general().part_type) {
 
@@ -343,6 +358,7 @@ void Generator::simulate() {
 
                 // loop over hits
                 for (int i = 0; i<nhits; i++) {
+                    count_hit++;
                     // Compute the position of each hit
 
                     double r_shower = 0;
@@ -361,25 +377,20 @@ void Generator::simulate() {
 
                     // hit position on layer (EE, FH or BH). Energy attribution
                     int hit_pos = sqrt(x*x+y*y);
-                    int thick = 0;
-                    // double side;
                     if (hit_pos <= parameters_.geometry().limit_first_zone) {
                         real_energy = aShowerParametrization.spotEnergy(ip)[0];
                         thick = 100;
-                        // side = parameters_.geometry().small_cell_side;
                     }
                     else if (hit_pos >= parameters_.geometry().limit_first_zone &&
                              hit_pos <= parameters_.geometry().limit_second_zone){
                         real_energy = aShowerParametrization.spotEnergy(ip)[1];
-                        // side = parameters_.geometry().large_cell_side;
                         thick = 200;
                     }
                     else {
                         real_energy = denrj;
-                        // side = parameters_.geometry().large_cell_side;
                         thick = 300;
                     }
-                    event.fillThick(i, thick);
+                    event.fillThick(count_hit, thick);
                     energygen += real_energy;
 
                     double rmin = numeric_limits<double>::max();
@@ -431,14 +442,14 @@ void Generator::simulate() {
                             energyrec += enoise;
                         }
                     }
+
+                    // fill shower histograms
+                    hTransverseProfile[layer_id]->Fill(r_shower, real_energy);
+                    //  hPhiProfile.Fill(phi_shower,real_energy);
+                    //  hSpotEnergy.Fill(real_energy);
                 }
             }
         }
-
-       // // // fill shower histograms
-       // //  hTransverseProfile.Fill(r_shower,real_energy);
-       // //  hPhiProfile.Fill(phi_shower,real_energy);
-       // //  hSpotEnergy.Fill(real_energy);
 
         cout << "simulated energy " << energygen << endl;
         cout << "simulated energy inside cells " << energygenincells << endl;
@@ -464,20 +475,16 @@ void Generator::simulate() {
         output_.fillTree(event);
     }
 
+    // // Exporting histograms to file
+    for (int i = layer_min; i < layer_max; i++)
+        hTransverseProfile[i]->Write();
+
     output_.saveTree();
 
-    // // Exporting histograms to file
     // hEnergyGen.Write();
-    // hTransverseProfile.Write();
     // hPhiProfile.Write();
     // hSpotEnergy.Write();
     // hEnergySum.Write();
-
-    if (!hCellEnergyMap.empty()) {
-        for (const auto& id_hist : hCellEnergyMap) {
-            id_hist.second.Write();
-        }
-    }
 
     cout<<endl;
     cout<< "---------> Simulation information : "<<endl;
