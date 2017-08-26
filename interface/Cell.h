@@ -31,7 +31,7 @@ class Cell {
     double getZ() const;
     int getIIndex();
     int getJIndex();
-    int getLayer();
+    int getLayer() const;
     uint32_t getId() const;
 
   private:

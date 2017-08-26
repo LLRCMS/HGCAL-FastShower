@@ -25,6 +25,7 @@ OutputService::OutputService(const std::string& file_name):
       tree_->Branch("gen_energy", &gen_energy_);
       tree_->Branch("gen_eta", &gen_eta_);
       tree_->Branch("gen_phi", &gen_phi_);
+      tree_->Branch("layer", &layer_);
       tree_->Branch("cell_n", &cell_n_, "cell_n/i");
       tree_->Branch("cell_energy", &cell_energy_);
       tree_->Branch("cell_x", &cell_x_);
@@ -67,6 +68,9 @@ void OutputService::fillTree(const Event& event) {
         cell_z_.emplace_back(z);
         cell_eta_.emplace_back(eta);
         cell_phi_.emplace_back(phi);
+
+        double layer = c.second.getLayer();
+        layer_.emplace_back(layer);
     }
 
     for(const auto& id_part : event.gen_en()) {
@@ -80,8 +84,9 @@ void OutputService::fillTree(const Event& event) {
         gen_phi_.emplace_back(id_part.second);
     for(const auto& id_part : event.pdg_id())
         PDGid_.emplace_back(id_part.second);
-    for(const auto& id_part : event.thick())
+    for(const auto& id_part : event.thick()) {
         thick_.emplace_back(id_part.second);
+    }
 
     tree_->Fill();
 }

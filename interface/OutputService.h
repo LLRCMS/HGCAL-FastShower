@@ -47,6 +47,8 @@ class OutputService {
         std::vector<float> cell_z_;
         std::vector<float> cell_eta_;
         std::vector<float> cell_phi_;
+        std::vector<float> layer_;
+
 
 };
 

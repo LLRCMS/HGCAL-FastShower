@@ -54,7 +54,7 @@ int Cell::getJIndex(){
     return j_index_;
 }
 
-int Cell::getLayer(){
+int Cell::getLayer() const{
     return k_index_;
 }
 
