@@ -3,6 +3,10 @@ import math as m
 
 geometry_type = 'Hexagons'
 
+#rotation angle of cells between two layers (degree)
+#implemented for hexagons cells only
+geometry_cell_rotation = 10.
+
 geometry_layer = -1
 # layers' z positions
 # from CMSSW V7 geometry: https://indico.cern.ch/event/458374/contribution/9/attachments/1179028/1828217/Andreev_29Oct2015.pdf 
@@ -21,7 +25,7 @@ geometry_layers_z[:] = [z+z0 for z in geometry_layers_z]
 geometry_small_cell_side = 0.476
 geometry_large_cell_side = 0.648
 
-# limits position of the differents zones (100, 200, 300 um)
+# limits position of the different zones (100, 200, 300 um)
 if geometry_layer in range(0, 27): #EE
     geometry_limit_first_zone = 75. #cm
     geometry_limit_second_zone = 120.
