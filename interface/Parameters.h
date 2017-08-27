@@ -84,7 +84,7 @@ class Parameters {
         struct Display {
             Display();
             unsigned events;
-            unsigned layer;
+            int layer;
         };
 
     public:
