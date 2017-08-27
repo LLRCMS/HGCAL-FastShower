@@ -31,8 +31,7 @@ class Generator {
 
         void simulate();
 
-        // void display(Geometry& geometry, std::map<Cell,TH1F*,CellComp>& hCellEnergyEvtMap, int ievt=0);
-        std::unique_ptr<TCanvas> display(const std::unordered_map<uint32_t,TH1F>& hCellEnergyEvtMap, int ievt=0);
+        std::unique_ptr<TCanvas> display(const std::unordered_map<uint32_t,TH1F>& hCellEnergyEvtMap , std::vector<Cell>& , int ievt=0);
 
         const std::array<double,52>& getMipEnergy() const {return mip_energy_;}
         const std::array<double,52>& getSampling() const {return sampling_;}
