@@ -6,6 +6,8 @@
 #include "TFile.h"
 #include "TText.h"
 #include "TPaveText.h"
+#include <typeinfo>
+
 #include "TMarker.h"
 #include <fstream>
 #include <string>
@@ -50,7 +52,6 @@ Generator::~Generator(){
 void Generator::simulate() {
     unsigned nevents = parameters_.general().events;
 
-    unsigned display_layer = parameters_.display().layer;
     std::unordered_map<uint32_t, TH1F> hCellEnergyMap;
     std::unordered_map<uint32_t, TH1F> hCellEnergyEvtMap;
 
@@ -75,77 +76,78 @@ void Generator::simulate() {
 
     // Build geometry
     int layer_min, layer_max;
+    int display_layer;
+
     if (parameters_.geometry().layer==-1) {
         layer_min = 0;
         layer_max = parameters_.geometry().layers_z.size();
+        display_layer = parameters_.display().layer;
     }
     else {
         layer_min = parameters_.geometry().layer;
         layer_max = parameters_.geometry().layer + 1;
+        display_layer = layer_min;
     }
 
-    // // Simple vector to used in layer
     std::vector<Cell> cell_collection[52];
-    // // Map to collect all cells and used it in the outputservice for example
-    std::unordered_map<uint32_t, Cell> cell_map_collection;
 
     for (int layer_id = layer_min; layer_id < layer_max; layer_id++) {
 
-        cout << "=====> Layer " <<layer_id+1 << " / "<< layer_max << '\r' << flush;
+        cout << "=====> Layer " <<layer_id + 1 << " / "<< layer_max << '\r' << flush;
 
         if (parameters_.geometry().type!=Parameters::Geometry::Type::External) {
-            geometry_.constructFromParameters(parameters_.general().debug, layer_id, display_layer);
 
+            geometry_.constructFromParameters(parameters_.general().debug, layer_id, display_layer);
             for (auto& cell : geometry_.getCells()){
                 if (cell.second.getLayer() == layer_id)
                     cell_collection[layer_id].push_back(cell.second);
             }
-            cell_map_collection.insert(geometry_.getCells().begin(), geometry_.getCells().end());
         }
         else
             geometry_.constructFromJson(parameters_.general().debug, layer_id);
 
-        // if (display_layer == layer_id) {
+        if (display_layer == layer_id) {
 
-            // std::string hName;
-            // hName = "geometry_";
-            // hName += std::to_string(display_layer);
-            // TH2Poly* geometry_histo = (TH2Poly*)geometry_.cellHistogram()->Clone(hName.c_str());
-            // geometry_histo->Write();
-            // delete geometry_histo;
+            // cout << "display_layer "<<display_layer<<"  layer_id : "<<layer_id<<endl;
+            std::string hName;
+            hName = "geometry_";
+            hName += std::to_string(display_layer + 1);
+            TH2Poly* geometry_histo = (TH2Poly*)geometry_.cellHistogram()->Clone(hName.c_str());
+            geometry_histo->Write();
+            delete geometry_histo;
 
-            // for (Cell c : cell_collection[display_layer]) {
-            //     int i = c.getIIndex();
-            //     int j = c.getJIndex();
-            //     int k = c.getLayer();
+            for (Cell c : cell_collection[display_layer]) {
+                int i = c.getIIndex();
+                int j = c.getJIndex();
+                int k = c.getLayer();
 
-            //     hName="hCellEnergy_[";
-            //     hName += std::to_string(i);
-            //     hName += ",";
-            //     hName += std::to_string(j);
-            //     hName += ",";
-            //     hName += std::to_string(k);
-            //     hName += "]";
-            //     hCellEnergyMap.emplace(c.getId(), TH1F(hName.c_str(),"Energy in cell [i,j,k])",100,0.,100.));
-            // }
+                hName="hCellEnergy_[";
+                hName += std::to_string(i);
+                hName += ",";
+                hName += std::to_string(j);
+                hName += ",";
+                hName += std::to_string(k);
+                hName += "]";
+                hCellEnergyMap.emplace(c.getId(), TH1F(hName.c_str(),"Energy in cell [i,j,k])",100,0.,100.));
+            }
 
-            // if (parameters_.display().events > 0) {
-            //     for (Cell c : cell_collection[1]) {
-            //         int i = c.getIIndex();
-            //         int j = c.getJIndex();
-            //         int k = c.getLayer();
+            if (parameters_.display().events > 0) {
+                for (Cell c : cell_collection[display_layer]) {
+                    int i = c.getIIndex();
+                    int j = c.getJIndex();
+                    int k = c.getLayer();
 
-            //         hName="hCellEnergyEvt[";
-            //         hName += std::to_string(i);
-            //         hName += ",";
-            //         hName += std::to_string(j);
-            //         hName += ",";
-            //         hName += std::to_string(k);
-            //         hName += "]";
-            //         hCellEnergyEvtMap.emplace(c.getId(),TH1F(hName.c_str(),"Event Energy in cell [i,j,k])",100,0.,100.));
-            //     }
-            // }
-        // }
+                    hName="hCellEnergyEvt[";
+                    hName += std::to_string(i);
+                    hName += ",";
+                    hName += std::to_string(j);
+                    hName += ",";
+                    hName += std::to_string(k);
+                    hName += "]";
+                    hCellEnergyEvtMap.emplace(c.getId(),TH1F(hName.c_str(),"Event Energy in cell [i,j,k])",100,0.,100.));
+                }
+            }
+        }
     }
 
     if (parameters_.general().debug)
@@ -419,7 +421,7 @@ void Generator::simulate() {
 
                     bool isincell = geometry_.isInCell(pos, cell);
 
-                    double enoise;
+                    double enoise = 0;
                     if (!isincell) {
                         cout << "[main] point is not inside the closest cell (hit in boarder cells or in hole at the limit)  x,y " << x << " " << y <<
                         " cell position " << cell.getX() << " " << cell.getY() <<
@@ -428,19 +430,18 @@ void Generator::simulate() {
                         hit_outside_geom++;
                     }
                     else {
-
                         event.fillCells(closestCells->getId(), cell);
 
                         energyrec += real_energy;
                         energygenincells += real_energy;
                         event.fillHit(closestCells->getId(), real_energy);
-
                         // loop on cells for the noise generation from the cells calibration
                         if (parameters_.generation().noise) {
                             enoise = gun_.Gaus(0., calibratednoise[layer_id]);
                             event.fillHit(closestCells->getId(), enoise);
                             energyrec += enoise;
                         }
+
                     }
 
                     // fill shower histograms
@@ -456,28 +457,44 @@ void Generator::simulate() {
         cout << "reconstructed energy inside cells (includes noise) " << energyrec << endl;
 
         if (!hCellEnergyMap.empty() && !hCellEnergyEvtMap.empty()) {
+
             for (const auto& hit : event.hits()) {
-                hCellEnergyMap.at(hit.first).Fill(hit.second);
+                if (event.getLayerFromId(hit.first) == display_layer + 1) {
+                    cout << "energy : " << hit.second<<endl;
+                    cout << "cellid : " << hit.first<<endl;
+                    hCellEnergyMap.at(hit.first).Fill(hit.second);
+                }
             }
             // if requested display a few events
             if (iev<=parameters_.display().events) {
                 for (const auto& hit : event.hits()) {
-                    hCellEnergyEvtMap.at(hit.first).Reset();
-                    hCellEnergyEvtMap.at(hit.first).Fill(hit.second);
+                    if (event.getLayerFromId(hit.first) == display_layer + 1) {
+                        hCellEnergyEvtMap.at(hit.first).Reset();
+                        hCellEnergyEvtMap.at(hit.first).Fill(hit.second);
+                    }
                 }
-                canvas.emplace_back(display(hCellEnergyEvtMap,iev));
+                canvas.emplace_back(display(hCellEnergyEvtMap, cell_collection[display_layer], iev));
             }
         }
 
-        // // fill global histograms
+        // fill global histograms
         // hEnergySum.Fill(energyrec,1.);
         // hEnergyGen.Fill(energygenincells,1.);
         output_.fillTree(event);
     }
 
-    // // Exporting histograms to file
+    // Exporting histograms to file
     for (int i = layer_min; i < layer_max; i++)
         hTransverseProfile[i]->Write();
+
+    if (!hCellEnergyMap.empty()) {
+
+        canvas.emplace_back(display(hCellEnergyMap, cell_collection[display_layer]));
+        // Writing energy map plots
+        for(const auto& canvas_ptr : canvas) {
+            canvas_ptr->Write();
+        }
+    }
 
     output_.saveTree();
 
@@ -492,14 +509,6 @@ void Generator::simulate() {
     cout<<hit_outside_geom<<" hits are outside or at the boarder of the geometry for a total of "
         <<tot_hits<<" hits ("<<hit_outside_geom*100./tot_hits<<"\%)."<< endl;
 
-    if (!hCellEnergyMap.empty()) {
-        canvas.emplace_back(display(hCellEnergyMap));
-        // Writing energy map plots
-        for(const auto& canvas_ptr : canvas) {
-            canvas_ptr->Write();
-        }
-    }
-
     t.Stop();
     t.Print();
     cout << endl;
@@ -507,7 +516,7 @@ void Generator::simulate() {
 
 
 
-std::unique_ptr<TCanvas> Generator::display(const std::unordered_map<uint32_t,TH1F>& hCellEnergyEvtMap, int ievt) {
+std::unique_ptr<TCanvas> Generator::display(const std::unordered_map<uint32_t,TH1F>& hCellEnergyEvtMap, std::vector<Cell>& cell_collection, int ievt) {
 
     // FIXME: build titles without using char[]
     std::string title1, title2, title4;
@@ -516,7 +525,7 @@ std::unique_ptr<TCanvas> Generator::display(const std::unordered_map<uint32_t,TH
         title1 = "Mean energy profile in layer ";
     else
         title1 = "Event " + std::to_string(ievt) + " energy profile in layer ";
-    title1 = title1 + std::to_string(parameters_.geometry().layer);
+    title1 = title1 + std::to_string(parameters_.display().layer);
     title2 = "E = ";
     sprintf(str,"%4.1f",parameters_.generation().energy);
     std::string string=str;
@@ -534,14 +543,16 @@ std::unique_ptr<TCanvas> Generator::display(const std::unordered_map<uint32_t,TH
     std::unique_ptr<TCanvas> c1(new TCanvas(title.c_str(),title.c_str(),700,700));
     TH2Poly* energy_map = (TH2Poly*)geometry_.cellHistogram()->Clone(std::string("test"+std::to_string(ievt)).c_str());
 
-    // for (auto& hist : hCellEnergyEvtMap) {
-    //     Cell cell = geometry_.getCells()->at(hist.first);
-    //     // print mean energies
-    //     double enrj = hist.second.GetMean();
-    //     energy_map->Fill(cell.getX(), cell.getY(), enrj);
-    //     // FIXME: no sprintf
-    //     sprintf(str,"%4.1f",hist.second.GetMean());
-    // }
+    for (auto& hist : hCellEnergyEvtMap) {
+        for(Cell& c : cell_collection) {
+            if (c.getId() == hist.first) {
+                double enrj = hist.second.GetMean();
+                energy_map->Fill(c.getX(), c.getY(), enrj);
+                // FIXME: no sprintf
+                sprintf(str,"%4.1f",hist.second.GetMean());
+            }
+        }
+    }
 
     energy_map->Draw("colz");
 
