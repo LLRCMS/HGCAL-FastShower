@@ -6,7 +6,6 @@
 #include "HGCalSimulation/FastShower/interface/Event.h"
 #endif
 
-
 Event::Event(uint32_t run, uint32_t event): run_(run), event_(event) {
 }
 
@@ -37,7 +36,9 @@ void Event::fillThick(uint32_t id, int thick) {
 }
 
 void Event::fillCells(uint32_t id, Cell& cell) {
-    cells_.emplace(id, cell);
+    // if the cell is already in map, don't add it
+    if (!(cells_.find(id) != cells_.end()))
+        cells_.emplace(id, cell);
 }
 
 void Event::setnPart(uint32_t part) {
@@ -46,4 +47,17 @@ void Event::setnPart(uint32_t part) {
 
 void Event::clear() {
     hits_.clear();
+}
+
+
+int Event::getLayerFromId(int cell_id) {
+
+    // std::string s_id = to_string(cell_id);
+    int len = std::to_string(cell_id).length();
+    // int digits = s_id.length();
+
+    if (len == 9)
+        return atoi(std::to_string(cell_id).substr(0, 1).c_str());
+    else
+        return atoi(std::to_string(cell_id).substr(0, 2).c_str());
 }

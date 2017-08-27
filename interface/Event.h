@@ -34,7 +34,9 @@ class Event {
         const std::unordered_map<uint32_t, double>& gen_phi() const {return generated_phi_;}
         const std::unordered_map<uint32_t, double>& pdg_id() const {return pdgid_;}
         const std::unordered_map<uint32_t, double>& thick() const {return thick_;}
-        const std::unordered_multimap<uint32_t, Cell>& cells() const {return cells_;}
+        const std::unordered_map<uint32_t, Cell>& cells() const {return cells_;}
+
+        int getLayerFromId(int);
 
     private:
         uint32_t run_;
@@ -42,7 +44,7 @@ class Event {
         uint32_t npart_;
         std::unordered_map<uint32_t, double> hits_;
         // multimap is used for hits with same cell_id. With map, they count as one in the ouputfile
-        std::unordered_multimap<uint32_t, Cell> cells_;
+        std::unordered_map<uint32_t, Cell> cells_;
         std::unordered_map<uint32_t, double> generated_energy_;
         std::unordered_map<uint32_t, double> generated_eta_;
         std::unordered_map<uint32_t, double> generated_phi_;
