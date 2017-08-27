@@ -677,25 +677,30 @@ void Geometry::constructFromParameters(bool debug, int layer_id, int display_lay
     }
 
     // // build histogram of cells for the selected layer
-    // if (display_layer == layer_id) {
+    if (display_layer == layer_id) {
         cell_histogram_.reset(new TH2Poly("cells", "cells",
             x_min>0?x_min*0.9:x_min*1.1, x_max>0?x_max*1.1:x_max*0.9,
             y_min>0?y_min*0.9:y_min*1.1, y_max>0?y_max*1.1:y_max*0.9));
 
         // take ownership of the histogram
         cell_histogram_->SetDirectory(0);
+
         for (auto& c : cells_) {
+
             auto& cell = c.second;
-            vector<double> binsx, binsy;
-            for (const auto& vertex : cell.getVertices()) {
-                binsx.emplace_back(vertex(0));
-                binsy.emplace_back(vertex(1));
+            if (cell.getLayer() == layer_id) {
+
+                vector<double> binsx, binsy;
+                for (const auto& vertex : cell.getVertices()) {
+                    binsx.emplace_back(vertex(0));
+                    binsy.emplace_back(vertex(1));
+                }
+                binsx.emplace_back(cell.getVertices()[0](0));
+                binsy.emplace_back(cell.getVertices()[0](1));
+                cell_histogram_->AddBin(binsx.size(), binsx.data(), binsy.data());
             }
-            binsx.emplace_back(cell.getVertices()[0](0));
-            binsy.emplace_back(cell.getVertices()[0](1));
-            cell_histogram_->AddBin(binsx.size(), binsx.data(), binsy.data());
         }
-    // }
+    }
 }
 
 
