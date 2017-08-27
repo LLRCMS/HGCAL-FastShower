@@ -4,9 +4,6 @@
 #include "HGCalSimulation/FastShower/interface/OutputService.h"
 #endif
 
-#include <iostream>
-using namespace std;
-
 
 OutputService::OutputService(const std::string& file_name):
     file_(TFile::Open(file_name.c_str(), "recreate")),
@@ -56,7 +53,6 @@ void OutputService::fillTree(const Event& event) {
     }
     cell_n_ = cell_energy_.size();
 
-    int n = 0;
     for(auto& c : event.cells()) {
         double x = c.second.getX();
         double y = c.second.getY();
@@ -74,17 +70,8 @@ void OutputService::fillTree(const Event& event) {
         cell_phi_.emplace_back(phi);
 
         double layer = c.second.getLayer();
-        cout << "hit number : "<<n++<<endl;
-        cout << "cellid"<<c.first<<"  layer : "<<layer<<endl;
         layer_.emplace_back(layer);
     }
-    int c_l = 0;
-    for (auto& l : layer_){
-        if (l == 2)
-            c_l++;
-        }
-    cout <<"element in layer 2 : "<<c_l<<endl;
-
 
     for(const auto& id_part : event.gen_en()) {
         if(id_part.second<=0.)
