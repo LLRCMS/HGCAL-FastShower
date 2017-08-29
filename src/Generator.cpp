@@ -108,7 +108,6 @@ void Generator::simulate() {
 
         if (display_layer == layer_id) {
 
-            // cout << "display_layer "<<display_layer<<"  layer_id : "<<layer_id<<endl;
             std::string hName;
             hName = "geometry_";
             hName += std::to_string(display_layer + 1);
@@ -184,7 +183,7 @@ void Generator::simulate() {
 
     for (int i = layer_min; i < layer_max; i++) {
         sprintf(hTransProfName, "hTransverseProfile_%d", i);
-        hTransverseProfile[i] = new TH1F(hTransProfName, "Generated transverse profile (cm)",100,0.,20.);
+        hTransverseProfile[i] = new TH1F(hTransProfName, "Generated transverse profile (cm)",120,0.,120.);
     }
 
     std::unordered_map<int, Tree*> tree_map;
@@ -205,8 +204,8 @@ void Generator::simulate() {
 
         // Geometry build with the cell center position, add a margin for the
         // square corners containing the boarder cells
-        x_min -= parameters_.geometry().small_cell_side * 2;
-        x_max += parameters_.geometry().large_cell_side * 2;
+        x_min -= parameters_.geometry().small_cell_side;
+        x_max += parameters_.geometry().large_cell_side;
         y_min -= parameters_.geometry().large_cell_side * 2;
         y_max += parameters_.geometry().large_cell_side * 2;
 
@@ -267,7 +266,6 @@ void Generator::simulate() {
 
 
     int thick = 0;
-    int count_hit = 0;
 
     for (unsigned iev=1; iev <= nevents; iev++) {
         cout << "================ Simulating event: " << iev << " ================" << endl;
@@ -355,12 +353,11 @@ void Generator::simulate() {
 
                 double real_energy = 0;
                 // electromagnetic fraction if the hadronic shower is simulated
-                double f_em = std::log(energy_incident)*0.1;
+                double f_em = std::log(energy_incident)*0.11;
 
 
                 // loop over hits
                 for (int i = 0; i<nhits; i++) {
-                    count_hit++;
                     // Compute the position of each hit
 
                     double r_shower = 0;
@@ -392,13 +389,18 @@ void Generator::simulate() {
                         real_energy = denrj;
                         thick = 300;
                     }
-                    event.fillThick(count_hit, thick);
                     energygen += real_energy;
 
                     double rmin = numeric_limits<double>::max();
                     Cell* closestCells;
 
-                    std::vector<Cell*>* leafCells = tree_map[layer_id]->getLeaf(float(x), float(y))->getCells();
+                    std::vector<Cell*>* leafCells;
+
+                    try {
+                        leafCells = tree_map[layer_id]->getLeaf(float(x), float(y))->getCells();
+                    } catch(string s) {
+                        // cout << s << endl;
+                    }
 
                     for (Cell* leafCell : *leafCells) {
                         double leafCell_x = leafCell->getX();
@@ -423,10 +425,11 @@ void Generator::simulate() {
 
                     double enoise = 0;
                     if (!isincell) {
-                        cout << "[main] point is not inside the closest cell (hit in boarder cells or in hole at the limit)  x,y " << x << " " << y <<
-                        " cell position " << cell.getX() << " " << cell.getY() <<
-                        " closest cell indices " << cell.getIIndex() << " " <<  cell.getJIndex()<<
-                        " layer Id : "<<layer_id + 1<< endl;
+                        if (parameters_.general().debug)
+                            cout << "[main] point is not inside the closest cell (hit in boarder cells or in hole at the limit)  x,y " << x << " " << y <<
+                            " cell position " << cell.getX() << " " << cell.getY() <<
+                            " closest cell indices " << cell.getIIndex() << " " <<  cell.getJIndex()<<
+                            " layer Id : "<<layer_id + 1<< endl;
                         hit_outside_geom++;
                     }
                     else {
@@ -442,10 +445,12 @@ void Generator::simulate() {
                             energyrec += enoise;
                         }
 
+                        event.fillThick(closestCells->getId(), thick);
+
                     }
 
                     // fill shower histograms
-                    hTransverseProfile[layer_id]->Fill(r_shower, real_energy);
+                    hTransverseProfile[layer_id]->Fill(r_shower, real_energy + enoise);
                     //  hPhiProfile.Fill(phi_shower,real_energy);
                     //  hSpotEnergy.Fill(real_energy);
                 }
@@ -459,11 +464,8 @@ void Generator::simulate() {
         if (!hCellEnergyMap.empty() && !hCellEnergyEvtMap.empty()) {
 
             for (const auto& hit : event.hits()) {
-                if (event.getLayerFromId(hit.first) == display_layer + 1) {
-                    cout << "energy : " << hit.second<<endl;
-                    cout << "cellid : " << hit.first<<endl;
+                if (event.getLayerFromId(hit.first) == display_layer + 1)
                     hCellEnergyMap.at(hit.first).Fill(hit.second);
-                }
             }
             // if requested display a few events
             if (iev<=parameters_.display().events) {
