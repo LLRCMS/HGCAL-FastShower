@@ -507,7 +507,7 @@ void Geometry::constructFromParameters(bool debug, int layer_id, int display_lay
     int real_j = 0;
     for (int i=windows1[0]-index_rotation*10; i<=(windows1[1])+index_rotation*2;i++) {
         real_j = 0;
-        for (int j=(windows1[2]-index_rotation*25); j<=windows1[3]-index_rotation*10;j++) {
+        for (int j=(windows1[2]-index_rotation*25); j<=windows1[3];j++) {
 
             double *xyrPhi = XYrPhi(i, j, side1, itype, xs, ys,zone1);
 
@@ -595,7 +595,7 @@ void Geometry::constructFromParameters(bool debug, int layer_id, int display_lay
     int real_j2 = 0;
     for (int i=windows2[0]-index_rotation*4; i<=(windows2[1]+index_rotation*5) ;i++) {
         real_j2 = 0;
-        for (int j = (windows2[2]-index_rotation*40); j<=(windows2[3]-index_rotation*8);j++) {
+        for (int j = (windows2[2]-index_rotation*40); j<=(windows2[3]);j++) {
 
             double *xyrPhi = XYrPhi(i, j, side2, itype, xs, ys, 2);
 

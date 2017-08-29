@@ -12,6 +12,7 @@ class Tree {
         Tree(Rectangle*, int);
         ~Tree();
 
+        bool empty();
         void addCell(Cell*);
         int countCells();
         std::vector<Cell*>* getCells();
