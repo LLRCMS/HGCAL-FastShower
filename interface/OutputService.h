@@ -36,18 +36,18 @@ class OutputService {
         unsigned npart_;
         unsigned cell_n_;
 
-        std::vector<float> PDGid_;
-        std::vector<float> thick_;
-        std::vector<float> gen_energy_;
-        std::vector<float> gen_eta_;
-        std::vector<float> gen_phi_;
-        std::vector<float> cell_energy_;
-        std::vector<float> cell_x_;
-        std::vector<float> cell_y_;
-        std::vector<float> cell_z_;
-        std::vector<float> cell_eta_;
-        std::vector<float> cell_phi_;
-        std::vector<float> layer_;
+        std::vector<int> PDGid_;
+        std::vector<int> thick_;
+        std::vector<double> gen_energy_;
+        std::vector<double> gen_eta_;
+        std::vector<double> gen_phi_;
+        std::vector<double> cell_energy_;
+        std::vector<double> cell_x_;
+        std::vector<double> cell_y_;
+        std::vector<double> cell_z_;
+        std::vector<double> cell_eta_;
+        std::vector<double> cell_phi_;
+        std::vector<int> layer_;
 
 
 };
