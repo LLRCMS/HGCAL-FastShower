@@ -25,14 +25,14 @@ OutputService::OutputService(const std::string& file_name):
 
       tree_->Branch("layer", &layer_);
       tree_->Branch("thickness", &thick_);
-      tree_->Branch("cell_n", &cell_n_, "cell_n/i");
 
-      tree_->Branch("energy", &cell_energy_);
-      tree_->Branch("x", &cell_x_);
-      tree_->Branch("y", &cell_y_);
-      tree_->Branch("z", &cell_z_);
-      tree_->Branch("eta", &cell_eta_);
-      tree_->Branch("phi", &cell_phi_);
+      tree_->Branch("cell_n", &cell_n_, "cell_n/i");
+      tree_->Branch("cell_energy", &cell_energy_);
+      tree_->Branch("cell_x", &cell_x_);
+      tree_->Branch("cell_y", &cell_y_);
+      tree_->Branch("cell_z", &cell_z_);
+      tree_->Branch("cell_eta", &cell_eta_);
+      tree_->Branch("cell_phi", &cell_phi_);
 }
 
 OutputService::~OutputService() {
