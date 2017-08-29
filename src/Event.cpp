@@ -32,7 +32,8 @@ void Event::fillPDGid(uint32_t id, int PDGid) {
 }
 
 void Event::fillThick(uint32_t id, int thick) {
-    thick_.emplace(id, thick);
+    if (!(thick_.find(id) != thick_.end()))
+        thick_.emplace(id, thick);
 }
 
 void Event::fillCells(uint32_t id, Cell& cell) {
