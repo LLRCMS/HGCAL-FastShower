@@ -43,7 +43,6 @@ Parameters::Geometry::Geometry():
 Parameters::Shower::Shower():
     moliere_radius(0.),
     interaction_length(0.),
-    radiation_length(0.),
     transverse_parameters_electro(),
     transverse_parameters_hadro(),
     map_layers_energy(),
@@ -133,13 +132,10 @@ void Parameters::fillShower(const python::dict& dict) {
     shower_.moliere_radius = python::extract<double>(dict["shower_moliere_radius"]);
     shower_.interaction_length = python::extract<double>(dict["shower_interaction_length"]);
 
-    python::list radiation_length = python::extract<python::list>(dict["shower_radiation_length"]);
-    shower_.radiation_length = toStdVector<double>(radiation_length);
     python::dict transverse_parameters_electro = python::extract<python::dict>(dict["shower_transverse_parameters_electro"]);
     shower_.transverse_parameters_electro = toStdMap<std::string,double>(transverse_parameters_electro);
     python::dict transverse_parameters_hadro = python::extract<python::dict>(dict["shower_transverse_parameters_hadro"]);
     shower_.transverse_parameters_hadro = toStdMap<std::string,double>(transverse_parameters_hadro);
-    // shower_.alpha = python::extract<double>(dict["shower_alpha"]);
 
     python::dict shower_layers_energy = python::extract<python::dict>(dict["shower_layers_energy"]);
     shower_.map_layers_energy = toStdMapVector<int,double>(shower_layers_energy);
@@ -194,7 +190,6 @@ void Parameters::print() const {
     std::cout<<"|Configuration parameters\n";
     std::cout<<"|- General\n";
     std::cout<<"|-- Events = "<<general_.events<<"\n";
-    // std::cout<<"|-- Number of shooting particle = "<<general_.npart<<"\n";
     std::cout<<"|-- Debug = "<<general_.debug<<"\n";
     std::cout<<"|-- Output file = "<<general_.output_file<<"\n";
     std::cout<<"|- Geometry\n";
@@ -212,13 +207,8 @@ void Parameters::print() const {
     std::cout<<"]\n";
     std::cout<<"|-- File = "<<geometry_.file<<"\n";
     std::cout<<"|- Shower\n";
-    // std::cout<<"|-- Shower type = "<<shower_.shower_type<<"\n";
     std::cout<<"|-- Moliere radius = "<<shower_.moliere_radius<<"\n";
     std::cout<<"|-- interaction length = "<<shower_.interaction_length<<"\n";
-    std::cout<<"|-- Radiation length = [";
-    for(const auto& rad : shower_.radiation_length) {
-        std::cout<<rad<<" ";
-    }
     std::cout<<"]\n";
     std::cout<<"|-- Transverse parameters = [";
     for(const auto& name_value : shower_.transverse_parameters_electro) {
@@ -228,15 +218,6 @@ void Parameters::print() const {
         std::cout<<name_value.first<<"("<<name_value.second<<") ";
     }
     std::cout<<"]\n";
-    // std::cout<<"|-- Layers energy = [";
-    // for(const auto& name_value : shower_.layers_energy) {
-    //     std::cout<<name_value.first<<"("<<name_value.second<<") ";
-    // }
-    std::cout<<"]\n";
-    // std::cout<<"|-- Alpha = "<<shower_.alpha<<"\n";
-    // for(const auto& name_value : shower_.map_alpha) {
-    //     std::cout<<name_value.first<<"("<<name_value.second<<") ";
-    // }
     std::cout<<"|- Generation\n";
     std::cout<<"|-- Energy = "<<generation_.energy<<"\n";
     std::cout<<"|-- Fluctuation = "<<generation_.fluctuation<<"\n";

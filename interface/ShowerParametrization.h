@@ -25,11 +25,6 @@ class ShowerParametrization {
         moliereRadius_(params.moliere_radius),
         interaction_length_(params.interaction_length) {
 
-        // FIXME: can compute the normalized profile in python
-        if(params.radiation_length.size()!=52)
-            throw std::string("The size of shower_radiation_length should be equals to the layer number");
-        std::copy_n(params.radiation_length.begin(), radLength_.size(), radLength_.begin());
-
         typedef map<int, std::vector<double>>::const_iterator MapIterator;
         for (MapIterator iter = params.map_layers_energy.begin(); iter != params.map_layers_energy.end(); iter++) {
             if(iter->second.size()!=52)
@@ -91,8 +86,6 @@ class ShowerParametrization {
         }
         return partLayerProfile_;
     }
-
-    const std::array<double,52>& getRadiationLength() const {return radLength_;}
 
     // transversal
     double r0_electro_(int klayer, int pdgid) {return (a0_electro + a1_electro*klayer + a2_electro*klayer*klayer)*r0layer_Electro_/tot_layer_Electro;}

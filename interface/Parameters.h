@@ -12,7 +12,6 @@ class Parameters {
         struct General {
             General();
             unsigned events;
-            // unsigned npart;
             std::vector<int> part_type;
             bool debug;
             std::string output_file;
@@ -43,7 +42,6 @@ class Parameters {
             Shower();
             double moliere_radius;
             double interaction_length;
-            std::vector<double> radiation_length;
             std::map<std::string, double> transverse_parameters_electro;
             std::map<std::string, double> transverse_parameters_hadro;
             std::vector<double> layers_energy;
