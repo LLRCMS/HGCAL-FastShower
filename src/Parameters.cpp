@@ -160,14 +160,18 @@ void Parameters::fillGeneration(const python::dict& dict) {
         throw std::string("Unknown type of calibration");
     generation_.gentype = Generation::calib_type_map_.at(gentype);
 
-    python::list mip_energy = python::extract<python::list>(dict["generation_mip_energy"]);
-    generation_.mip_energy = toStdVector<double>(mip_energy);
-    python::list sampling = python::extract<python::list>(dict["generation_sampling"]);
-    generation_.sampling = toStdVector<double>(sampling);
+    // if (generation_.gentype == Generation::GenType::Personnal) {
+        python::list mip_energy = python::extract<python::list>(dict["generation_mip_energy"]);
+        generation_.mip_energy = toStdVector<double>(mip_energy);
+        python::list sampling = python::extract<python::list>(dict["generation_sampling"]);
+        generation_.sampling = toStdVector<double>(sampling);
 
-    generation_.noise = python::extract<bool>(dict["generation_noise"]);
-    python::list noise_sigma = python::extract<python::list>(dict["generation_noise_sigma"]);
-    generation_.noise_sigma = toStdVector<double>(noise_sigma);
+        generation_.noise = python::extract<bool>(dict["generation_noise"]);
+        python::list noise_sigma = python::extract<python::list>(dict["generation_noise_sigma"]);
+        generation_.noise_sigma = toStdVector<double>(noise_sigma);
+    // }
+    // else
+        generation_.calib_file = python::extract<std::string>(dict["generation_file"]);
 
     generation_.incident_eta = python::extract<double>(dict["generation_incident_eta"]);
     generation_.incident_phi = python::extract<double>(dict["generation_incident_phi"]);

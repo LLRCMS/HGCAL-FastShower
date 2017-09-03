@@ -49,6 +49,58 @@ Generator::Generator(const Parameters& params): geometry_(params.geometry()),
 Generator::~Generator(){
 }
 
+
+double** Generator::readCalibration(const string filename) {
+
+    double** calib = new double*[52];
+    for(int i = 0; i < 52; ++i)
+        calib[i] = new double[3];
+
+    ifstream fichier(filename);
+    string line;
+
+    if (fichier) {
+        while(getline(fichier, line)) {
+
+            // Remove comment lines (beginning with #)
+            if (line.find("#") != std::string::npos) {
+                continue;
+            }
+            else {
+                int layer_col;
+                double mip[3];
+                double noise[3];
+
+                istringstream strm(line);
+
+                strm >> layer_col;
+                strm >> mip[2];
+                strm >> mip[1];
+                strm >> mip[0];
+
+                strm >> noise[2];
+                strm >> noise[2];
+                strm >> noise[2];
+                strm >> noise[2];
+                strm >> noise[1];
+                strm >> noise[0];
+
+                for (int i = 0; i < 3; i++) {
+                    double sampl = mip[i];
+                    double MIP = sampl/100;
+                    calib[layer_col-1][i] = noise[i]*MIP/sampl;
+                }
+            }
+        }
+    }
+    else
+        cout << "Wrong file path or the file does not exit"<<endl;
+
+    fichier.close();
+
+    return calib;
+}
+
 void Generator::simulate() {
     unsigned nevents = parameters_.general().events;
 
@@ -106,8 +158,8 @@ void Generator::simulate() {
         else
             geometry_.constructFromJson(parameters_.general().debug, layer_id);
 
-        if (display_layer == layer_id) {
 
+        if (display_layer == layer_id) {
             std::string hName;
             hName = "geometry_";
             hName += std::to_string(display_layer + 1);
@@ -156,19 +208,27 @@ void Generator::simulate() {
 
 
     // Noise calibration of each cells for all layers
-    double calibratednoise[parameters_.geometry().layers_z.size()];
+    double** calibratednoise = new double*[52];
+    for(int i = 0; i < 52; ++i)
+        calibratednoise[i] = new double[3];
 
     if (parameters_.generation().noise) {
         cout << "Noise calibration ..."<<endl;
 
-        for(int layer_id = layer_min; layer_id < layer_max; layer_id++) {
+        if (parameters_.generation().gentype == Parameters::Generation::GenType::Personnal) {
 
-            double sigma_noise = getNoiseSigma()[layer_id];
-            double mip = getMipEnergy()[layer_id];
-            double sampl = getSampling()[layer_id];
+            for(int layer_id = layer_min; layer_id < layer_max; layer_id++) {
 
-            calibratednoise[layer_id] = sigma_noise*mip/sampl;
+                double sigma_noise = getNoiseSigma()[layer_id];
+                double mip = getMipEnergy()[layer_id];
+                double sampl = getSampling()[layer_id];
+
+                for (int i = 0; i<3; i++)
+                    calibratednoise[layer_id][i] = sigma_noise*mip/sampl;
+            }
         }
+        else
+            calibratednoise = readCalibration(parameters_.generation().calib_file);
     }
     cout << "Done !"<<endl;
 
@@ -177,7 +237,7 @@ void Generator::simulate() {
     double hit_outside_geom = 0.;
     double tot_hits = 0;
 
-    // Histograms
+    // Histograms for transverse profile
     TH1F *hTransverseProfile[layer_max-layer_min];
     char* hTransProfName = new char[30];
 
@@ -186,6 +246,7 @@ void Generator::simulate() {
         hTransverseProfile[i] = new TH1F(hTransProfName, "Generated transverse profile (cm)",120,0.,120.);
     }
 
+    // Build the tree map ; one key corresponds to one layer
     std::unordered_map<int, Tree*> tree_map;
 
     for (int layer_id = layer_min; layer_id < layer_max; layer_id++) {
@@ -364,7 +425,7 @@ void Generator::simulate() {
                     if (ip == 11 || ip == 22)
                         r_shower = gun_.Exp(r0_electro); // exponential exp(-r/r0)
                     else
-                        r_shower = f_em*gun_.Exp(r0_electro) + (1-f_em)*gun_.Exp(r0_hadro);
+                        r_shower = gun_.Exp(r0_hadro);
 
                     double phi_shower = gun_.Rndm()*TMath::TwoPi();
                     double x = r_shower*cos(phi_shower) + incident_x;
@@ -440,7 +501,7 @@ void Generator::simulate() {
                         event.fillHit(closestCells->getId(), real_energy);
                         // loop on cells for the noise generation from the cells calibration
                         if (parameters_.generation().noise) {
-                            enoise = gun_.Gaus(0., calibratednoise[layer_id]);
+                            enoise = gun_.Gaus(0., calibratednoise[layer_id][thick/100 - 1]);
                             event.fillHit(closestCells->getId(), enoise);
                             energyrec += enoise;
                         }
@@ -514,6 +575,11 @@ void Generator::simulate() {
     t.Stop();
     t.Print();
     cout << endl;
+
+    // free calibration array
+    for(int i = 0; i < 52; ++i)
+        delete [] calibratednoise[i];
+    delete [] calibratednoise;
 }
 
 

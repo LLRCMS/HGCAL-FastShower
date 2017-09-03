@@ -37,6 +37,8 @@ class Generator {
         const std::array<double,52>& getSampling() const {return sampling_;}
         const std::array<double,52>& getNoiseSigma() const {return noise_sigma_;}
 
+        double** readCalibration(const string filename);
+
 
     private:
         TRandom3 gun_;

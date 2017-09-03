@@ -30,24 +30,22 @@ generation_number_of_hits_per_gev = 1000
 # electronic noise
 generation_noise = True
 # Calibration (noise true) : you can choose to calibrate with values from file or with your own values
-generation_calib_type = "Personnal"
-generation_file = 'calib.txt'
+generation_calib_type = "External"
+generation_file = './calibration.txt'
 
 # # mev per MIP (GeV) for 200 um
 generation_mip_energy = [0.094, 0.088, 0.088, 0.088, 0.088, 0.088, 0.088, 0.088, 0.088, 0.097,
                         0.11, 0.11, 0.11, 0.11, 0.11, 0.11, 0.11, 0.11, 0.11, 0.127, 0.148, 
-                        0.148, 0.148, 0.148, 0.148, 0.148, 0.148, 0.415, 0.598, 0.542, 0.542,
-                        0.542, 0.542, 0.542, 0.542, 0.542, 0.542, 0.542, 0.542, 0.674, 0.832, 0.922,
-                        0.922, 0.922, 0.922, 0.922, 0.922, 0.922, 0.922, 0.922, 0.922, 0.461]
-# sampling fraction for 200 um
+                        0.148, 0.148, 0.148, 0.148, 0.148, 0.148, 0.415, 2.99, 2.71, 2.71,
+                        2.71, 2.71, 2.71, 2.71, 2.71, 2.71, 2.71, 2.71, 3.37, 8.32, 9.22,
+                        9.22, 9.22, 9.22, 9.22, 9.22, 9.22, 9.22, 9.22, 9.22, 4.61]
+# sampling fluctuation for 200 um
 generation_sampling = [9.4, 8.8, 8.8, 8.8, 8.8, 8.8, 8.8, 8.8, 8.8, 9.7, 11, 11, 11, 11, 11, 11,
                        11, 11, 11, 12.7, 14.8, 14.8, 14.8, 14.8, 14.8, 14.8, 14.8, 41.5, 59.8, 54.2,
                        54.2, 54.2, 54.2, 54.2, 54.2, 54.2, 54.2, 54.2, 54.2, 67.4, 83.2, 92.2, 92.2,
                        92.2, 92.2, 92.2, 92.2, 92.2, 92.2, 92.2, 92.2, 46.1]
 
-# sampling fluctuations for 100, 200 and 300 um Si
-# generation_sampling = [0.55, 2.2, 6.6]
-# noise in mips for 200 um
+ # noise in mips for 200 um
 generation_noise_sigma = [0.131, 0.131, 0.131, 0.131, 0.131, 0.131, 0.131, 0.131, 0.131, 0.131,
                           0.131, 0.131, 0.131, 0.131, 0.131, 0.131, 0.131, 0.131, 0.131, 0.131,
                           0.131, 0.131, 0.131, 0.131, 0.131, 0.131, 0.131, 0.131, 0.131, 0.131,
