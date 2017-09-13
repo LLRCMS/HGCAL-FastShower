@@ -62,7 +62,7 @@ class ShowerParametrization {
         a2_hadro = transverse_params_hadro.at("a2");
 
         tot_layer_Electro = 28.;
-        tot_layer_Hadro = 24.;
+        tot_layer_Hadro = 52.;
     }
 
     ~ShowerParametrization() {}
@@ -89,7 +89,7 @@ class ShowerParametrization {
 
     // transversal
     double r0_electro_(int klayer, int pdgid) {return (a0_electro + a1_electro*klayer + a2_electro*klayer*klayer)*r0layer_Electro_/tot_layer_Electro;}
-    double r0_hadro_(int klayer, int pdgid) {return (a0_hadro + a1_hadro*klayer + a2_hadro*klayer*klayer)*r0layer_Hadro_/tot_layer_Hadro;}
+    double r0_hadro_(int klayer, int pdgid) { return (a0_hadro + a1_hadro*klayer + a2_hadro*klayer*klayer)/tot_layer_Hadro;}
 
     // fluctuations
     std::array<double,3> spotEnergy(int pdgid) {

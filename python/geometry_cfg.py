@@ -5,7 +5,7 @@ geometry_type = 'Hexagons'
 
 #rotation angle of cells between two layers (degree)
 #implemented for hexagons cells only
-geometry_cell_rotation = 10.
+geometry_cell_rotation = 0.
 
 geometry_layer = -1
 # layers' z positions
@@ -37,7 +37,8 @@ else: #FH-BH
 # Define (eta,phi) window to build the geometry
 geometry_eta_min = 1.475
 geometry_eta_max = 3.
-geometry_phi_min = -m.pi/12. # -7.5 deg 
-geometry_phi_max = m.pi/12. # +7.5 deg 
-#
+geometry_phi_min = -m.pi/8.
+geometry_phi_max = m.pi/8.
+
+
 geometry_file = 'data/AC_11.json'

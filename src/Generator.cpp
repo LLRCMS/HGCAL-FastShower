@@ -87,7 +87,11 @@ double** Generator::readCalibration(const string filename) {
 
                 for (int i = 0; i < 3; i++) {
                     double sampl = mip[i];
-                    double MIP = sampl/100;
+                    double MIP;
+                    if (layer_col <= 40)
+                        MIP = sampl/100;
+                    else
+                        MIP = sampl/10;
                     calib[layer_col-1][i] = noise[i]*MIP/sampl;
                 }
             }
@@ -243,7 +247,7 @@ void Generator::simulate() {
 
     for (int i = layer_min; i < layer_max; i++) {
         sprintf(hTransProfName, "hTransverseProfile_%d", i);
-        hTransverseProfile[i] = new TH1F(hTransProfName, "Generated transverse profile (cm)",120,0.,120.);
+        hTransverseProfile[i] = new TH1F(hTransProfName, "Generated transverse profile (cm)",240,0.,120.);
     }
 
     // Build the tree map ; one key corresponds to one layer
@@ -413,9 +417,6 @@ void Generator::simulate() {
                 tot_hits += nhits;
 
                 double real_energy = 0;
-                // electromagnetic fraction if the hadronic shower is simulated
-                double f_em = std::log(energy_incident)*0.11;
-
 
                 // loop over hits
                 for (int i = 0; i<nhits; i++) {
@@ -424,8 +425,15 @@ void Generator::simulate() {
                     double r_shower = 0;
                     if (ip == 11 || ip == 22)
                         r_shower = gun_.Exp(r0_electro); // exponential exp(-r/r0)
-                    else
-                        r_shower = gun_.Exp(r0_hadro);
+                    else { // for hadronic shower templates parametrization
+                        if (layer_id <= 28)
+                            r_shower = 27.091*gun_.Exp(-r0_hadro*0.1379) + 0.6385*gun_.Exp(-r0_hadro*0.031066);
+                        else if (layer_id > 28 && layer_id <= 40)
+                            r_shower = 25.1655*gun_.Exp(-r0_hadro*0.1236) + 1.0868*gun_.Exp(-r0_hadro*0.0251655);
+                        else
+                            r_shower = 3.10866*gun_.Exp(-r0_hadro*0.1365) + 0.05379*gun_.Exp(-r0_hadro*0.01908);
+                    }
+
 
                     double phi_shower = gun_.Rndm()*TMath::TwoPi();
                     double x = r_shower*cos(phi_shower) + incident_x;
@@ -459,8 +467,8 @@ void Generator::simulate() {
 
                     try {
                         leafCells = tree_map[layer_id]->getLeaf(float(x), float(y))->getCells();
-                    } catch(string s) {
-                        // cout << s << endl;
+                    }
+                    catch(string s) {
                     }
 
                     for (Cell* leafCell : *leafCells) {
@@ -474,7 +482,6 @@ void Generator::simulate() {
                             closestCells = leafCell;
                         }
                     }
-
                     // for half-cell or boarder cells, check it is within the cell
                     // add energy to corresponding cell
                     // Note : isincell search the position of the hit in the closest cell. When it finds the
@@ -494,6 +501,7 @@ void Generator::simulate() {
                         hit_outside_geom++;
                     }
                     else {
+
                         event.fillCells(closestCells->getId(), cell);
 
                         energyrec += real_energy;
@@ -511,7 +519,7 @@ void Generator::simulate() {
                     }
 
                     // fill shower histograms
-                    hTransverseProfile[layer_id]->Fill(r_shower, real_energy + enoise);
+                    hTransverseProfile[layer_id]->Fill(abs(r_shower), real_energy + enoise);
                     //  hPhiProfile.Fill(phi_shower,real_energy);
                     //  hSpotEnergy.Fill(real_energy);
                 }

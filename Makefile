@@ -17,6 +17,7 @@ vpath %.cpp ./bin
 SRCPP = main.cpp\
 	Cell.cpp\
 	Geometry.cpp\
+	Hit.cpp\
 	Generator.cpp\
 	Parameters.cpp\
 	Event.cpp\

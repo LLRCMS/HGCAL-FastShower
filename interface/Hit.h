@@ -5,6 +5,7 @@
 #include "ShowerParametrization.h"
 #include "TVector.h"
 #include "TRandom3.h"
+#include "TMath.h"
 
 
 
@@ -13,10 +14,11 @@ class Hit {
 
 public:
 
-    Hit(int, int, double);
+    Hit(const Parameters&);
+    // Hit(int, int, double, double, double);
     ~Hit();
 
-    TVector* hitPosition(int, int, double);
+    double* hitPosition(int, int, double, double, double);
     TVector* getHitPosition();
     double getHitEnergy();
 
@@ -26,7 +28,7 @@ private:
     const Parameters& parameters_;
 
 
-    TVector* position_;
+    TVectorD* position_;
     double* energy_;
 };
 

@@ -1,11 +1,10 @@
 #include "Hit.h"
 
-
-Hit::Hit(int layer, int PDGid, double e_inc){
+Hit::Hit(const Parameters& params): parameters_(params){
     position_ = nullptr;
     energy_ = nullptr;
 
-    hitPosition(layer, PDGid, e_inc);
+    // hitPosition(layer, PDGid, e_inc, x_inc, y_inc);
 }
 
 Hit::~Hit(){
@@ -46,26 +45,28 @@ Hit::~Hit(){
 //     energygen += real_energy;
 // }
 
-// // Shower parametrization
-// ShowerParametrization aShowerParametrization(parameters_.shower());
 
 
-TVector* Hit::hitPosition(int layer, int PDGid, double e_inc) {
 
+double * Hit::hitPosition(int layer, int PDGid, double e_inc, double x_inc, double y_inc) {
+
+    // Shower parametrization
+    ShowerParametrization aShowerParametrization(parameters_.shower());
+    
     double r0_electro = aShowerParametrization.r0_electro_(layer, PDGid);
     double r0_hadro = aShowerParametrization.r0_hadro_(layer, PDGid);
 
-    double f_em = std::log(energy_incident)*0.1;
+    double f_em = std::log(e_inc)*0.1;
 
-    double r_shower;
+    double r_shower = 0;
     if (PDGid == 11 || PDGid == 22)
         r_shower = gun_.Exp(r0_electro); // exponential exp(-r/r0)
     else
-        r_shower = f_em*gun_.Exp(r0_electro) + (1-f_em)*gun_.Exp(r_hadro);
+        r_shower = f_em*gun_.Exp(r0_electro) + (1-f_em)*gun_.Exp(r0_hadro);
 
     double phi_shower = gun_.Rndm()*TMath::TwoPi();
-    // double x = r_shower*cos(phi_shower) + incident_x;
-    // double y = r_shower*sin(phi_shower) + incident_y;
+    double x = r_shower*cos(phi_shower) + x_inc;
+    double y = r_shower*sin(phi_shower) + y_inc;
 
-    return new TVector[2] {x, y};
+    return new double[2] {x, y};
 }

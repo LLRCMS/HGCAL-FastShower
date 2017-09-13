@@ -4,7 +4,7 @@ import geometry_cfg
 shower_moliere_radius = 2.8
 shower_interaction_length = 16.8
 
-#mean layer energy profile, taken from TP studies for E = 35 GeV electrons, photons and E = 100 GeV pions
+#mean layer energy profile (MeV), taken from TP studies for E = 35 GeV electrons, photons and E = 100 GeV pions
 shower_layers_energy = {11 : [1.5874, 3.3291, 6.1224, 10.6888, 14.4497, 20.3249, 22.7999, 28.3454,
                         31.4394, 40.9882, 36.8994, 37.8882, 31.1828, 30.3768, 23.5351, 22.3839,
                         16.3414, 15.1179, 12.3962, 12.1699, 7.4253, 5.9549, 3.7008, 2.9236, 1.6568,
@@ -28,9 +28,9 @@ shower_layers_energy = {11 : [1.5874, 3.3291, 6.1224, 10.6888, 14.4497, 20.3249,
 #Parameters get from the Full simulation (CMSSW_9_0_0_pre2 release) with the TP studies as reference
 # for electromagnetic shower
 shower_transverse_parameters_electro = dict(a0=8.93, a1=0.046, a2=0.081)
-shower_transverse_parameters_hadro = dict(a0=0.199, a1=0.301, a2=0.115)
+shower_transverse_parameters_hadro = dict(a0=28, a1=0.3350, a2=0.052)
 
 shower_alpha = {11 : [0.243, 0.214, 0.199],
                 22 : [0.243, 0.214, 0.199],
-                211 : [0.15, 0.15, 0.15]
+                211 : [0.75, 0.75, 0.75]
                 }
