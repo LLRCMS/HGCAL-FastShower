@@ -425,15 +425,8 @@ void Generator::simulate() {
                     double r_shower = 0;
                     if (ip == 11 || ip == 22)
                         r_shower = gun_.Exp(r0_electro); // exponential exp(-r/r0)
-                    else { // for hadronic shower templates parametrization
-                        if (layer_id <= 28)
-                            r_shower = 27.091*gun_.Exp(-r0_hadro*0.1379) + 0.6385*gun_.Exp(-r0_hadro*0.031066);
-                        else if (layer_id > 28 && layer_id <= 40)
-                            r_shower = 25.1655*gun_.Exp(-r0_hadro*0.1236) + 1.0868*gun_.Exp(-r0_hadro*0.0251655);
-                        else
-                            r_shower = 3.10866*gun_.Exp(-r0_hadro*0.1365) + 0.05379*gun_.Exp(-r0_hadro*0.01908);
-                    }
-
+                    else // for hadronic shower templates parametrization
+                        r_shower = 130 * gun_.Exp(-r0_hadro/8.15) + 10.5 * gun_.Exp(-r0_hadro/56.);
 
                     double phi_shower = gun_.Rndm()*TMath::TwoPi();
                     double x = r_shower*cos(phi_shower) + incident_x;
@@ -445,17 +438,21 @@ void Generator::simulate() {
 
                     // hit position on layer (EE, FH or BH). Energy attribution
                     int hit_pos = sqrt(x*x+y*y);
+                    double side;
                     if (hit_pos <= parameters_.geometry().limit_first_zone) {
                         real_energy = aShowerParametrization.spotEnergy(ip)[0];
+                        side = parameters_.geometry().small_cell_side;
                         thick = 100;
                     }
                     else if (hit_pos >= parameters_.geometry().limit_first_zone &&
                              hit_pos <= parameters_.geometry().limit_second_zone){
                         real_energy = aShowerParametrization.spotEnergy(ip)[1];
+                        side = parameters_.geometry().large_cell_side;
                         thick = 200;
                     }
                     else {
                         real_energy = denrj;
+                        side = parameters_.geometry().large_cell_side;
                         thick = 300;
                     }
                     energygen += real_energy;
@@ -519,7 +516,9 @@ void Generator::simulate() {
                     }
 
                     // fill shower histograms
-                    hTransverseProfile[layer_id]->Fill(abs(r_shower), real_energy + enoise);
+                    double deltaR = side*sqrt(3);
+                    double deltaS = 2*TMath::Pi()*r_shower*deltaR;
+                    hTransverseProfile[layer_id]->Fill(abs(r_shower), (real_energy + enoise)/deltaS);
                     //  hPhiProfile.Fill(phi_shower,real_energy);
                     //  hSpotEnergy.Fill(real_energy);
                 }
