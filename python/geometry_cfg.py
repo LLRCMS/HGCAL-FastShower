@@ -1,6 +1,7 @@
 
 import math as m
 
+# Cells types : Hexagons, Triangles, External
 geometry_type = 'Hexagons'
 
 #rotation angle of cells between two layers (degree)
@@ -34,7 +35,7 @@ else: #FH-BH
     geometry_limit_second_zone = 100.
 
 
-# Define (eta,phi) window to build the geometry
+# Define (eta,phi) windows to build the geometry
 geometry_eta_min = 1.475
 geometry_eta_max = 3.
 geometry_phi_min = -m.pi/8.

@@ -30,6 +30,7 @@ shower_layers_energy = {11 : [1.5874, 3.3291, 6.1224, 10.6888, 14.4497, 20.3249,
 shower_transverse_parameters_electro = dict(a0=8.93, a1=0.046, a2=0.081)
 shower_transverse_parameters_hadro = dict(a0=28, a1=0.3350, a2=0.052)
 
+# energy resolution determines nhitspergev if fluctuation is true
 shower_alpha = {11 : [0.243, 0.214, 0.199],
                 22 : [0.243, 0.214, 0.199],
                 211 : [0.75, 0.75, 0.75]

@@ -5,7 +5,7 @@ import math as m
 generation_gun_type = "E"
 
 # Energy is a generic term, enter your E or pT values
-generation_energy = 100. #GeV
+generation_energy = 35. #GeV
 generation_energy_fluctuation = False
 generation_energy_range_max = 120.
 generation_energy_range_min = 100.
