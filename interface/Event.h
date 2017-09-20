@@ -43,7 +43,6 @@ class Event {
         uint32_t event_;
         uint32_t npart_;
         std::unordered_map<uint32_t, double> hits_;
-        // multimap is used for hits with same cell_id. With map, they count as one in the ouputfile
         std::unordered_map<uint32_t, Cell> cells_;
         std::unordered_map<uint32_t, double> generated_energy_;
         std::unordered_map<uint32_t, double> generated_eta_;

@@ -53,9 +53,7 @@ void Event::clear() {
 
 int Event::getLayerFromId(int cell_id) {
 
-    // std::string s_id = to_string(cell_id);
     int len = std::to_string(cell_id).length();
-    // int digits = s_id.length();
 
     if (len == 9)
         return atoi(std::to_string(cell_id).substr(0, 1).c_str());
