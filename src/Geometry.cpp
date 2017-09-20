@@ -83,21 +83,8 @@ double** Geometry::hexagonoffset(double side) {
     // pic on top
     double *dim = dimensions(side);
     return new double*[2] {
-      new double[6] {dim[1]*cos(index_rotation*angle_) + dim[2]*sin(index_rotation*angle_),
-                     dim[1]*cos(index_rotation*angle_) - dim[2]*sin(index_rotation*angle_),
-                     -side*sin(index_rotation*angle_),
-                     -dim[1]*cos(index_rotation*angle_) - dim[2]*sin(index_rotation*angle_),
-                     -dim[1]*cos(index_rotation*angle_) + dim[2]*sin(index_rotation*angle_),
-                     side*sin(index_rotation*angle_)
-                    },
-
-      new double[6] {dim[1]*sin(index_rotation*angle_) - dim[2]*cos(index_rotation*angle_),
-                     dim[1]*sin(index_rotation*angle_) + dim[2]*cos(index_rotation*angle_),
-                     side*cos(index_rotation*angle_),
-                     -dim[1]*sin(index_rotation*angle_) + dim[2]*cos(index_rotation*angle_),
-                     -dim[1]*sin(index_rotation*angle_) - dim[2]*cos(index_rotation*angle_),
-                     -side*cos(index_rotation*angle_)
-                    }
+      new double[6] {dim[1], dim[1], 0., -dim[1],-dim[1], 0},
+      new double[6] {-dim[2], dim[2], side, dim[2], -dim[2],-side}
     };
 
     // Hexagons flat side on top
@@ -212,15 +199,15 @@ double* Geometry::XYrPhi(int i, int j, double side, Parameters::Geometry::Type i
 
     double *der = derivative(side, itype);
     // peak on top
-    double x_bfrot, y_bfrot;
     if (zone == 1) {
-        x_bfrot = xs[0] + i*der[0] + j*der[1];
-        y_bfrot = ys[0] + j*der[2];
+        xyrPhi[0] = xs[0] + i*der[0] + j*der[1];
+        xyrPhi[1] = ys[0] + j*der[2];
     }
     else {
-        x_bfrot = xs[3] + i*der[0] + j*der[1];
-        y_bfrot = ys[3] + j*der[2];
+        xyrPhi[0] = xs[3] + i*der[0] + j*der[1];
+        xyrPhi[1] = ys[3] + j*der[2];
     }
+
     // //flat side on top
     // double x = xs[0] + i*dxdi;
     // double y = ys[0] + j*dydj + i*dxdj;
@@ -228,10 +215,6 @@ double* Geometry::XYrPhi(int i, int j, double side, Parameters::Geometry::Type i
     // up and down triangle barycenters are not aligned
     // if(itype==Parameters::Geometry::Type::Triangles && i%2)
     //     y += asqrt3_/6.;
-
-    // rotation
-    xyrPhi[0] = x_bfrot*cos(index_rotation*angle_) - y_bfrot*sin(index_rotation*angle_);
-    xyrPhi[1] = x_bfrot*sin(index_rotation*angle_) + y_bfrot*cos(index_rotation*angle_);
 
     xyrPhi[2] = sqrt(xyrPhi[0]*xyrPhi[0] + xyrPhi[1]*xyrPhi[1]);
     xyrPhi[3] = copysign(acos(xyrPhi[0]/xyrPhi[2]),xyrPhi[1]);
@@ -441,12 +424,6 @@ void Geometry::constructFromParameters(bool debug, int layer_id, int display_lay
             cout << "with triangular cells " << endl;
     }
 
-    // Rotation angle (radian convertion)
-    angle_ = parameters_.angle*M_PI/180.;
-
-    // Get the rotation index : 6 hexagons rotations give the same hexagone
-    index_rotation = klayer_ % 6;
-
     // compute x,y positions of the global geometry window (in the eta-phi region)
     double theta_min = 2.*atan(exp(-parameters_.eta_max));
     double theta_max = 2.*atan(exp(-parameters_.eta_min));
@@ -505,15 +482,15 @@ void Geometry::constructFromParameters(bool debug, int layer_id, int display_lay
   // build cells inside the requested window
     int real_i = 0;
     int real_j = 0;
-    for (int i=windows1[0]-index_rotation*10; i<=(windows1[1])+index_rotation*2;i++) {
+    for (int i = windows1[0]; i <= windows1[1]; i++) {
         real_j = 0;
-        for (int j=(windows1[2]-index_rotation*25); j<=windows1[3];j++) {
+        for (int j = windows1[2]; j <= windows1[3]; j++) {
 
             double *xyrPhi = XYrPhi(i, j, side1, itype, xs, ys,zone1);
 
             // check if cell is inside boundaries. If not, skip it
-            if(!(xyrPhi[2]>=r_min &&
-                 xyrPhi[2]<=limit_first_zone &&
+            if(!(xyrPhi[2] >= r_min &&
+                 xyrPhi[2] <= limit_first_zone &&
                  TVector2::Phi_mpi_pi(xyrPhi[3]-phi_min)>=0 &&
                  TVector2::Phi_mpi_pi(xyrPhi[3]-phi_max)<=0)) {
                 continue;
@@ -593,9 +570,9 @@ void Geometry::constructFromParameters(bool debug, int layer_id, int display_lay
   // build cells inside the requested window
     int real_i2 = 0;
     int real_j2 = 0;
-    for (int i=windows2[0]-index_rotation*4; i<=(windows2[1]+index_rotation*5) ;i++) {
+    for (int i=windows2[0]; i<=windows2[1]; i++) {
         real_j2 = 0;
-        for (int j = (windows2[2]-index_rotation*40); j<=(windows2[3]);j++) {
+        for (int j = windows2[2]; j<=windows2[3]; j++) {
 
             double *xyrPhi = XYrPhi(i, j, side2, itype, xs, ys, 2);
 
