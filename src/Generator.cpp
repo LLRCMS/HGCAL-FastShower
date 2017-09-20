@@ -32,10 +32,6 @@ Generator::Generator(const Parameters& params): geometry_(params.geometry()),
                                                 output_(params.general().output_file),
                                                 shower_(params.shower()),
                                                 parameters_(params) { 
-        if(parameters_.generation().mip_energy.size()!=parameters_.geometry().layers_z.size())
-            throw std::string("The size of generation_mip_energy should be equals to the layer number");
-        std::copy_n(parameters_.generation().mip_energy.begin(), mip_energy_.size(), mip_energy_.begin());
-
         if(parameters_.generation().sampling.size()!=parameters_.geometry().layers_z.size())
             throw std::string("The size of generation_sampling should be equals to 3 (EE, FH and BH)");
         std::copy_n(parameters_.generation().sampling.begin(), sampling_.size(), sampling_.begin());
@@ -228,8 +224,12 @@ void Generator::simulate() {
             for(int layer_id = layer_min; layer_id < layer_max; layer_id++) {
 
                 double sigma_noise = getNoiseSigma()[layer_id];
-                double mip = getMipEnergy()[layer_id];
+                double mip;
                 double sampl = getSampling()[layer_id];
+                if (layer_id <= 40)
+                    mip = sampl/100;
+                else
+                    mip = sampl/10;
 
                 for (int i = 0; i<3; i++)
                     calibratednoise[layer_id][i] = sigma_noise*mip/sampl;

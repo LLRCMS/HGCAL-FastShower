@@ -23,7 +23,6 @@ class Parameters {
             Geometry();
             Type type;
             int layer;
-            double angle;
             std::vector<double> layers_z;
             // internal infinite geometries
             double small_cell_side;
@@ -41,10 +40,9 @@ class Parameters {
         struct Shower {
             Shower();
             double moliere_radius;
-            double interaction_length;
             std::map<std::string, double> transverse_parameters_electro;
             std::map<std::string, double> transverse_parameters_hadro;
-            std::vector<double> layers_energy;
+            // std::vector<double> layers_energy;
             std::map<int, std::vector<double>> map_layers_energy;
             std::map<int, std::vector<double>> map_alpha;
         };
@@ -70,7 +68,6 @@ class Parameters {
             bool fluctuation;
             int number_of_hits_per_gev;
             // own values for calibration
-            std::vector<double> mip_energy;
             std::vector<double> sampling;
             bool noise;
             std::vector<double> noise_sigma;

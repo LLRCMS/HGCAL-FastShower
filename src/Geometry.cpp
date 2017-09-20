@@ -92,6 +92,17 @@ double** Geometry::hexagonoffset(double side) {
     // const array<double, nvertices> hexagonoffsety = {{-asqrt3over2_,0,asqrt3over2_,asqrt3over2_,0.,-asqrt3over2_}};
 }
 
+double** Geometry::triangleoffset(double side){
+
+    // up, up, down, down
+    double *dim = dimensions(side);
+    return new double*[4] {
+      new double[3] {dim[2], 0., -dim[2]},
+      new double[3] {-dim[1]/3., dim[0]/3., -dim[1]/3.},
+      new double[3] {dim[2], -dim[2], 0.},
+      new double[3] {dim[1]/3., dim[1]/3., -dim[0]/3.},
+    };
+}
 
 double* Geometry::derivative(double side, Parameters::Geometry::Type itype){
     double *derivative = new double[3];
@@ -111,12 +122,12 @@ double* Geometry::derivative(double side, Parameters::Geometry::Type itype){
             // dxdi = a3over2_;
             break;
         }
-        // case Parameters::Geometry::Type::Triangles: {
-            // dxdi = aover2_;
-            // dxdj = aover2_;
-            // dydj = asqrt3over2_;
-            // break;
-        // }
+        case Parameters::Geometry::Type::Triangles: {
+            derivative[0] = dim[2];
+            derivative[1] = dim[2];
+            derivative[2] = dim[1];
+            break;
+        }
         default:
             break;
     };
@@ -213,11 +224,13 @@ double* Geometry::XYrPhi(int i, int j, double side, Parameters::Geometry::Type i
     // double y = ys[0] + j*dydj + i*dxdj;
 
     // up and down triangle barycenters are not aligned
-    // if(itype==Parameters::Geometry::Type::Triangles && i%2)
-    //     y += asqrt3_/6.;
+    if(itype==Parameters::Geometry::Type::Triangles && i%2) {
+        double *dim = dimensions(side);
+        xyrPhi[1] += dim[0]/6.;
+    }
 
     xyrPhi[2] = sqrt(xyrPhi[0]*xyrPhi[0] + xyrPhi[1]*xyrPhi[1]);
-    xyrPhi[3] = copysign(acos(xyrPhi[0]/xyrPhi[2]),xyrPhi[1]);
+    xyrPhi[3] = copysign(acos(xyrPhi[0]/xyrPhi[2]), xyrPhi[1]);
 
     return xyrPhi;
 }
@@ -476,7 +489,13 @@ void Geometry::constructFromParameters(bool debug, int layer_id, int display_lay
 
     double side1 = parameters_.small_cell_side;
     int zone1 = 1;
-    double **offset1 = hexagonoffset(side1);
+
+    double **offset1;
+    if (itype==Parameters::Geometry::Type::Hexagons)
+        offset1 = hexagonoffset(side1);
+    else
+        offset1 = triangleoffset(side1);
+
     int *windows1 = ijWindows(zone1, xs, ys, side1, itype);
 
   // build cells inside the requested window
@@ -523,24 +542,24 @@ void Geometry::constructFromParameters(bool debug, int layer_id, int display_lay
                       vertices.back()(1) = xyrPhi[1] + offset1[1][iv];
                       break;
                   }
-                  // case Parameters::Geometry::Type::Triangles:
-                  // {
-                  //   switch(i%2) {
-                  //     case 0:
-                  //     {
-                  //       vertices.back()(0) = x+uptriangleoffsetx[iv];
-                  //       vertices.back()(1) = y+uptriangleoffsety[iv];
-                  //       break;
-                  //     }
-                  //     default:
-                  //     {
-                  //       vertices.back()(0) = x+downtriangleoffsetx[iv];
-                  //       vertices.back()(1) = y+downtriangleoffsety[iv];
-                  //       break;
-                  //     }
-                  //   }
-                  //   break;
-                  // }
+                  case Parameters::Geometry::Type::Triangles:
+                  {
+                    switch(i%2) {
+                      case 0:
+                      {
+                        vertices.back()(0) = xyrPhi[0] + offset1[0][iv];
+                        vertices.back()(1) = xyrPhi[1] + offset1[1][iv];
+                        break;
+                      }
+                      default:
+                      {
+                        vertices.back()(0) = xyrPhi[0] + offset1[2][iv];
+                        vertices.back()(1) = xyrPhi[1] + offset1[3][iv];
+                        break;
+                      }
+                    }
+                    break;
+                  }
                   default:
                       break;
                 };
@@ -564,7 +583,13 @@ void Geometry::constructFromParameters(bool debug, int layer_id, int display_lay
     }
 
     double side2 = parameters_.large_cell_side;
-    double **offset2 = hexagonoffset(side2);
+
+    double **offset2;
+    if (itype==Parameters::Geometry::Type::Hexagons)
+        offset2 = hexagonoffset(side2);
+    else
+        offset2 = triangleoffset(side2);
+
     int *windows2 = ijWindows(2, xs, ys, side2, itype);
 
   // build cells inside the requested window
@@ -612,24 +637,24 @@ void Geometry::constructFromParameters(bool debug, int layer_id, int display_lay
                       vertices.back()(1) = xyrPhi[1]+ offset2[1][iv];
                       break;
                   }
-                  // case Parameters::Geometry::Type::Triangles:
-                  // {
-                  //   switch(i%2) {
-                  //     case 0:
-                  //     {
-                  //       vertices.back()(0) = x+uptriangleoffsetx[iv];
-                  //       vertices.back()(1) = y+uptriangleoffsety[iv];
-                  //       break;
-                  //     }
-                  //     default:
-                  //     {
-                  //       vertices.back()(0) = x+downtriangleoffsetx[iv];
-                  //       vertices.back()(1) = y+downtriangleoffsety[iv];
-                  //       break;
-                  //     }
-                  //   }
-                  //   break;
-                  // }
+                  case Parameters::Geometry::Type::Triangles:
+                  {
+                    switch(i%2) {
+                      case 0:
+                      {
+                        vertices.back()(0) = xyrPhi[0] + offset2[0][iv];
+                        vertices.back()(1) = xyrPhi[1] + offset2[1][iv];
+                        break;
+                      }
+                      default:
+                      {
+                        vertices.back()(0) = xyrPhi[0] + offset2[2][iv];
+                        vertices.back()(1) = xyrPhi[1] + offset2[3][iv];
+                        break;
+                      }
+                    }
+                    break;
+                  }
                   default:
                       break;
                 };

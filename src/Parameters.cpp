@@ -27,7 +27,6 @@ Parameters::Generation::calib_type_map_ = {
 Parameters::Geometry::Geometry():
     type(Type::Undefined),
     layer(-1),
-    angle(0),
     layers_z(0),
     small_cell_side(0),
     large_cell_side(0),
@@ -42,7 +41,6 @@ Parameters::Geometry::Geometry():
 
 Parameters::Shower::Shower():
     moliere_radius(0.),
-    interaction_length(0.),
     transverse_parameters_electro(),
     transverse_parameters_hadro(),
     map_layers_energy(),
@@ -58,7 +56,6 @@ Parameters::Generation::Generation():
     E_range_min(0.),
     E_range_max(0.),
     number_of_hits_per_gev(0),
-    mip_energy(0.),
     sampling(0.),
     noise(false),
     noise_sigma(0.),
@@ -109,7 +106,6 @@ void Parameters::fillGeometry(const python::dict& dict) {
         throw std::string("Unknown type of geometry");
     geometry_.type = Geometry::type_map_.at(type);
     geometry_.layer = python::extract<int>(dict["geometry_layer"]);
-    geometry_.angle = python::extract<double>(dict["geometry_cell_rotation"]);
 
     python::list layers_z = python::extract<python::list>(dict["geometry_layers_z"]);
     geometry_.layers_z = toStdVector<double>(layers_z);
@@ -130,7 +126,6 @@ void Parameters::fillGeometry(const python::dict& dict) {
 
 void Parameters::fillShower(const python::dict& dict) {
     shower_.moliere_radius = python::extract<double>(dict["shower_moliere_radius"]);
-    shower_.interaction_length = python::extract<double>(dict["shower_interaction_length"]);
 
     python::dict transverse_parameters_electro = python::extract<python::dict>(dict["shower_transverse_parameters_electro"]);
     shower_.transverse_parameters_electro = toStdMap<std::string,double>(transverse_parameters_electro);
@@ -160,18 +155,13 @@ void Parameters::fillGeneration(const python::dict& dict) {
         throw std::string("Unknown type of calibration");
     generation_.gentype = Generation::calib_type_map_.at(gentype);
 
-    // if (generation_.gentype == Generation::GenType::Personnal) {
-        python::list mip_energy = python::extract<python::list>(dict["generation_mip_energy"]);
-        generation_.mip_energy = toStdVector<double>(mip_energy);
-        python::list sampling = python::extract<python::list>(dict["generation_sampling"]);
-        generation_.sampling = toStdVector<double>(sampling);
+    python::list sampling = python::extract<python::list>(dict["generation_mip"]);
+    generation_.sampling = toStdVector<double>(sampling);
 
-        generation_.noise = python::extract<bool>(dict["generation_noise"]);
-        python::list noise_sigma = python::extract<python::list>(dict["generation_noise_sigma"]);
-        generation_.noise_sigma = toStdVector<double>(noise_sigma);
-    // }
-    // else
-        generation_.calib_file = python::extract<std::string>(dict["generation_file"]);
+    generation_.noise = python::extract<bool>(dict["generation_noise"]);
+    python::list noise_sigma = python::extract<python::list>(dict["generation_noise_sigma"]);
+    generation_.noise_sigma = toStdVector<double>(noise_sigma);
+    generation_.calib_file = python::extract<std::string>(dict["generation_file"]);
 
     generation_.incident_eta = python::extract<double>(dict["generation_incident_eta"]);
     generation_.incident_phi = python::extract<double>(dict["generation_incident_phi"]);
@@ -212,26 +202,21 @@ void Parameters::print() const {
     std::cout<<"|-- File = "<<geometry_.file<<"\n";
     std::cout<<"|- Shower\n";
     std::cout<<"|-- Moliere radius = "<<shower_.moliere_radius<<"\n";
-    std::cout<<"|-- interaction length = "<<shower_.interaction_length<<"\n";
     std::cout<<"]\n";
-    std::cout<<"|-- Transverse parameters = [";
+    std::cout<<"|-- Transverse parameters electro = [";
     for(const auto& name_value : shower_.transverse_parameters_electro) {
         std::cout<<name_value.first<<"("<<name_value.second<<") ";
     }
+    std::cout<<"]\n";
+    std::cout<<"|-- Transverse parameters hadro = [";
     for(const auto& name_value : shower_.transverse_parameters_hadro) {
         std::cout<<name_value.first<<"("<<name_value.second<<") ";
     }
-    std::cout<<"]\n";
     std::cout<<"|- Generation\n";
     std::cout<<"|-- Energy = "<<generation_.energy<<"\n";
     std::cout<<"|-- Fluctuation = "<<generation_.fluctuation<<"\n";
     std::cout<<"|-- Hits/GeV = "<<generation_.number_of_hits_per_gev<<"\n";
     std::cout<<"|-- Mip energy = [";
-    for(const auto& mip : generation_.mip_energy) {
-      std::cout<<mip<< " ";
-    }
-    std::cout<<"]\n";
-    std::cout<<"|-- Sampling = [";
     for(const auto& sampl : generation_.sampling) {
       std::cout<<sampl<< " ";
     }

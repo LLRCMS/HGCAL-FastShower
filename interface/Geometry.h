@@ -34,7 +34,7 @@ class Geometry {
 
     double* dimensions(double side);
     double** hexagonoffset(double side);
-    // // double* triangleoffset(double a1, double a2, double a3);
+    double** triangleoffset(double side);
     double* derivative(double side, Parameters::Geometry::Type itype);
     double** dxdyFirstZone(double* xs, double* ys);
     double** dxdySecondZone(double* xs, double* ys);
@@ -47,8 +47,6 @@ class Geometry {
     std::unordered_map<uint32_t, Cell> getCells() const {return cells_;}
     int getLayer() const {return klayer_;}
     double getZlayer() const {return zlayer_;}
-    // Parameters::Geometry::Type getType() const {return itype_;}
-
 
     const std::unique_ptr<TH2Poly>& cellHistogram() const {return cell_histogram_;}
     void draw(const Parameters::Display& params);

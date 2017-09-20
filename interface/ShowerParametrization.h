@@ -22,8 +22,7 @@ class ShowerParametrization {
 
     ShowerParametrization() {}
     ShowerParametrization(const Parameters::Shower& params):
-        moliereRadius_(params.moliere_radius),
-        interaction_length_(params.interaction_length) {
+        moliereRadius_(params.moliere_radius){
 
         typedef map<int, std::vector<double>>::const_iterator MapIterator;
         for (MapIterator iter = params.map_layers_energy.begin(); iter != params.map_layers_energy.end(); iter++) {
@@ -47,9 +46,7 @@ class ShowerParametrization {
 
         // transverse parameters
         // exponential parameter set from TP studies, 90% containment at Rm for electro.
-        // 95% containment at lambdaI for hadro
         r0layer_Electro_ = moliereRadius_/std::log(10.);
-        r0layer_Hadro_ = interaction_length_/std::log(5.);
         const auto& transverse_params_electro = params.transverse_parameters_electro;
         // FIXME: find better way to implement transverse parameters
         a0_electro = transverse_params_electro.at("a0");
@@ -120,7 +117,6 @@ class ShowerParametrization {
 
         // transverse parametrisation
         double r0layer_Electro_;
-        double r0layer_Hadro_;
         double a0_hadro;
         double a1_hadro;
         double a2_hadro;
