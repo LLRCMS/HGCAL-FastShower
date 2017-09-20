@@ -111,15 +111,16 @@ void Generator::simulate() {
     std::unordered_map<uint32_t, TH1F> hCellEnergyMap;
     std::unordered_map<uint32_t, TH1F> hCellEnergyEvtMap;
 
-    TStopwatch t;
-    t.Start();
+    TStopwatch t_all;
+    t_all.Start();
 
     // some initializations
     double energygen=0.;
     double energygenincells=0.;
     double energyrec=0.;
 
-
+    TStopwatch t_geo;
+    t_geo.Start();
     // Geometry
     cout<<"I'm building the geometry, please wait..." <<endl;
 
@@ -199,7 +200,7 @@ void Generator::simulate() {
                     hName += ",";
                     hName += std::to_string(k);
                     hName += "]";
-                    hCellEnergyEvtMap.emplace(c.getId(),TH1F(hName.c_str(),"Event Energy in cell [i,j,k])",100,0.,100.));
+                    hCellEnergyEvtMap.emplace(c.getId(),TH1F(hName.c_str(),"Event Energy in cell [i,j,k])", 100, 0., 100.));
                 }
             }
         }
@@ -208,9 +209,12 @@ void Generator::simulate() {
     if (parameters_.general().debug)
         geometry_.print();
 
+    t_geo.Stop();
+    t_geo.Print();
     cout << "Done !"<<endl;
 
-
+    TStopwatch t_evt;
+    t_evt.Start();
     // Noise calibration of each cells for all layers
     double** calibratednoise = new double*[52];
     for(int i = 0; i < 52; ++i)
@@ -247,7 +251,7 @@ void Generator::simulate() {
 
     for (int i = layer_min; i < layer_max; i++) {
         sprintf(hTransProfName, "hTransverseProfile_%d", i);
-        hTransverseProfile[i] = new TH1F(hTransProfName, "Generated transverse profile (cm)",240,0.,120.);
+        hTransverseProfile[i] = new TH1F(hTransProfName, "Generated transverse profile (cm)", 600, 0., 120);
     }
 
     // Build the tree map ; one key corresponds to one layer
@@ -333,7 +337,7 @@ void Generator::simulate() {
     int thick = 0;
 
     for (unsigned iev=1; iev <= nevents; iev++) {
-        cout << "================ Simulating event: " << iev << " ================" << endl;
+        // cout << "================ Simulating event: " << iev << " ================" << endl;
 
         // initialize event
         Event event(0, iev); // default run number =0
@@ -426,7 +430,7 @@ void Generator::simulate() {
                     if (ip == 11 || ip == 22)
                         r_shower = gun_.Exp(r0_electro); // exponential exp(-r/r0)
                     else // for hadronic shower templates parametrization
-                        r_shower = 130 * gun_.Exp(-r0_hadro/8.15) + 10.5 * gun_.Exp(-r0_hadro/56.);
+                        r_shower = 108 * gun_.Exp(-r0_hadro/19.3) + 95 * gun_.Exp(-r0_hadro/76.);
 
                     double phi_shower = gun_.Rndm()*TMath::TwoPi();
                     double x = r_shower*cos(phi_shower) + incident_x;
@@ -518,16 +522,20 @@ void Generator::simulate() {
                     // fill shower histograms
                     double deltaR = side*sqrt(3);
                     double deltaS = 2*TMath::Pi()*r_shower*deltaR;
-                    hTransverseProfile[layer_id]->Fill(abs(r_shower), (real_energy + enoise)/deltaS);
+                    if (ip == 211)
+                        hTransverseProfile[layer_id]->Fill(abs(r_shower), abs((real_energy + enoise)/deltaS));
+                    else
+                        hTransverseProfile[layer_id]->Fill(abs(r_shower), real_energy + enoise);
+
                     //  hPhiProfile.Fill(phi_shower,real_energy);
                     //  hSpotEnergy.Fill(real_energy);
                 }
             }
         }
 
-        cout << "simulated energy " << energygen << endl;
-        cout << "simulated energy inside cells " << energygenincells << endl;
-        cout << "reconstructed energy inside cells (includes noise) " << energyrec << endl;
+        // cout << "simulated energy " << energygen << endl;
+        // cout << "simulated energy inside cells " << energygenincells << endl;
+        // cout << "reconstructed energy inside cells (includes noise) " << energyrec << endl;
 
         if (!hCellEnergyMap.empty() && !hCellEnergyEvtMap.empty()) {
 
@@ -567,7 +575,9 @@ void Generator::simulate() {
     }
 
     output_.saveTree();
-
+    t_evt.Stop();
+    cout << "evt simulation CPU time :"<< endl;
+    t_evt.Print();
     // hEnergyGen.Write();
     // hPhiProfile.Write();
     // hSpotEnergy.Write();
@@ -579,8 +589,8 @@ void Generator::simulate() {
     cout<<hit_outside_geom<<" hits are outside or at the boarder of the geometry for a total of "
         <<tot_hits<<" hits ("<<hit_outside_geom*100./tot_hits<<"\%)."<< endl;
 
-    t.Stop();
-    t.Print();
+    t_all.Stop();
+    t_all.Print();
     cout << endl;
 
     // free calibration array
