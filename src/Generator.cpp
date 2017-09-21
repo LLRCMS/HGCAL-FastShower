@@ -290,7 +290,7 @@ void Generator::simulate() {
 
             x_c = float(c.getX());
             y_c = float(c.getY());
-            float cell_radius = sqrt((x_c*x_c)+(y_c-y_c));
+            float cell_radius = sqrt((x_c*x_c)+(y_c*y_c));
 
             if (cell_radius <= float(parameters_.geometry().limit_first_zone))
                 side = parameters_.geometry().small_cell_side;
@@ -430,7 +430,7 @@ void Generator::simulate() {
                     if (ip == 11 || ip == 22)
                         r_shower = gun_.Exp(r0_electro); // exponential exp(-r/r0)
                     else // for hadronic shower templates parametrization
-                        r_shower = 108 * gun_.Exp(-r0_hadro/19.3) + 95 * gun_.Exp(-r0_hadro/76.);
+                        r_shower = 108 * gun_.Exp(r0_hadro/19.3) + 95 * gun_.Exp(r0_hadro/76.);
 
                     double phi_shower = gun_.Rndm()*TMath::TwoPi();
                     double x = r_shower*cos(phi_shower) + incident_x;
