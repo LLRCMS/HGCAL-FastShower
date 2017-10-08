@@ -1,7 +1,7 @@
-This Fast simulation tool allows to simulate electromagnetic or hadronic shower in the HGCal. The documentation for the new input parameters and the improvments is not available yet but you will find it here soon. Meanwhile, find below the documentation of the first version of this tool.
+This Fast simulation tool allows to simulate electromagnetic or hadronic shower in the HGCal. The documentation for the new input parameters and the improvements is not available yet but you will find it here soon. Meanwhile, find below the documentation of the first version of this tool.
 
 Some bugs, listed below, have been found and will be fixed as soon as possible :
-- Display layer fail (the display is optionnal and don't disrupt the simulation ouptut)
+- Display layer fail (the display is optional and don't disrupt the simulation output)
 - The simulation with triangle cells is not optimized
 
 Please note that the simulation with external geometry is implemented but not tested since the new implementation. Use this geometry can lead to compilation/simulation issues.
