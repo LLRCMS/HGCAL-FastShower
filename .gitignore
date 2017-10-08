@@ -3,8 +3,6 @@
 *.pyc
 *.pdf
 *.root
-*.json
-*.xml
 *.exe
 *.py
 *.txt
