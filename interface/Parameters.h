@@ -59,10 +59,10 @@ class Parameters {
             double E_range_min;
             double E_range_max;
             // own values for calibration
-            std::vector<double> sampling;
+            double sampling;
             int number_of_hits_per_gev;
             bool noise;
-            std::vector<double> noise_sigma;
+            double noise_sigma;
             double incident_eta;
             double incident_phi;
             bool eta_fluctuation;

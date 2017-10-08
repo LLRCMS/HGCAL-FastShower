@@ -155,12 +155,10 @@ void Parameters::fillGeneration(const python::dict& dict) {
         throw std::string("Unknown type of calibration");
     generation_.gentype = Generation::calib_type_map_.at(gentype);
 
-    python::list sampling = python::extract<python::list>(dict["generation_mip"]);
-    generation_.sampling = toStdVector<double>(sampling);
+    generation_.sampling = python::extract<double>(dict["generation_mip"]);
 
     generation_.noise = python::extract<bool>(dict["generation_noise"]);
-    python::list noise_sigma = python::extract<python::list>(dict["generation_noise_sigma"]);
-    generation_.noise_sigma = toStdVector<double>(noise_sigma);
+    generation_.noise_sigma = python::extract<double>(dict["generation_noise_sigma"]);
     generation_.calib_file = python::extract<std::string>(dict["generation_file"]);
 
     generation_.incident_eta = python::extract<double>(dict["generation_incident_eta"]);
@@ -216,17 +214,9 @@ void Parameters::print() const {
     std::cout<<"|-- Energy = "<<generation_.energy<<"\n";
     std::cout<<"|-- Fluctuation = "<<generation_.fluctuation<<"\n";
     std::cout<<"|-- Hits/GeV = "<<generation_.number_of_hits_per_gev<<"\n";
-    std::cout<<"|-- Mip energy = [";
-    for(const auto& sampl : generation_.sampling) {
-      std::cout<<sampl<< " ";
-    }
-    std::cout<<"]\n";
+    std::cout<<"|-- Mip energy = ["<< generation_.sampling<<"\n";
     std::cout<<"|-- Noise = "<<generation_.noise<<"\n";
-    std::cout<<"|-- Noise sigma = [";
-    for(const auto& noise : generation_.noise_sigma) {
-      std::cout<<noise<< " ";
-    }
-    std::cout<<"]\n";
+    std::cout<<"|-- Noise sigma = ["<< generation_.noise_sigma <<"\n";
     std::cout<<"|-- Direction = ("<<generation_.incident_eta<<" "<<generation_.incident_phi<<")\n";
     std::cout<<"|-- Eta fluctuation = "<<generation_.eta_fluctuation<<"  range = ("<<generation_.eta_range_min<<","<<generation_.eta_range_max<<")"<<"\n";
     std::cout<<"|-- Phi fluctuation = "<<generation_.phi_fluctuation<<"  range = ("<<generation_.phi_range_min<<","<<generation_.phi_range_max<<")"<<"\n";

@@ -32,13 +32,6 @@ Generator::Generator(const Parameters& params): geometry_(params.geometry()),
                                                 output_(params.general().output_file),
                                                 shower_(params.shower()),
                                                 parameters_(params) { 
-        if(parameters_.generation().sampling.size()!=parameters_.geometry().layers_z.size())
-            throw std::string("The size of generation_sampling should be equals to 3 (EE, FH and BH)");
-        std::copy_n(parameters_.generation().sampling.begin(), sampling_.size(), sampling_.begin());
-
-        if(parameters_.generation().noise_sigma.size()!=parameters_.geometry().layers_z.size())
-            throw std::string("The size of generation_noise_sigma should be equals to the layer number");
-        std::copy_n(parameters_.generation().noise_sigma.begin(), noise_sigma_.size(), noise_sigma_.begin());
 }
 
 
@@ -223,9 +216,9 @@ void Generator::simulate() {
 
             for(int layer_id = layer_min; layer_id < layer_max; layer_id++) {
 
-                double sigma_noise = getNoiseSigma()[layer_id];
+                double sigma_noise = parameters_.generation().noise_sigma;
                 double mip;
-                double sampl = getSampling()[layer_id];
+                double sampl = parameters_.generation().sampling;
                 if (layer_id <= 40)
                     mip = sampl/100;
                 else
