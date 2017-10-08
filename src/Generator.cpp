@@ -100,16 +100,14 @@ void Generator::simulate() {
     std::unordered_map<uint32_t, TH1F> hCellEnergyMap;
     std::unordered_map<uint32_t, TH1F> hCellEnergyEvtMap;
 
-    TStopwatch t_all;
-    t_all.Start();
+    TStopwatch t;
+    t.Start();
 
     // some initializations
     double energygen=0.;
     double energygenincells=0.;
     double energyrec=0.;
 
-    TStopwatch t_geo;
-    t_geo.Start();
     // Geometry
     cout<<"I'm building the geometry, please wait..." <<endl;
 
@@ -151,7 +149,6 @@ void Generator::simulate() {
         }
         else
             geometry_.constructFromJson(parameters_.general().debug, layer_id);
-
 
         if (display_layer == layer_id) {
             std::string hName;
@@ -198,12 +195,8 @@ void Generator::simulate() {
     if (parameters_.general().debug)
         geometry_.print();
 
-    t_geo.Stop();
-    t_geo.Print();
     cout << "Done !"<<endl;
 
-    TStopwatch t_evt;
-    t_evt.Start();
     // Noise calibration of each cells for all layers
     double** calibratednoise = new double*[52];
     for(int i = 0; i < 52; ++i)
@@ -283,7 +276,7 @@ void Generator::simulate() {
 
             x_c = float(c.getX());
             y_c = float(c.getY());
-            float cell_radius = sqrt((x_c*x_c)+(y_c*y_c));
+            float cell_radius = sqrt((x_c*x_c)+(y_c-y_c));
 
             if (cell_radius <= float(parameters_.geometry().limit_first_zone))
                 side = parameters_.geometry().small_cell_side;
@@ -325,7 +318,6 @@ void Generator::simulate() {
 
         tree_map.insert({layer_id, tree});
     }
-
 
     int thick = 0;
 
@@ -495,7 +487,6 @@ void Generator::simulate() {
                         hit_outside_geom++;
                     }
                     else {
-
                         event.fillCells(closestCells->getId(), cell);
 
                         energyrec += real_energy;
@@ -509,7 +500,6 @@ void Generator::simulate() {
                         }
 
                         event.fillThick(closestCells->getId(), thick);
-
                     }
 
                     // fill shower histograms
@@ -533,13 +523,15 @@ void Generator::simulate() {
         if (!hCellEnergyMap.empty() && !hCellEnergyEvtMap.empty()) {
 
             for (const auto& hit : event.hits()) {
-                if (event.getLayerFromId(hit.first) == display_layer + 1)
+
+                if (event.getLayerFromId(hit.first) == display_layer) {
                     hCellEnergyMap.at(hit.first).Fill(hit.second);
+                }
             }
             // if requested display a few events
             if (iev<=parameters_.display().events) {
                 for (const auto& hit : event.hits()) {
-                    if (event.getLayerFromId(hit.first) == display_layer + 1) {
+                    if (event.getLayerFromId(hit.first) == display_layer) {
                         hCellEnergyEvtMap.at(hit.first).Reset();
                         hCellEnergyEvtMap.at(hit.first).Fill(hit.second);
                     }
@@ -568,9 +560,6 @@ void Generator::simulate() {
     }
 
     output_.saveTree();
-    t_evt.Stop();
-    cout << "evt simulation CPU time :"<< endl;
-    t_evt.Print();
     // hEnergyGen.Write();
     // hPhiProfile.Write();
     // hSpotEnergy.Write();
@@ -582,8 +571,8 @@ void Generator::simulate() {
     cout<<hit_outside_geom<<" hits are outside or at the boarder of the geometry for a total of "
         <<tot_hits<<" hits ("<<hit_outside_geom*100./tot_hits<<"\%)."<< endl;
 
-    t_all.Stop();
-    t_all.Print();
+    t.Stop();
+    t.Print();
     cout << endl;
 
     // free calibration array
@@ -603,7 +592,7 @@ std::unique_ptr<TCanvas> Generator::display(const std::unordered_map<uint32_t,TH
         title1 = "Mean energy profile in layer ";
     else
         title1 = "Event " + std::to_string(ievt) + " energy profile in layer ";
-    title1 = title1 + std::to_string(parameters_.display().layer);
+    title1 = title1 + std::to_string(parameters_.display().layer + 1);
     title2 = "E = ";
     sprintf(str,"%4.1f",parameters_.generation().energy);
     std::string string=str;
