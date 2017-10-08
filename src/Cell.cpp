@@ -1,5 +1,4 @@
 
-
 #include "TMath.h"
 #ifdef STANDALONE
 #include "Cell.h"
@@ -11,8 +10,8 @@
 
 
 uint32_t Cell::id(uint16_t i, uint16_t j, uint16_t k) {
-    // id format = kk0iii0jjj
-    return (k+1)*100000000 + i*10000 + j;
+    // id format = iiijjjkk
+    return i*100000 + j*100 + k;
 }
 
 
