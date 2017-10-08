@@ -8,7 +8,7 @@ CCVERSIONGTEQ48 := $(shell expr `g++ -dumpversion | cut -f1,2 -d.` \>= 4.8)
 UCFLAGS = -O3 -Wall -DSTANDALONE
 
 RUCFLAGS := $(shell root-config --cflags) -I./interface/ -I/usr/include/python2.6/ 
-LIBS :=  $(shell root-config --libs) -lpython2.6 -lboost_python 
+LIBS :=  $(shell root-config --libs) -lpython2.7 -lboost_python 
 
 vpath %.cpp ./src/json
 vpath %.cpp ./src
