@@ -1,3 +1,4 @@
+#include <iostream>
 
 
 #ifdef STANDALONE
@@ -55,8 +56,5 @@ int Event::getLayerFromId(int cell_id) {
 
     int len = std::to_string(cell_id).length();
 
-    if (len == 9)
-        return atoi(std::to_string(cell_id).substr(0, 1).c_str());
-    else
-        return atoi(std::to_string(cell_id).substr(0, 2).c_str());
+    return atoi(std::to_string(cell_id).substr(len -2, len).c_str());
 }
