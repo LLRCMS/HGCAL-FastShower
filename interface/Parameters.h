@@ -52,11 +52,17 @@ class Parameters {
             const static std::map<std::string, GenType> calib_type_map_;
             Generation();
             GenType gentype;
+            bool fluctuation;
             bool fluctuation_energy;
             std::string gun_type;
             double energy;
             double E_range_min;
             double E_range_max;
+            // own values for calibration
+            std::vector<double> sampling;
+            int number_of_hits_per_gev;
+            bool noise;
+            std::vector<double> noise_sigma;
             double incident_eta;
             double incident_phi;
             bool eta_fluctuation;
@@ -65,12 +71,6 @@ class Parameters {
             double eta_range_min;
             double phi_range_max;
             double phi_range_min;
-            bool fluctuation;
-            int number_of_hits_per_gev;
-            // own values for calibration
-            std::vector<double> sampling;
-            bool noise;
-            std::vector<double> noise_sigma;
             // calibration values read in file
             std::string calib_file;
 

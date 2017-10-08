@@ -44,8 +44,8 @@ class Generator {
         TRandom3 gun_;
         Geometry geometry_;
         OutputService output_;
-        const Parameters& parameters_;
         ShowerParametrization shower_;
+        const Parameters& parameters_;
 
 
         std::array<double,52> mip_energy_;

@@ -34,10 +34,11 @@ class OutputService {
         unsigned run_;
         unsigned event_;
         unsigned npart_;
-        unsigned cell_n_;
-
         std::vector<int> PDGid_;
         std::vector<int> thick_;
+
+        unsigned cell_n_;
+
         std::vector<double> gen_energy_;
         std::vector<double> gen_eta_;
         std::vector<double> gen_phi_;

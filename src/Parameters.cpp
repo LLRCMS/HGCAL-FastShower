@@ -9,7 +9,7 @@
 
 using namespace boost;
 
-Parameters::General::General(): events(0), debug(false), output_file(""), part_type(0) {
+Parameters::General::General(): events(0), part_type(0), debug(false), output_file("") {
 }
 
 const std::map<std::string, Parameters::Geometry::Type>
@@ -55,8 +55,8 @@ Parameters::Generation::Generation():
     energy(0.),
     E_range_min(0.),
     E_range_max(0.),
-    number_of_hits_per_gev(0),
     sampling(0.),
+    number_of_hits_per_gev(0),
     noise(false),
     noise_sigma(0.),
     incident_eta(0.),
