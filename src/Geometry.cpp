@@ -487,6 +487,12 @@ void Geometry::constructFromParameters(bool debug, int layer_id, int display_lay
     double y_min = numeric_limits<double>::max();
     double y_max = numeric_limits<double>::lowest();
 
+    int n_vertices;
+    if (itype==Parameters::Geometry::Type::Hexagons)
+        n_vertices = 6;
+    else
+        n_vertices = 3;
+
     double side1 = parameters_.small_cell_side;
     int zone1 = 1;
 
@@ -534,7 +540,7 @@ void Geometry::constructFromParameters(bool debug, int layer_id, int display_lay
             }
 
             vector<TVectorD> vertices;
-            for (int iv=0; iv<6; iv++) {
+            for (int iv=0; iv<n_vertices; iv++) {
                 vertices.emplace_back(2);
                 switch(itype) {
                   case Parameters::Geometry::Type::Hexagons: {
@@ -629,7 +635,7 @@ void Geometry::constructFromParameters(bool debug, int layer_id, int display_lay
             }
 
             vector<TVectorD> vertices;
-            for (int iv=0; iv<6; iv++) {
+            for (int iv=0; iv<n_vertices; iv++) {
                 vertices.emplace_back(2);
                 switch(itype) {
                   case Parameters::Geometry::Type::Hexagons: {
