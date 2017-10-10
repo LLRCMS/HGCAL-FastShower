@@ -139,16 +139,15 @@ void Generator::simulate() {
 
         cout << "=====> Layer " <<layer_id + 1 << " / "<< layer_max << '\r' << flush;
 
-        if (parameters_.geometry().type!=Parameters::Geometry::Type::External) {
-
+        if (parameters_.geometry().type!=Parameters::Geometry::Type::External)
             geometry_.constructFromParameters(parameters_.general().debug, layer_id, display_layer);
-            for (auto& cell : geometry_.getCells()){
-                if (cell.second.getLayer() == layer_id)
-                    cell_collection[layer_id].push_back(cell.second);
-            }
-        }
         else
             geometry_.constructFromJson(parameters_.general().debug, layer_id);
+
+        for (auto& cell : geometry_.getCells()){
+            if (cell.second.getLayer() == layer_id)
+                cell_collection[layer_id].push_back(cell.second);
+        }
 
         if (display_layer == layer_id) {
             std::string hName;
@@ -240,83 +239,86 @@ void Generator::simulate() {
         hTransverseProfile[i] = new TH1F(hTransProfName, "Generated transverse profile (cm)", 600, 0., 120);
     }
 
-    // Build the tree map ; one key corresponds to one layer
+    // Build the tree map (except for external geometry) ; one key corresponds to one layer
     std::unordered_map<int, Tree*> tree_map;
 
-    for (int layer_id = layer_min; layer_id < layer_max; layer_id++) {
+    if (parameters_.geometry().type!=Parameters::Geometry::Type::External) {
 
-        std::vector<double > cell_x;
-        std::vector<double > cell_y;
-        for (Cell c : cell_collection[layer_id]) {
-            cell_x.push_back(c.getX());
-            cell_y.push_back(c.getY());
+        for (int layer_id = layer_min; layer_id < layer_max; layer_id++) {
+
+            std::vector<double > cell_x;
+            std::vector<double > cell_y;
+            for (Cell c : cell_collection[layer_id]) {
+                cell_x.push_back(c.getX());
+                cell_y.push_back(c.getY());
+            }
+
+            double x_min = *std::minmax_element(cell_x.begin(), cell_x.end()).first;
+            double x_max = *std::minmax_element(cell_x.begin(), cell_x.end()).second;
+            double y_min = *std::minmax_element(cell_y.begin(), cell_y.end()).first;
+            double y_max = *std::minmax_element(cell_y.begin(), cell_y.end()).second;
+
+            // Geometry build with the cell center position, add a margin for the
+            // square corners containing the boarder cells
+            x_min -= parameters_.geometry().small_cell_side;
+            x_max += parameters_.geometry().large_cell_side;
+            y_min -= parameters_.geometry().large_cell_side * 2;
+            y_max += parameters_.geometry().large_cell_side * 2;
+
+            Rectangle* plan = new Rectangle(
+                new Point((float)x_min, (float)y_max),
+                new Point((float)x_max, (float)y_min)
+            );
+
+            Tree* tree = new Tree(plan, 5);
+            float x_c, y_c;
+            double side;
+            for(Cell& c : cell_collection[layer_id]) {
+
+                x_c = float(c.getX());
+                y_c = float(c.getY());
+                float cell_radius = sqrt((x_c*x_c)+(y_c-y_c));
+
+                if (cell_radius <= float(parameters_.geometry().limit_first_zone))
+                    side = parameters_.geometry().small_cell_side;
+                else
+                    side = parameters_.geometry().large_cell_side;
+
+                Point* cornerA = new Point(x_c - float(side*sqrt(3)/2), y_c + float(side));
+                Point* cornerB = new Point(x_c + float(side*sqrt(3)/2), y_c + float(side));
+                Point* cornerC = new Point(x_c + float(side*sqrt(3)/2), y_c - float(side));
+                Point* cornerD = new Point(x_c - float(side*sqrt(3)/2), y_c - float(side));
+
+                std::set<Tree*> alreadyAdded;
+
+                Tree* leafA = tree->getLeaf(cornerA);
+                leafA->addCell(&c);
+                alreadyAdded.insert(leafA);
+
+                Tree* leafB = tree->getLeaf(cornerB);
+
+                if(alreadyAdded.count(leafB) == 0) {
+                    leafB->addCell(&c);
+                    alreadyAdded.insert(leafB);
+                }
+
+                Tree* leafC = tree->getLeaf(cornerC);
+
+                if(alreadyAdded.count(leafC) == 0) {
+                    leafC->addCell(&c);
+                    alreadyAdded.insert(leafC);
+                }
+
+                Tree* leafD = tree->getLeaf(cornerD);
+
+                if(alreadyAdded.count(leafD) == 0) {
+                    leafD->addCell(&c);
+                    alreadyAdded.insert(leafD);
+                }
+            }
+
+            tree_map.insert({layer_id, tree});
         }
-
-        double x_min = *std::minmax_element(cell_x.begin(), cell_x.end()).first;
-        double x_max = *std::minmax_element(cell_x.begin(), cell_x.end()).second;
-        double y_min = *std::minmax_element(cell_y.begin(), cell_y.end()).first;
-        double y_max = *std::minmax_element(cell_y.begin(), cell_y.end()).second;
-
-        // Geometry build with the cell center position, add a margin for the
-        // square corners containing the boarder cells
-        x_min -= parameters_.geometry().small_cell_side;
-        x_max += parameters_.geometry().large_cell_side;
-        y_min -= parameters_.geometry().large_cell_side * 2;
-        y_max += parameters_.geometry().large_cell_side * 2;
-
-        Rectangle* plan = new Rectangle(
-            new Point((float)x_min, (float)y_max),
-            new Point((float)x_max, (float)y_min)
-        );
-
-        Tree* tree = new Tree(plan, 5);
-        float x_c, y_c;
-        double side;
-        for(Cell& c : cell_collection[layer_id]) {
-
-            x_c = float(c.getX());
-            y_c = float(c.getY());
-            float cell_radius = sqrt((x_c*x_c)+(y_c-y_c));
-
-            if (cell_radius <= float(parameters_.geometry().limit_first_zone))
-                side = parameters_.geometry().small_cell_side;
-            else
-                side = parameters_.geometry().large_cell_side;
-
-            Point* cornerA = new Point(x_c - float(side*sqrt(3)/2), y_c + float(side));
-            Point* cornerB = new Point(x_c + float(side*sqrt(3)/2), y_c + float(side));
-            Point* cornerC = new Point(x_c + float(side*sqrt(3)/2), y_c - float(side));
-            Point* cornerD = new Point(x_c - float(side*sqrt(3)/2), y_c - float(side));
-
-            std::set<Tree*> alreadyAdded;
-
-            Tree* leafA = tree->getLeaf(cornerA);
-            leafA->addCell(&c);
-            alreadyAdded.insert(leafA);
-
-            Tree* leafB = tree->getLeaf(cornerB);
-
-            if(alreadyAdded.count(leafB) == 0) {
-                leafB->addCell(&c);
-                alreadyAdded.insert(leafB);
-            }
-
-            Tree* leafC = tree->getLeaf(cornerC);
-
-            if(alreadyAdded.count(leafC) == 0) {
-                leafC->addCell(&c);
-                alreadyAdded.insert(leafC);
-            }
-
-            Tree* leafD = tree->getLeaf(cornerD);
-
-            if(alreadyAdded.count(leafD) == 0) {
-                leafD->addCell(&c);
-                alreadyAdded.insert(leafD);
-            }
-        }
-
-        tree_map.insert({layer_id, tree});
     }
 
     int thick = 0;
@@ -425,55 +427,64 @@ void Generator::simulate() {
                     pos(0)=x;
                     pos(1)=y;
 
-                    // hit position on layer (EE, FH or BH). Energy attribution
-                    int hit_pos = sqrt(x*x+y*y);
-                    double side;
-                    if (hit_pos <= parameters_.geometry().limit_first_zone) {
-                        real_energy = aShowerParametrization.spotEnergy(ip)[0];
-                        side = parameters_.geometry().small_cell_side;
-                        thick = 100;
-                    }
-                    else if (hit_pos >= parameters_.geometry().limit_first_zone &&
-                             hit_pos <= parameters_.geometry().limit_second_zone){
-                        real_energy = aShowerParametrization.spotEnergy(ip)[1];
-                        side = parameters_.geometry().large_cell_side;
-                        thick = 200;
+                    double side = 0;
+                    const Cell* closestCells = NULL;
+
+                    if (parameters_.geometry().type!=Parameters::Geometry::Type::External) {
+
+                        // hit position on layer (EE, FH or BH). Energy attribution
+                        int hit_pos = sqrt(x*x+y*y);
+                        if (hit_pos <= parameters_.geometry().limit_first_zone) {
+                            real_energy = aShowerParametrization.spotEnergy(ip)[0];
+                            side = parameters_.geometry().small_cell_side;
+                            thick = 100;
+                        }
+                        else if (hit_pos >= parameters_.geometry().limit_first_zone &&
+                                 hit_pos <= parameters_.geometry().limit_second_zone){
+                            real_energy = aShowerParametrization.spotEnergy(ip)[1];
+                            side = parameters_.geometry().large_cell_side;
+                            thick = 200;
+                        }
+                        else {
+                            real_energy = denrj;
+                            side = parameters_.geometry().large_cell_side;
+                            thick = 300;
+                        }
+                        energygen += real_energy;
+
+                        double rmin = numeric_limits<double>::max();
+
+                        std::vector<Cell*>* leafCells;
+
+                        try {
+                            leafCells = tree_map[layer_id]->getLeaf(float(x), float(y))->getCells();
+                        }
+                        catch(string s) {
+                        }
+
+                        for (Cell* leafCell : *leafCells) {
+                            double leafCell_x = leafCell->getX();
+                            double leafCell_y = leafCell->getY();
+                            double r = (leafCell_x - x) * (leafCell_x - x)
+                                + (leafCell_y - y) * (leafCell_y - y);
+
+                            if (r < rmin) {
+                                rmin = r;
+                                closestCells = leafCell;
+                            }
+                        }
                     }
                     else {
-                        real_energy = denrj;
-                        side = parameters_.geometry().large_cell_side;
-                        thick = 300;
-                    }
-                    energygen += real_energy;
-
-                    double rmin = numeric_limits<double>::max();
-                    Cell* closestCells;
-
-                    std::vector<Cell*>* leafCells;
-
-                    try {
-                        leafCells = tree_map[layer_id]->getLeaf(float(x), float(y))->getCells();
-                    }
-                    catch(string s) {
-                    }
-
-                    for (Cell* leafCell : *leafCells) {
-                        double leafCell_x = leafCell->getX();
-                        double leafCell_y = leafCell->getY();
-                        double r = (leafCell_x - x) * (leafCell_x - x)
-                            + (leafCell_y - y) * (leafCell_y - y);
-
-                        if (r < rmin) {
-                            rmin = r;
-                            closestCells = leafCell;
-                        }
+                        energygen += denrj;
+                        closestCells = geometry_.closestCell(x,y);
                     }
                     // for half-cell or boarder cells, check it is within the cell
                     // add energy to corresponding cell
                     // Note : isincell search the position of the hit in the closest cell. When it finds the
                     // cell it stop : remove the limit line problem because the hit is attributed to the 
                     // first cell found
-                    Cell& cell = *closestCells;
+                    const Cell& cell = *closestCells;
+
 
                     bool isincell = geometry_.isInCell(pos, cell);
 
