@@ -42,6 +42,7 @@ class Geometry {
     double* XYrPhi(int i, int j, double side, Parameters::Geometry::Type itype, double* xs, double* ys, double zone);
 
     bool isInCell(const TVectorD& position, const Cell& cell) const; // test if a point is within a cell
+    const Cell* closestCell(double x, double y) const;
 
     // getters
     std::unordered_map<uint32_t, Cell> getCells() const {return cells_;}
