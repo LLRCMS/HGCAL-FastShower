@@ -21,7 +21,7 @@ class Event {
         void fillGenPhi(uint32_t, double);
         void fillPDGid(uint32_t, int);
         void fillThick(uint32_t, int);
-        void fillCells(uint32_t, Cell&);
+        void fillCells(uint32_t, const Cell&);
         void setnPart(uint32_t);
         void clear();
 

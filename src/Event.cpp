@@ -37,7 +37,7 @@ void Event::fillThick(uint32_t id, int thick) {
         thick_.emplace(id, thick);
 }
 
-void Event::fillCells(uint32_t id, Cell& cell) {
+void Event::fillCells(uint32_t id, const Cell& cell) {
     // if the cell is already in map, don't add it
     if (!(cells_.find(id) != cells_.end()))
         cells_.emplace(id, cell);
