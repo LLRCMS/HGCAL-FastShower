@@ -250,24 +250,10 @@ void Geometry::constructFromJson(bool debug, int layer_id) {
     // units are mm, converted in cm
     Json::Reader reader;
     Json::Value obj;
-<<<<<<< HEAD
     ifstream ifs(filename);
     //bool success = reader.parse(ifs, obj);
     reader.parse(ifs, obj);
     const Json::Value& version = obj["Version"]; 
-=======
-
-    ifstream ifs(filename);
-    try {
-        ifs.is_open();
-        throw "Unable to open the external geometry file"; 
-    }
-    catch ( string s) {
-    }
-    reader.parse(ifs, obj);
-    const Json::Value& version = obj["Version"];
-
->>>>>>> 3659878f2f3deb746ed085045166de3504c00e7a
     if(debug) {
         cout << " " << endl;
         cout << "Reading geometry from JSON file: " << filename << endl;
@@ -278,10 +264,6 @@ void Geometry::constructFromJson(bool debug, int layer_id) {
     const Json::Value& module = obj["Module"];
     if(module.isNull())
         throw string("No module information found in json file");
-<<<<<<< HEAD
-=======
-
->>>>>>> 3659878f2f3deb746ed085045166de3504c00e7a
     const Json::Value& module_area = module["Module_area"]; 
     const Json::Value& module_cells_and_half_cells = module["Module_cells_(1/1, 1/2)"]; 
     const Json::Value& module_full_cells = module["Module_cells_1/1"]; 
@@ -290,7 +272,6 @@ void Geometry::constructFromJson(bool debug, int layer_id) {
     const Json::Value& module_center_coord = module["Module_center_coord"]; 
     const Json::Value& module_orientation = module["Module_orientation"]; 
     const Json::Value& module_vertices = module["Module_vertex_coord"];
-<<<<<<< HEAD
     //bool module_vertices_ok = false;
     vector<pair<double,double>> module_vertex_coordinates;
     if(!module_vertices.isNull() && module_vertices.isArray()) {
@@ -299,36 +280,16 @@ void Geometry::constructFromJson(bool debug, int layer_id) {
             const Json::Value& coord = module_vertices[i]; 
             if(coord.isNull() || !coord.isArray() || coord.size()!=2) {
                 //module_vertices_ok = false;
-=======
-
-    vector<pair<double,double>> module_vertex_coordinates;
-
-    if(!module_vertices.isNull() && module_vertices.isArray()) {
-
-        for (unsigned i=0; i<module_vertices.size(); i++) {
-
-            const Json::Value& coord = module_vertices[i]; 
-            if(coord.isNull() || !coord.isArray() || coord.size()!=2) {
-                cout << "The vertex coordinates have wrong format"<<endl;
->>>>>>> 3659878f2f3deb746ed085045166de3504c00e7a
                 break;
             }
             module_vertex_coordinates.emplace_back(coord[0].asDouble(), coord[1].asDouble());
         }
     }
-<<<<<<< HEAD
-=======
-
->>>>>>> 3659878f2f3deb746ed085045166de3504c00e7a
     if(!module_cells_and_half_cells.isNull() && !module_full_cells.isNull() && !module_half_cells.isNull()) {
         if(module_cells_and_half_cells.asUInt()!=module_half_cells.asUInt()+module_full_cells.asUInt()) {
             cout<<"Inconsistency in the number of full and half cells\n";
         }
     }
-<<<<<<< HEAD
-=======
-
->>>>>>> 3659878f2f3deb746ed085045166de3504c00e7a
     // FIXME: should add more checks
     if(debug) {
         cout << "Module area : " << module_area.asDouble() << endl;
@@ -371,10 +332,7 @@ void Geometry::constructFromJson(bool debug, int layer_id) {
         position(1) = hexagon_attributes[1]["center_coord"][1].asDouble()/10.; // cm
         position(2) = getZlayer();
 
-<<<<<<< HEAD
         double orientation = hexagon_attributes[2]["orientation"].asDouble();
-=======
->>>>>>> 3659878f2f3deb746ed085045166de3504c00e7a
         vector<TVectorD> vertices;
         for (unsigned i=0; i<hexagon_attributes[3]["vertex_coord_abs"].size(); i++) {
             vertices.emplace_back(2);
@@ -391,11 +349,8 @@ void Geometry::constructFromJson(bool debug, int layer_id) {
             cout << " center coordinates : " << 
               hexagon_attributes[1]["center_coord"][0].asDouble() << " " <<
               hexagon_attributes[1]["center_coord"][1].asDouble() << endl;
-<<<<<<< HEAD
             cout << " orientation : " << 
               hexagon_attributes[2]["orientation"].asDouble() << endl;
-=======
->>>>>>> 3659878f2f3deb746ed085045166de3504c00e7a
             cout << " vertex_coordinates : " << endl;
             for(const auto& vertex : vertices) {
                 cout << "  vertex " << vertex(0) << " " << vertex(1) << endl;
@@ -406,11 +361,6 @@ void Geometry::constructFromJson(bool debug, int layer_id) {
 
     // half hexagon cells meta data
     const Json::Value& half_hexagons = module["Edge_VHH"];
-<<<<<<< HEAD
-=======
-    if(hexagons.isNull() || !hexagons.isObject())
-        throw string("Cannot find half hexagons information");
->>>>>>> 3659878f2f3deb746ed085045166de3504c00e7a
     const Json::Value& half_hexagons_area = half_hexagons["VHH_area"];
     const Json::Value& half_hexagons_area_module = half_hexagons["VHH_area_module"];
     const Json::Value& half_hexagons_count = half_hexagons["VHH_count"];
@@ -828,5 +778,5 @@ const Cell* Geometry::closestCell(double x, double y) const {
           //x << " " << y << std::endl;
     }
 
-  return &(icfound->second);
+  return &icfound->second;
 }
