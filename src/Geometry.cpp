@@ -238,180 +238,191 @@ double* Geometry::XYrPhi(int i, int j, double side, Parameters::Geometry::Type i
 
 void Geometry::constructFromJson(bool debug, int layer_id) {
 
-    // itype_ = Parameters::Geometry::Type::External;
-    // const string& filename = parameters_.file;
+    itype_ = Parameters::Geometry::Type::External;
+    const string& filename = parameters_.file;
 
-    // // first set klayer and zlayer according to user parameters
-    // setLayer(layer_id);
-    // double zlayer = parameters_.layers_z[klayer_]; // else offset from the layer z position
-    // setZlayer(zlayer);
+    // first set klayer and zlayer according to user parameters
+    setLayer(layer_id);
+    double zlayer = parameters_.layers_z[klayer_]; // else offset from the layer z position
+    setZlayer(zlayer);
 
-    // // json format from Marina 06/2016
-    // // units are mm, converted in cm
-    // Json::Reader reader;
-    // Json::Value obj;
-    // ifstream ifs(filename);
-    // //bool success = reader.parse(ifs, obj);
-    // reader.parse(ifs, obj);
-    // const Json::Value& version = obj["Version"]; 
-    // if(debug) {
-    //     cout << " " << endl;
-    //     cout << "Reading geometry from JSON file: " << filename << endl;
-    //     cout << "Geometry version " << version.asString() << endl;
-    // }
+    // json format from Marina 06/2016
+    // units are mm, converted in cm
+    Json::Reader reader;
+    Json::Value obj;
 
-    // // module meta data
-    // const Json::Value& module = obj["Module"];
-    // if(module.isNull())
-    //     throw string("No module information found in json file");
-    // const Json::Value& module_area = module["Module_area"]; 
-    // const Json::Value& module_cells_and_half_cells = module["Module_cells_(1/1, 1/2)"]; 
-    // const Json::Value& module_full_cells = module["Module_cells_1/1"]; 
-    // const Json::Value& module_half_cells = module["Module_cells_1/2"]; 
-    // const Json::Value& module_third_cells = module["Module_cells_1/3"]; 
-    // const Json::Value& module_center_coord = module["Module_center_coord"]; 
-    // const Json::Value& module_orientation = module["Module_orientation"]; 
-    // const Json::Value& module_vertices = module["Module_vertex_coord"];
-    // //bool module_vertices_ok = false;
-    // vector<pair<double,double>> module_vertex_coordinates;
-    // if(!module_vertices.isNull() && module_vertices.isArray()) {
-    //     //module_vertices_ok = true;
-    //     for (unsigned i=0; i<module_vertices.size(); i++) {
-    //         const Json::Value& coord = module_vertices[i]; 
-    //         if(coord.isNull() || !coord.isArray() || coord.size()!=2) {
-    //             //module_vertices_ok = false;
-    //             break;
-    //         }
-    //         module_vertex_coordinates.emplace_back(coord[0].asDouble(), coord[1].asDouble());
-    //     }
-    // }
-    // if(!module_cells_and_half_cells.isNull() && !module_full_cells.isNull() && !module_half_cells.isNull()) {
-    //     if(module_cells_and_half_cells.asUInt()!=module_half_cells.asUInt()+module_full_cells.asUInt()) {
-    //         cout<<"Inconsistency in the number of full and half cells\n";
-    //     }
-    // }
-    // // FIXME: should add more checks
-    // if(debug) {
-    //     cout << "Module area : " << module_area.asDouble() << endl;
-    //     cout << "Module cells (1/1, 1/2) : " << module_cells_and_half_cells.asUInt() << endl;
-    //     cout << "Module cells_1/1 : " << module_full_cells.asUInt() << endl;
-    //     cout << "Module cells 1/2 : " << module_half_cells.asUInt() << endl;
-    //     cout << "Module cells 1/3 : " << module_third_cells.asUInt() << endl;
-    //     cout << "Module center coord : " << module_center_coord[0].asDouble() << 
-    //       " " << module_center_coord[1].asDouble() << endl;
-    //     cout << "Module orientation : " << module_orientation.asDouble() << endl;
-    //     cout << "Module vertex coord : " << endl;
-    //     cout << " " << endl;
-    // }
+    ifstream ifs(filename);
+    try {
+        ifs.is_open();
+        throw "Unable to open the external geometry file"; 
+    }
+    catch ( string s) {
+    }
+    reader.parse(ifs, obj);
+    const Json::Value& version = obj["Version"];
 
-    // // full hexagon cells meta data
-    // const Json::Value& hexagons = module["FH"];
-    // if(hexagons.isNull() || !hexagons.isObject())
-    //     throw string("Cannot find full hexagons information");
-    // const Json::Value& full_hexagons_area = hexagons["FH_area"]; 
-    // const Json::Value& full_hexagons_area_module = hexagons["FH_area_module"]; 
-    // const Json::Value& full_hexagons_count = hexagons["FH_count"]; 
-    // // FIXME: should add more checks
-    // if(debug) {
-    //     cout << "Full hexagon area " << full_hexagons_area.asDouble() << endl;
-    //     cout << "Full hexagon area module " << full_hexagons_area_module.asDouble() << endl;
-    //     cout << "Full hexagons nbr of cells " << full_hexagons_count.asUInt() << endl;
-    //     cout << " " << endl;
-    // }
+    if(debug) {
+        cout << " " << endl;
+        cout << "Reading geometry from JSON file: " << filename << endl;
+        cout << "Geometry version " << version.asString() << endl;
+    }
 
-    // // construct full hexagon cells
-    // for (unsigned int icell=0; icell<full_hexagons_count.asUInt(); icell++) {
-    //     string cell_name = fixedLength(icell,5,"FH");
-    //     // FIXME: add more checks
-    //     const Json::Value& hexagon_attributes = hexagons[cell_name]; 
-    //     int i_index = hexagon_attributes[0]["mapping_coord"][0].asInt();
-    //     int j_index = hexagon_attributes[0]["mapping_coord"][1].asInt();
+    // module meta data
+    const Json::Value& module = obj["Module"];
+    if(module.isNull())
+        throw string("No module information found in json file");
 
-    //     TVectorD position(3);
-    //     position(0) = hexagon_attributes[1]["center_coord"][0].asDouble()/10.; // cm
-    //     position(1) = hexagon_attributes[1]["center_coord"][1].asDouble()/10.; // cm
-    //     position(2) = getZlayer();
+    const Json::Value& module_area = module["Module_area"]; 
+    const Json::Value& module_cells_and_half_cells = module["Module_cells_(1/1, 1/2)"]; 
+    const Json::Value& module_full_cells = module["Module_cells_1/1"]; 
+    const Json::Value& module_half_cells = module["Module_cells_1/2"]; 
+    const Json::Value& module_third_cells = module["Module_cells_1/3"]; 
+    const Json::Value& module_center_coord = module["Module_center_coord"]; 
+    const Json::Value& module_orientation = module["Module_orientation"]; 
+    const Json::Value& module_vertices = module["Module_vertex_coord"];
 
-    //     double orientation = hexagon_attributes[2]["orientation"].asDouble();
-    //     vector<TVectorD> vertices;
-    //     for (unsigned i=0; i<hexagon_attributes[3]["vertex_coord_abs"].size(); i++) {
-    //         vertices.emplace_back(2);
-    //         vertices.back()(0) = hexagon_attributes[3]["vertex_coord_abs"][i][0].asDouble()/10.; // cm
-    //         vertices.back()(1) = hexagon_attributes[3]["vertex_coord_abs"][i][1].asDouble()/10.; // cm
-    //     }
-    //     cells_.emplace(Cell::id(i_index, j_index,klayer_), Cell(move(position), move(vertices), i_index, j_index,klayer_));
+    vector<pair<double,double>> module_vertex_coordinates;
 
-    //     if(debug) {
-    //         cout << "New cell " << cell_name << " : " << endl;
-    //         cout << " mapping coordinates : " << 
-    //           hexagon_attributes[0]["mapping_coord"][0].asInt() << " " <<
-    //           hexagon_attributes[0]["mapping_coord"][1].asInt() << endl;
-    //         cout << " center coordinates : " << 
-    //           hexagon_attributes[1]["center_coord"][0].asDouble() << " " <<
-    //           hexagon_attributes[1]["center_coord"][1].asDouble() << endl;
-    //         cout << " orientation : " << 
-    //           hexagon_attributes[2]["orientation"].asDouble() << endl;
-    //         cout << " vertex_coordinates : " << endl;
-    //         for(const auto& vertex : vertices) {
-    //             cout << "  vertex " << vertex(0) << " " << vertex(1) << endl;
-    //         }
-    //     }
-    // }
-    // if(debug) cout << " " << endl;
+    if(!module_vertices.isNull() && module_vertices.isArray()) {
 
-    // // half hexagon cells meta data
-    // const Json::Value& half_hexagons = module["Edge_VHH"];
-    // const Json::Value& half_hexagons_area = half_hexagons["VHH_area"];
-    // const Json::Value& half_hexagons_area_module = half_hexagons["VHH_area_module"];
-    // const Json::Value& half_hexagons_count = half_hexagons["VHH_count"];
-    // // FIXME: should add more checks
-    // if(debug) {
-    //     cout << "Half hexagon area (edges) : " << half_hexagons_area.asDouble() << endl;
-    //     cout << "Half hexagon area module (edges) : " << half_hexagons_area_module.asDouble() << endl;
-    //     cout << "Half hexagons nbr of cells (edges) : " << half_hexagons_count.asUInt() << endl;
-    //     cout << " " << endl;
-    // }
+        for (unsigned i=0; i<module_vertices.size(); i++) {
 
-    // // construct half hexagon cells
-    // for (unsigned int icell=0; icell<half_hexagons_count.asUInt(); icell++) {
-    //     string cell_name = fixedLength(icell,5,"VHH");
-    //     // FIXME: add more checks
-    //     const Json::Value& hexagon_attributes = half_hexagons[cell_name];
-    //     int i_index = hexagon_attributes[0]["mapping_coord"][0].asInt();
-    //     int j_index = hexagon_attributes[0]["mapping_coord"][1].asInt();
+            const Json::Value& coord = module_vertices[i]; 
+            if(coord.isNull() || !coord.isArray() || coord.size()!=2) {
+                cout << "The vertex coordinates have wrong format"<<endl;
+                break;
+            }
+            module_vertex_coordinates.emplace_back(coord[0].asDouble(), coord[1].asDouble());
+        }
+    }
 
-    //     TVectorD position(3);
-    //     position(0) = hexagon_attributes[1]["center_coord"][0].asDouble()/10.; // cm
-    //     position(1) = hexagon_attributes[1]["center_coord"][1].asDouble()/10.; // cm
-    //     position(2) = getZlayer();
+    if(!module_cells_and_half_cells.isNull() && !module_full_cells.isNull() && !module_half_cells.isNull()) {
+        if(module_cells_and_half_cells.asUInt()!=module_half_cells.asUInt()+module_full_cells.asUInt()) {
+            cout<<"Inconsistency in the number of full and half cells\n";
+        }
+    }
 
-    //     double orientation = hexagon_attributes[2]["orientation"].asDouble();
-    //     vector<TVectorD> vertices;
+    // FIXME: should add more checks
+    if(debug) {
+        cout << "Module area : " << module_area.asDouble() << endl;
+        cout << "Module cells (1/1, 1/2) : " << module_cells_and_half_cells.asUInt() << endl;
+        cout << "Module cells_1/1 : " << module_full_cells.asUInt() << endl;
+        cout << "Module cells 1/2 : " << module_half_cells.asUInt() << endl;
+        cout << "Module cells 1/3 : " << module_third_cells.asUInt() << endl;
+        cout << "Module center coord : " << module_center_coord[0].asDouble() << 
+          " " << module_center_coord[1].asDouble() << endl;
+        cout << "Module orientation : " << module_orientation.asDouble() << endl;
+        cout << "Module vertex coord : " << endl;
+        cout << " " << endl;
+    }
 
-    //     for (unsigned i=0; i<hexagon_attributes[3]["vertex_coord_abs"].size(); i++) {
-    //         vertices.emplace_back(2);
-    //         vertices.back()(0) = hexagon_attributes[3]["vertex_coord_abs"][i][0].asDouble()/10.;// cm
-    //         vertices.back()(1) = hexagon_attributes[3]["vertex_coord_abs"][i][1].asDouble()/10.;// cm
-    //     }
-    //     cells_.emplace(Cell::id(i_index, j_index,klayer_),Cell(move(position), move(vertices), i_index, j_index,klayer_));
+    // full hexagon cells meta data
+    const Json::Value& hexagons = module["FH"];
+    if(hexagons.isNull() || !hexagons.isObject())
+        throw string("Cannot find full hexagons information");
+    const Json::Value& full_hexagons_area = hexagons["FH_area"]; 
+    const Json::Value& full_hexagons_area_module = hexagons["FH_area_module"]; 
+    const Json::Value& full_hexagons_count = hexagons["FH_count"]; 
+    // FIXME: should add more checks
+    if(debug) {
+        cout << "Full hexagon area " << full_hexagons_area.asDouble() << endl;
+        cout << "Full hexagon area module " << full_hexagons_area_module.asDouble() << endl;
+        cout << "Full hexagons nbr of cells " << full_hexagons_count.asUInt() << endl;
+        cout << " " << endl;
+    }
 
-    //     if(debug) {
-    //         cout << "New cell " << cell_name << " : " << endl;
-    //         cout << " mapping coordinates : " <<
-    //           hexagon_attributes[0]["mapping_coord"][0].asInt() << " " <<
-    //           hexagon_attributes[0]["mapping_coord"][1].asInt() << endl;
-    //         cout << " center coordinates : " <<
-    //           hexagon_attributes[1]["center_coord"][0].asDouble() << " " <<
-    //           hexagon_attributes[1]["center_coord"][1].asDouble() << endl;
+    // construct full hexagon cells
+    for (unsigned int icell=0; icell<full_hexagons_count.asUInt(); icell++) {
+        string cell_name = fixedLength(icell,5,"FH");
+        // FIXME: add more checks
+        const Json::Value& hexagon_attributes = hexagons[cell_name]; 
+        int i_index = hexagon_attributes[0]["mapping_coord"][0].asInt();
+        int j_index = hexagon_attributes[0]["mapping_coord"][1].asInt();
 
-    //         cout << " orientation : " << hexagon_attributes[2]["orientation"].asDouble() << endl;
-    //         cout << " vertex_coordinates : " << endl;
-    //         for(const auto& vertex : vertices) {
-    //           cout << "  vertex " << vertex(0) << " " << vertex(1) << endl;
-    //         }
-    //     }
-    // }
-    // if(debug) cout << " " << endl;
+        TVectorD position(3);
+        position(0) = hexagon_attributes[1]["center_coord"][0].asDouble()/10.; // cm
+        position(1) = hexagon_attributes[1]["center_coord"][1].asDouble()/10.; // cm
+        position(2) = getZlayer();
+
+        vector<TVectorD> vertices;
+        for (unsigned i=0; i<hexagon_attributes[3]["vertex_coord_abs"].size(); i++) {
+            vertices.emplace_back(2);
+            vertices.back()(0) = hexagon_attributes[3]["vertex_coord_abs"][i][0].asDouble()/10.; // cm
+            vertices.back()(1) = hexagon_attributes[3]["vertex_coord_abs"][i][1].asDouble()/10.; // cm
+        }
+        cells_.emplace(Cell::id(i_index, j_index,klayer_), Cell(move(position), move(vertices), i_index, j_index,klayer_));
+
+        if(debug) {
+            cout << "New cell " << cell_name << " : " << endl;
+            cout << " mapping coordinates : " << 
+              hexagon_attributes[0]["mapping_coord"][0].asInt() << " " <<
+              hexagon_attributes[0]["mapping_coord"][1].asInt() << endl;
+            cout << " center coordinates : " << 
+              hexagon_attributes[1]["center_coord"][0].asDouble() << " " <<
+              hexagon_attributes[1]["center_coord"][1].asDouble() << endl;
+            cout << " vertex_coordinates : " << endl;
+            for(const auto& vertex : vertices) {
+                cout << "  vertex " << vertex(0) << " " << vertex(1) << endl;
+            }
+        }
+    }
+    if(debug) cout << " " << endl;
+
+    // half hexagon cells meta data
+    const Json::Value& half_hexagons = module["Edge_VHH"];
+    if(hexagons.isNull() || !hexagons.isObject())
+        throw string("Cannot find half hexagons information");
+    const Json::Value& half_hexagons_area = half_hexagons["VHH_area"];
+    const Json::Value& half_hexagons_area_module = half_hexagons["VHH_area_module"];
+    const Json::Value& half_hexagons_count = half_hexagons["VHH_count"];
+    // FIXME: should add more checks
+    if(debug) {
+        cout << "Half hexagon area (edges) : " << half_hexagons_area.asDouble() << endl;
+        cout << "Half hexagon area module (edges) : " << half_hexagons_area_module.asDouble() << endl;
+        cout << "Half hexagons nbr of cells (edges) : " << half_hexagons_count.asUInt() << endl;
+        cout << " " << endl;
+    }
+
+    // construct half hexagon cells
+    for (unsigned int icell=0; icell<half_hexagons_count.asUInt(); icell++) {
+        string cell_name = fixedLength(icell,5,"VHH");
+        // FIXME: add more checks
+        const Json::Value& hexagon_attributes = half_hexagons[cell_name];
+        int i_index = hexagon_attributes[0]["mapping_coord"][0].asInt();
+        int j_index = hexagon_attributes[0]["mapping_coord"][1].asInt();
+
+        TVectorD position(3);
+        position(0) = hexagon_attributes[1]["center_coord"][0].asDouble()/10.; // cm
+        position(1) = hexagon_attributes[1]["center_coord"][1].asDouble()/10.; // cm
+        position(2) = getZlayer();
+
+        double orientation = hexagon_attributes[2]["orientation"].asDouble();
+        vector<TVectorD> vertices;
+
+        for (unsigned i=0; i<hexagon_attributes[3]["vertex_coord_abs"].size(); i++) {
+            vertices.emplace_back(2);
+            vertices.back()(0) = hexagon_attributes[3]["vertex_coord_abs"][i][0].asDouble()/10.;// cm
+            vertices.back()(1) = hexagon_attributes[3]["vertex_coord_abs"][i][1].asDouble()/10.;// cm
+        }
+        cells_.emplace(Cell::id(i_index, j_index,klayer_),Cell(move(position), move(vertices), i_index, j_index,klayer_));
+
+        if(debug) {
+            cout << "New cell " << cell_name << " : " << endl;
+            cout << " mapping coordinates : " <<
+              hexagon_attributes[0]["mapping_coord"][0].asInt() << " " <<
+              hexagon_attributes[0]["mapping_coord"][1].asInt() << endl;
+            cout << " center coordinates : " <<
+              hexagon_attributes[1]["center_coord"][0].asDouble() << " " <<
+              hexagon_attributes[1]["center_coord"][1].asDouble() << endl;
+
+            cout << " orientation : " << hexagon_attributes[2]["orientation"].asDouble() << endl;
+            cout << " vertex_coordinates : " << endl;
+            for(const auto& vertex : vertices) {
+              cout << "  vertex " << vertex(0) << " " << vertex(1) << endl;
+            }
+        }
+    }
+    if(debug) cout << " " << endl;
 }
 
 
