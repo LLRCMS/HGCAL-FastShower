@@ -45,11 +45,11 @@ double Cell::getZ() const{
     return z_;
 }
 
-int Cell::getIIndex(){
+int Cell::getIIndex() const{
     return i_index_;
 }
 
-int Cell::getJIndex(){
+int Cell::getJIndex() const{
     return j_index_;
 }
 

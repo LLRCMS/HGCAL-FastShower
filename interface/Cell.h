@@ -29,8 +29,8 @@ class Cell {
     double getX() const;
     double getY() const;
     double getZ() const;
-    int getIIndex();
-    int getJIndex();
+    int getIIndex() const;
+    int getJIndex() const;
     int getLayer() const;
     uint32_t getId() const;
 
