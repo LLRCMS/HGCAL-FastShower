@@ -1,5 +1,3 @@
-
-
 #include <fstream>
 #include <iostream>
 #include <algorithm>
@@ -339,7 +337,7 @@ void Geometry::constructFromJson(bool debug, int layer_id) {
             vertices.back()(0) = hexagon_attributes[3]["vertex_coord_abs"][i][0].asDouble()/10.; // cm
             vertices.back()(1) = hexagon_attributes[3]["vertex_coord_abs"][i][1].asDouble()/10.; // cm
         }
-        cells_.emplace(Cell::id(i_index, j_index,klayer_), Cell(move(position), move(vertices), i_index, j_index,klayer_));
+        cells_.emplace(Cell::id(i_index, j_index,klayer_), Cell(move(position), move(vertices), orientation, i_index, j_index,klayer_));
 
         if(debug) {
             cout << "New cell " << cell_name << " : " << endl;
@@ -393,7 +391,7 @@ void Geometry::constructFromJson(bool debug, int layer_id) {
             vertices.back()(0) = hexagon_attributes[3]["vertex_coord_abs"][i][0].asDouble()/10.;// cm
             vertices.back()(1) = hexagon_attributes[3]["vertex_coord_abs"][i][1].asDouble()/10.;// cm
         }
-        cells_.emplace(Cell::id(i_index, j_index,klayer_),Cell(move(position), move(vertices), i_index, j_index,klayer_));
+        cells_.emplace(Cell::id(i_index, j_index,klayer_),Cell(move(position), move(vertices), orientation, i_index, j_index,klayer_));
 
         if(debug) {
             cout << "New cell " << cell_name << " : " << endl;
@@ -504,7 +502,10 @@ void Geometry::constructFromParameters(bool debug, int layer_id, int display_lay
 
     int *windows1 = ijWindows(zone1, xs, ys, side1, itype);
 
-  // build cells inside the requested window
+
+    double orientation = 90.;
+
+    // build cells inside the requested window
     int real_i = 0;
     int real_j = 0;
     for (int i = windows1[0]; i <= windows1[1]; i++) {
@@ -538,6 +539,8 @@ void Geometry::constructFromParameters(bool debug, int layer_id, int display_lay
             if (debug) {
                 cout << " center coordinates : " << xyrPhi[0] << " " << xyrPhi[1] << " "<< zlayer << endl;
             }
+
+            if (itype == Parameters::Geometry::Type::Triangles && i%2 != 0) orientation =  -90.; // for downward triangles
 
             vector<TVectorD> vertices;
             for (int iv=0; iv<n_vertices; iv++) {
@@ -576,7 +579,7 @@ void Geometry::constructFromParameters(bool debug, int layer_id, int display_lay
 
             auto c = cells_.emplace(
                 Cell::id(real_i, real_j, layer_id),
-                Cell(std::move(position), std::move(vertices), real_i, real_j, layer_id));
+                Cell(std::move(position), std::move(vertices), orientation, real_i, real_j, layer_id));
             if(!c.second) {
                 cout << "Warning: Cell with indices" << real_i << " "
                         << real_j << ", "<< layer_id
@@ -634,6 +637,8 @@ void Geometry::constructFromParameters(bool debug, int layer_id, int display_lay
                 cout << " center coordinates : " << xyrPhi[0] << " " << xyrPhi[1] << endl;
             }
 
+            if (itype == Parameters::Geometry::Type::Triangles && i%2 != 0) orientation =  -90.; // for downward triangles
+
             vector<TVectorD> vertices;
             for (int iv=0; iv<n_vertices; iv++) {
                 vertices.emplace_back(2);
@@ -671,7 +676,7 @@ void Geometry::constructFromParameters(bool debug, int layer_id, int display_lay
 
             auto c = cells_.emplace(
                 Cell::id(real_i + real_i2, real_j + real_j2, layer_id),
-                Cell(move(position), move(vertices), real_i + real_i2, real_j + real_j2, layer_id)
+                Cell(move(position), move(vertices), orientation, real_i + real_i2, real_j + real_j2, layer_id)
             );
             if(!c.second) {
                 cout << "Warning: Cell with indices" << real_i + real_i2<< " " <<

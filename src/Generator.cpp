@@ -538,7 +538,7 @@ void Generator::simulate() {
         // if (parameters_.geometry().type!=Parameters::Geometry::Type::Triangles) { // hexagons
         //   aShowerShape.reset(new ShowerShapeHexagon(event.hits(), geometry_.getCells()));
         // } else { // triangles
-        //   aShowerShape.reset(new ShowerShapeTriangle(event.hits(), geometry_.getCells()));   
+        //   aShowerShape.reset(new ShowerShapeTriangle(event.hits(), geometry_.getCells()));
         // }  
         // std::cout << "cell max i,j " << aShowerShape->maxCell()->getIIndex() << " " << aShowerShape->maxCell()->getJIndex()
         // << " with energy " << aShowerShape->maxE1() << std::endl;

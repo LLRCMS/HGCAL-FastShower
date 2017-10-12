@@ -17,11 +17,13 @@ uint32_t Cell::id(uint16_t i, uint16_t j, uint16_t k) {
 
 Cell::Cell(TVectorD&& position,
            std::vector<TVectorD>&& vertices,
+           double orientation,
            int i_index,
            int j_index,
            int k_index):
             position_(std::move(position)),
-            vertices_(std::move(vertices))
+            vertices_(std::move(vertices)),
+            orientation_(orientation)
 {
 
   i_index_ = (int16_t)i_index;

@@ -17,7 +17,7 @@ class Cell {
     // constructor for parametrized and full geometries
     // move position and vertices (the Cell object is the owner)
     // Cell(int, )
-    Cell(TVectorD&&, std::vector<TVectorD>&&, int, int, int);
+    Cell(TVectorD&&, std::vector<TVectorD>&&, double, int, int, int);
 
     ~Cell() {};
 
@@ -25,6 +25,7 @@ class Cell {
     const TVectorD& getPosition() const {return position_;}
     const std::vector<TVectorD>& getVertices() const {return vertices_;}
 
+    double getOrientation() const {return orientation_;}
 
     double getX() const;
     double getY() const;
@@ -34,6 +35,9 @@ class Cell {
     int getLayer() const;
     uint32_t getId() const;
 
+    bool isFullCell() const {return orientation_==90.;}
+    bool isHalfCell() const {return int(orientation_)%60==0;}
+
   private:
     TVectorD position_; // centre position in absolute coordinates
     std::vector<TVectorD> vertices_; // vertices positions in absolute coordinates
@@ -41,6 +45,8 @@ class Cell {
     uint16_t j_index_;
     uint16_t k_index_;
     uint32_t id_;
+
+    double orientation_; // orientation for halh cells
 
     double x_;
     double y_;
