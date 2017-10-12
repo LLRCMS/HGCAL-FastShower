@@ -527,9 +527,22 @@ void Generator::simulate() {
             }
         }
 
-        // cout << "simulated energy " << energygen << endl;
-        // cout << "simulated energy inside cells " << energygenincells << endl;
-        // cout << "reconstructed energy inside cells (includes noise) " << energyrec << endl;
+        cout << "simulated energy " << energygen << endl;
+        cout << "simulated energy inside cells " << energygenincells << endl;
+        cout << "reconstructed energy inside cells (includes noise) " << energyrec << endl;
+
+        //Not changed since all layers implementation. 
+        //FIX ME: Change the following lines in order to return for each layer or one layer the 
+        //bigger energy deposit.
+        // std::unique_ptr<ShowerShape> aShowerShape;
+        // if (parameters_.geometry().type!=Parameters::Geometry::Type::Triangles) { // hexagons
+        //   aShowerShape.reset(new ShowerShapeHexagon(event.hits(), geometry_.getCells()));
+        // } else { // triangles
+        //   aShowerShape.reset(new ShowerShapeTriangle(event.hits(), geometry_.getCells()));   
+        // }  
+        // std::cout << "cell max i,j " << aShowerShape->maxCell()->getIIndex() << " " << aShowerShape->maxCell()->getJIndex()
+        // << " with energy " << aShowerShape->maxE1() << std::endl;
+        // std::cout << "energy in first neighboors " << aShowerShape->firstNeighboors() << std::endl;
 
         if (!hCellEnergyMap.empty() && !hCellEnergyEvtMap.empty()) {
 
