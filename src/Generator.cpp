@@ -39,11 +39,9 @@ Generator::~Generator(){
 }
 
 
-double** Generator::readCalibration(const string filename) {
+std::array<std::array<double, 3>, 52> Generator::readCalibration(const std::string& filename) {
 
-    double** calib = new double*[52];
-    for(int i = 0; i < 52; ++i)
-        calib[i] = new double[3];
+    std::array<std::array<double, 3>, 52> calib;
 
     ifstream fichier(filename);
     string line;
@@ -197,9 +195,7 @@ void Generator::simulate() {
     cout << "Done !"<<endl;
 
     // Noise calibration of each cells for all layers
-    double** calibratednoise = new double*[52];
-    for(int i = 0; i < 52; ++i)
-        calibratednoise[i] = new double[3];
+    std::array<std::array<double, 3>, 52> calibratednoise;
 
     if (parameters_.generation().noise) {
         cout << "Noise calibration ..."<<endl;
@@ -324,7 +320,7 @@ void Generator::simulate() {
     int thick = 0;
 
     for (unsigned iev=1; iev <= nevents; iev++) {
-        // cout << "================ Simulating event: " << iev << " ================" << endl;
+        cout << "================ Simulating event: " << iev << " ================" << endl;
 
         // initialize event
         Event event(0, iev); // default run number =0
@@ -598,13 +594,7 @@ void Generator::simulate() {
     t.Stop();
     t.Print();
     cout << endl;
-
-    // free calibration array
-    for(int i = 0; i < 52; ++i)
-        delete [] calibratednoise[i];
-    delete [] calibratednoise;
 }
-
 
 
 std::unique_ptr<TCanvas> Generator::display(const std::unordered_map<uint32_t,TH1F>& hCellEnergyEvtMap, std::vector<Cell>& cell_collection, int ievt) {

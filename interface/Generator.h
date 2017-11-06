@@ -23,25 +23,25 @@
 #endif
 
 
-class Generator {
+class Generator
+{
 
-    public:
-        Generator(const Parameters&);
-        ~Generator();
+  public:
+    Generator(const Parameters&);
+    ~Generator();
 
-        void simulate();
+    void simulate();
 
-        std::unique_ptr<TCanvas> display(const std::unordered_map<uint32_t,TH1F>& hCellEnergyEvtMap , std::vector<Cell>& , int ievt=0);
+    std::unique_ptr<TCanvas> display(const std::unordered_map<uint32_t,TH1F>& hCellEnergyEvtMap , std::vector<Cell>& , int ievt=0);
 
-        double** readCalibration(const string filename);
+    std::array<std::array<double, 3>, 52> readCalibration(const std::string& filename);
 
-
-    private:
-        TRandom3 gun_;
-        Geometry geometry_;
-        OutputService output_;
-        ShowerParametrization shower_;
-        const Parameters& parameters_;
+  private:
+    TRandom3 gun_;
+    Geometry geometry_;
+    OutputService output_;
+    ShowerParametrization shower_;
+    const Parameters& parameters_;
 };
 
 
