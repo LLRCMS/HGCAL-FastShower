@@ -48,7 +48,7 @@ class OutputService {
     std::vector<double> cell_z_;
     std::vector<double> cell_eta_;
     std::vector<double> cell_phi_;
-    std::vector<int> layer_;
+    std::vector<int> cell_layer_;
 
 
 };

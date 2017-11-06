@@ -11,21 +11,20 @@ OutputService::OutputService(const std::string& file_name):
   run_(0),
   event_(0),
   npart_(0),
-  PDGid_(0),
-  thick_(0),
+  gen_PDGid_(0),
+  cell_thickness_(0),
   cell_n_() {
     tree_->Branch("run", &run_, "run/i");
     tree_->Branch("event", &event_, "event/i");
     tree_->Branch("npart", &npart_, "npart/i");
 
-    tree_->Branch("PDGid", &PDGid_);
+    tree_->Branch("gen_PDGid", &gen_PDGid_);
     tree_->Branch("gen_energy", &gen_energy_);
     tree_->Branch("gen_eta", &gen_eta_);
     tree_->Branch("gen_phi", &gen_phi_);
 
-    tree_->Branch("layer", &layer_);
-    tree_->Branch("thickness", &thick_);
-
+    tree_->Branch("thickness", &cell_thickness_);
+    tree_->Branch("cell_layer", &cell_layer_);
     tree_->Branch("cell_n", &cell_n_, "cell_n/i");
     tree_->Branch("cell_energy", &cell_energy_);
     tree_->Branch("cell_x", &cell_x_);
@@ -70,7 +69,7 @@ void OutputService::fillTree(const Event& event) {
     cell_phi_.emplace_back(phi);
 
     double layer = c.second.getLayer();
-    layer_.emplace_back(layer);
+    cell_layer_.emplace_back(layer);
   }
 
   for(const auto& id_part : event.generatedEnergy()) {
@@ -83,9 +82,9 @@ void OutputService::fillTree(const Event& event) {
   for(const auto& id_part : event.generatedPhi())
     gen_phi_.emplace_back(id_part.second);
   for(const auto& id_part : event.pdg_id())
-    PDGid_.emplace_back(id_part.second);
+    gen_PDGid_.emplace_back(id_part.second);
   for(const auto& id_part : event.thick()) {
-    thick_.emplace_back(id_part.second);
+    cell_thickness_.emplace_back(id_part.second);
   }
 
 tree_->Fill();
@@ -100,12 +99,12 @@ void OutputService::clear() {
   run_ = 0;
   event_ = 0;
   npart_ = 0.;
-  PDGid_.clear();
-  thick_.clear();
+  gen_PDGid_.clear();
+  cell_thickness_.clear();
   gen_energy_.clear();
   gen_eta_.clear();
   gen_phi_.clear();
-  layer_.clear();
+  cell_layer_.clear();
   cell_n_ = 0;
   cell_energy_.clear();
   cell_x_.clear();
