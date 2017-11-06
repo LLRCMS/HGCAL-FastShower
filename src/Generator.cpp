@@ -43,11 +43,11 @@ std::array<std::array<double, NB_PARAM>, NB_LAYERS> Generator::readCalibration(c
 
     std::array<std::array<double, NB_PARAM>, NB_LAYERS> calib;
 
-    ifstream fichier(filename);
+    ifstream my_calib_file(filename);
     string line;
 
-    if (fichier) {
-        while(getline(fichier, line)) {
+    if (my_calib_file) {
+        while(getline(my_calib_file, line)) {
 
             // Remove comment lines (beginning with #)
             if (line.find("#") != std::string::npos) {
@@ -87,7 +87,7 @@ std::array<std::array<double, NB_PARAM>, NB_LAYERS> Generator::readCalibration(c
     else
         cout << "Wrong file path or the file does not exit"<<endl;
 
-    fichier.close();
+    my_calib_file.close();
 
     return calib;
 }
