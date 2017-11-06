@@ -6,11 +6,11 @@
 
 class Cell {
 
-    public:
-      static uint32_t id(uint16_t i, uint16_t j, uint16_t k);
+  public:
+    static uint32_t id(uint16_t i, uint16_t j, uint16_t k);
 
-    private:
-      Cell() {}; // don't use default constructor
+  private:
+    Cell() {}; // don't use default constructor
 
 
   public:
@@ -41,9 +41,11 @@ class Cell {
   private:
     TVectorD position_; // centre position in absolute coordinates
     std::vector<TVectorD> vertices_; // vertices positions in absolute coordinates
+    // hopefully 16 bits are enough
     uint16_t i_index_;
     uint16_t j_index_;
     uint16_t k_index_;
+    // | j_index  | i_index | k_index
     uint32_t id_;
 
     double orientation_; // orientation for halh cells
