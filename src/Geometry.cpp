@@ -66,8 +66,8 @@ string Geometry::setHgcalPart(int klayer) {
         return "FH";
 }
 
-double* Geometry::dimensions(double side) {
-    double *dim = new double[4];
+std::array<double, 4> Geometry::dimensions(double side) {
+    std::array<double, 4> dim;
 
     dim[0] = side*sqrt(3.); //asqrt3_
     dim[1] = dim[0]/2.;  //asqrt3over2_
@@ -77,35 +77,37 @@ double* Geometry::dimensions(double side) {
     return dim;
 }
 
-double** Geometry::hexagonoffset(double side) {
+std::array< std::array<double, 6>, 4> Geometry::hexagonoffset(double side) {
+
     // pic on top
-    double *dim = dimensions(side);
-    return new double*[2] {
-      new double[6] {dim[1], dim[1], 0., -dim[1],-dim[1], 0},
-      new double[6] {-dim[2], dim[2], side, dim[2], -dim[2],-side}
-    };
+    std::array<double, 4> dim = dimensions(side);
+
+    return {{ {{dim[1], dim[1], 0., -dim[1],-dim[1], 0}},
+              {{-dim[2], dim[2], side, dim[2], -dim[2],-side}}
+           }};
 
     // Hexagons flat side on top
     // const array<double, nvertices> hexagonoffsetx = {{aover2_,a_,aover2_,-aover2_,-a,-aover2_}};
     // const array<double, nvertices> hexagonoffsety = {{-asqrt3over2_,0,asqrt3over2_,asqrt3over2_,0.,-asqrt3over2_}};
+
+    // return offset;
 }
 
-double** Geometry::triangleoffset(double side){
+std::array< std::array<double, 6>, 4> Geometry::triangleoffset(double side){
 
     // up, up, down, down
-    double *dim = dimensions(side);
-    return new double*[4] {
-      new double[3] {dim[2], 0., -dim[2]},
-      new double[3] {-dim[1]/3., dim[0]/3., -dim[1]/3.},
-      new double[3] {dim[2], -dim[2], 0.},
-      new double[3] {dim[1]/3., dim[1]/3., -dim[0]/3.},
-    };
+    std::array<double, 4> dim = dimensions(side);
+    return {{ {{dim[2], 0., -dim[2]}},
+              {{-dim[1]/3., dim[0]/3., -dim[1]/3.}},
+              {{dim[2], -dim[2], 0.}},
+              {{dim[1]/3., dim[1]/3., -dim[0]/3.}},
+           }};
 }
 
-double* Geometry::derivative(double side, Parameters::Geometry::Type itype){
-    double *derivative = new double[3];
+std::array<double, 3> Geometry::derivative(double side, Parameters::Geometry::Type itype){
+    std::array<double, 3> derivative;
 
-    double *dim = dimensions(side);
+    std::array<double, 4> dim = dimensions(side);
     // partial derivatives of x,y vs i,j
     switch(itype) {
         case Parameters::Geometry::Type::Hexagons: {
@@ -132,21 +134,21 @@ double* Geometry::derivative(double side, Parameters::Geometry::Type itype){
     return derivative;
 }
 
-double** Geometry::dxdyFirstZone(double* xs, double* ys) {
-    double* dx = new double[5];
-    double* dy = new double[5];
+std::array< std::array<double, 5>, 2> Geometry::dxdyFirstZone(std::array<double, 9> xs, std::array<double, 9> ys) {
+    std::array<double, 5> dx;
+    std::array<double, 5> dy;
 
     for(unsigned i=0; i<5; i++)
         dx[i] = xs[i+1]-xs[0];
     for(unsigned i=0; i<5; i++)
         dy[i] = ys[i+1]-ys[0];
 
-    return new double*[2] {dx, dy};
+    return {{ dx, dy}};
 }
 
-double** Geometry::dxdySecondZone(double* xs, double* ys) {
-    double* dx = new double[5];
-    double* dy = new double[5];
+std::array< std::array<double, 5>, 2> Geometry::dxdySecondZone(std::array<double, 9> xs, std::array<double, 9> ys) {
+    std::array<double, 5> dx;
+    std::array<double, 5> dy;
 
     dx[0] = xs[2]-xs[3];
     dx[1] = xs[6]-xs[3];
@@ -160,16 +162,16 @@ double** Geometry::dxdySecondZone(double* xs, double* ys) {
     dy[3] = ys[5]-ys[3];
     dy[4] = ys[8]-ys[3];
 
-    return new double*[2] {dx, dy};
+    return {{ dx, dy}};
 }
 
-int* Geometry::ijWindows(int zone, double* xs, double* ys, double side, Parameters::Geometry::Type itype) {
+std::array< int, 4> Geometry::ijWindows(int zone, std::array<double, 9> xs, std::array<double, 9> ys, double side, Parameters::Geometry::Type itype) {
     // compute i,j window needed to cover the x,y window
 
-    int *windows = new int[4];    //imin, imax, jmin, jmax
+    std::array< int, 4> windows;    //imin, imax, jmin, jmax
 
-    double *der = derivative(side, itype);
-    double** dxdy = new double*[5];
+    std::array<double, 3> der = derivative(side, itype);
+    std::array< std::array<double, 5>, 2> dxdy;
     array<double,6> js_first;
     array<double,6> is_first;
     array<double,6> js_second;
@@ -203,10 +205,10 @@ int* Geometry::ijWindows(int zone, double* xs, double* ys, double side, Paramete
 }
 
 
-double* Geometry::XYrPhi(int i, int j, double side, Parameters::Geometry::Type itype, double* xs, double* ys, double zone) {
-    double* xyrPhi = new double[4];
+std::array< double, 4> Geometry::XYrPhi(int i, int j, double side, Parameters::Geometry::Type itype, std::array<double, 9> xs, std::array<double, 9> ys, double zone) {
+    std::array< double, 4> xyrPhi;
 
-    double *der = derivative(side, itype);
+    std::array<double, 3> der = derivative(side, itype);
     // peak on top
     if (zone == 1) {
         xyrPhi[0] = xs[0] + i*der[0] + j*der[1];
@@ -223,7 +225,7 @@ double* Geometry::XYrPhi(int i, int j, double side, Parameters::Geometry::Type i
 
     // up and down triangle barycenters are not aligned
     if(itype==Parameters::Geometry::Type::Triangles && i%2) {
-        double *dim = dimensions(side);
+        std::array<double, 4> dim = dimensions(side);
         xyrPhi[1] += dim[0]/6.;
     }
 
@@ -456,7 +458,7 @@ void Geometry::constructFromParameters(bool debug, int layer_id, int display_lay
     double xs_sup_first = (limit_first_zone/(2*x4*x4))*denom;
     double ys_sup_first = sqrt((limit_first_zone*limit_first_zone)-(xs_sup_first *xs_sup_first));
 
-    double xs[9]= {
+    std::array<double, 9> xs = {{
         r_min*cos(phi_min),
         x1,
         xs_sup_first,
@@ -466,8 +468,9 @@ void Geometry::constructFromParameters(bool debug, int layer_id, int display_lay
         r_max*cos(phi_max),
         r_max*cos(phi_min),
         r_max*cos((phi_min+phi_max)/2.)
-    };
-    double ys[9] = {
+    }};
+
+    std::array<double, 9> ys = {{
         r_min*sin(phi_min),
         y1,
         ys_sup_first,
@@ -477,7 +480,7 @@ void Geometry::constructFromParameters(bool debug, int layer_id, int display_lay
         r_max*sin(phi_max),
         r_max*sin(phi_min),
         r_max*sin((phi_min+phi_max)/2.)
-    };
+    }};
 
     //For the output geometry TH1
     double x_min = numeric_limits<double>::max();
@@ -494,13 +497,14 @@ void Geometry::constructFromParameters(bool debug, int layer_id, int display_lay
     double side1 = parameters_.small_cell_side;
     int zone1 = 1;
 
-    double **offset1;
-    if (itype==Parameters::Geometry::Type::Hexagons)
+    std::array< std::array<double, 6>, 4> offset1;
+    if (itype==Parameters::Geometry::Type::Hexagons) {
         offset1 = hexagonoffset(side1);
+    }
     else
         offset1 = triangleoffset(side1);
 
-    int *windows1 = ijWindows(zone1, xs, ys, side1, itype);
+    std::array< int, 4> windows1 = ijWindows(zone1, xs, ys, side1, itype);
 
 
     double orientation = 90.;
@@ -512,7 +516,7 @@ void Geometry::constructFromParameters(bool debug, int layer_id, int display_lay
         real_j = 0;
         for (int j = windows1[2]; j <= windows1[3]; j++) {
 
-            double *xyrPhi = XYrPhi(i, j, side1, itype, xs, ys,zone1);
+            std::array< double, 4> xyrPhi = XYrPhi(i, j, side1, itype, xs, ys,zone1);
 
             // check if cell is inside boundaries. If not, skip it
             if(!(xyrPhi[2] >= r_min &&
@@ -593,13 +597,13 @@ void Geometry::constructFromParameters(bool debug, int layer_id, int display_lay
 
     double side2 = parameters_.large_cell_side;
 
-    double **offset2;
+    std::array< std::array<double, 6>, 4> offset2;
     if (itype==Parameters::Geometry::Type::Hexagons)
         offset2 = hexagonoffset(side2);
     else
         offset2 = triangleoffset(side2);
 
-    int *windows2 = ijWindows(2, xs, ys, side2, itype);
+    std::array< int, 4> windows2 = ijWindows(2, xs, ys, side2, itype);
 
   // build cells inside the requested window
     int real_i2 = 0;
@@ -608,7 +612,7 @@ void Geometry::constructFromParameters(bool debug, int layer_id, int display_lay
         real_j2 = 0;
         for (int j = windows2[2]; j<=windows2[3]; j++) {
 
-            double *xyrPhi = XYrPhi(i, j, side2, itype, xs, ys, 2);
+            std::array< double, 4> xyrPhi = XYrPhi(i, j, side2, itype, xs, ys, 2);
 
             // check if cell is inside boundaries. If not, skip it
             if(!(xyrPhi[2]>=limit_first_zone &&

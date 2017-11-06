@@ -31,15 +31,14 @@ class Geometry {
     void constructFromParameters(bool, int, int);
     void constructFromJson(bool, int);
 
-
-    double* dimensions(double side);
-    double** hexagonoffset(double side);
-    double** triangleoffset(double side);
-    double* derivative(double side, Parameters::Geometry::Type itype);
-    double** dxdyFirstZone(double* xs, double* ys);
-    double** dxdySecondZone(double* xs, double* ys);
-    int* ijWindows(int zone, double* xs, double* ys, double side, Parameters::Geometry::Type itype);
-    double* XYrPhi(int i, int j, double side, Parameters::Geometry::Type itype, double* xs, double* ys, double zone);
+    std::array<double, 4> dimensions(double side);
+    std::array< std::array<double, 6>, 4> hexagonoffset(double side);
+    std::array< std::array<double, 6>, 4> triangleoffset(double side);
+    std::array<double, 3> derivative(double side, Parameters::Geometry::Type itype);
+    std::array< std::array<double, 5>, 2> dxdyFirstZone(std::array<double, 9>, std::array<double, 9>);
+    std::array< std::array<double, 5>, 2>  dxdySecondZone(std::array<double, 9>, std::array<double, 9>);
+    std::array< int, 4> ijWindows(int zone, std::array<double, 9>, std::array<double, 9>, double side, Parameters::Geometry::Type itype);
+    std::array< double, 4> XYrPhi(int i, int j, double side, Parameters::Geometry::Type itype, std::array<double, 9>, std::array<double, 9>, double zone);
 
     bool isInCell(const TVectorD& position, const Cell& cell) const; // test if a point is within a cell
     const Cell* closestCell(double x, double y) const;
