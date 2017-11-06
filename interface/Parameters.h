@@ -7,6 +7,8 @@
 #include <boost/python/object.hpp>
 #include <boost/python/stl_iterator.hpp>
 
+#include <vector>
+
 class Parameters {
     public:
         struct General {
