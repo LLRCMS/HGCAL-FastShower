@@ -39,9 +39,9 @@ Generator::~Generator(){
 }
 
 
-std::array<std::array<double, 3>, 52> Generator::readCalibration(const std::string& filename) {
+std::array<std::array<double, NB_PARAM>, NB_LAYERS> Generator::readCalibration(const std::string& filename) {
 
-    std::array<std::array<double, 3>, 52> calib;
+    std::array<std::array<double, NB_PARAM>, NB_LAYERS> calib;
 
     ifstream fichier(filename);
     string line;
@@ -55,8 +55,8 @@ std::array<std::array<double, 3>, 52> Generator::readCalibration(const std::stri
             }
             else {
                 int layer_col;
-                double mip[3];
-                double noise[3];
+                double mip[NB_PARAM];
+                double noise[NB_PARAM];
 
                 istringstream strm(line);
 
@@ -72,7 +72,7 @@ std::array<std::array<double, 3>, 52> Generator::readCalibration(const std::stri
                 strm >> noise[1];
                 strm >> noise[0];
 
-                for (int i = 0; i < 3; i++) {
+                for (int i = 0; i < NB_PARAM; i++) {
                     double sampl = mip[i];
                     double MIP;
                     if (layer_col <= 40)
@@ -131,7 +131,7 @@ void Generator::simulate() {
         display_layer = layer_min;
     }
 
-    std::vector<Cell> cell_collection[52];
+    std::vector<Cell> cell_collection[NB_LAYERS];
 
     for (int layer_id = layer_min; layer_id < layer_max; layer_id++) {
 
@@ -195,7 +195,7 @@ void Generator::simulate() {
     cout << "Done !"<<endl;
 
     // Noise calibration of each cells for all layers
-    std::array<std::array<double, 3>, 52> calibratednoise;
+    std::array<std::array<double, NB_PARAM>, NB_LAYERS> calibratednoise;
 
     if (parameters_.generation().noise) {
         cout << "Noise calibration ..."<<endl;
@@ -212,7 +212,7 @@ void Generator::simulate() {
                 else
                     mip = sampl/10;
 
-                for (int i = 0; i<3; i++)
+                for (int i = 0; i<NB_PARAM; i++)
                     calibratednoise[layer_id][i] = sigma_noise*mip/sampl;
             }
         }
