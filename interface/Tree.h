@@ -28,18 +28,9 @@ class Tree {
 
         void subdivide(int);
 
-        // // Instead of staring the border coordinates, we need only store the midpoint where the node divides.
-        // // This means we have fewer checks that can be done, but we save in time and space.
-        // unsigned int mMidX;
-        // unsigned int mMidY;
-
-        // Zone de délimitation représentant les limites de ce Tree
-
-        // Vecteur pour stocker les cellules selectionnées dans le Tree
+        // Cells selected in the tree
         std::vector<Cell*>* cells;
 
-        // // Constante arbitraire indiquant combien d'éléments peuvent être stockés au maximum dans un noeud
-        // static constexpr int QT_NODE_CAPACITY = 15;
     protected:
         Rectangle* rectangle;
 };
