@@ -24,24 +24,23 @@ class ShowerParametrization {
     ShowerParametrization(const Parameters::Shower& params):
         moliereRadius_(params.moliere_radius){
 
-        typedef map<int, std::vector<double>>::const_iterator MapIterator;
-        for (MapIterator iter = params.map_layers_energy.begin(); iter != params.map_layers_energy.end(); iter++) {
-            if(iter->second.size()!=52)
+        for (auto& iter : params.map_layers_energy) {
+            if(iter.second.size()!=52){
                 throw std::string("The size of shower_layers_energy should be equals to the layer number");
+            }
 
             double total_weight=0.;
-            typedef std::vector<double>::const_iterator ListIterator;
-            for (ListIterator list_iter = iter->second.begin(); list_iter != iter->second.end(); list_iter++) {
-                total_weight += *list_iter;
+            for (auto& list_iter : iter.second) {
+                total_weight += list_iter;
             }
-            std::vector<double> new_list = iter->second;
+            std::vector<double> new_list = iter.second;
             std::transform(new_list.begin(), new_list.end(), new_list.begin(),
                    std::bind2nd(std::divides<double>(),total_weight));
-            layerProfile_[iter->first] = new_list;
+            layerProfile_[iter.first] = new_list;
         }
 
-        for (MapIterator iter = params.map_alpha.begin(); iter != params.map_alpha.end(); iter++) {
-            alpha_[iter->first] = iter->second;
+        for (auto& iter : params.map_alpha) {
+            alpha_[iter.first] = iter.second;
         }
 
         // transverse parameters
@@ -75,9 +74,8 @@ class ShowerParametrization {
             cout << "pdgid doesn't exist"<<endl;
         } else {
             int index = 0;
-            typedef std::vector<double>::const_iterator ListIterator;
-            for (ListIterator list_iter = pos->second.begin(); list_iter != pos->second.end(); list_iter++){
-                partLayerProfile_[index] = *list_iter;
+            for (auto& list_iter : pos->second){
+                partLayerProfile_[index] = list_iter;
                 index++;
             }
         }
@@ -95,9 +93,8 @@ class ShowerParametrization {
             cout << "pdgid doesn't exist"<<endl;
         } else {
             int index = 0;
-            typedef std::vector<double>::const_iterator ListIterator;
-            for (ListIterator list_iter = pos->second.begin(); list_iter != pos->second.end(); list_iter++){
-                alphasquare_[index] = (*list_iter)*(*list_iter);
+            for (auto& list_iter : pos->second){
+                alphasquare_[index] = list_iter*list_iter;
                 index++;
             }
         }
