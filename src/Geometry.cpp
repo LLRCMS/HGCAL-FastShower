@@ -59,13 +59,6 @@ void Geometry::setLayer(int klayer) {
 }
 
 
-string Geometry::setHgcalPart(int klayer) {
-    if (klayer < 28)
-        return "EE";
-    else
-        return "FH";
-}
-
 std::array<double, 4> Geometry::dimensions(double side) {
     std::array<double, 4> dim;
 
@@ -423,8 +416,6 @@ void Geometry::constructFromParameters(bool debug, int layer_id, int display_lay
     setZlayer(zlayer);
     int klayer(layer_id);
     setLayer(klayer);
-
-    string part = setHgcalPart(layer_id); //EE,FH,BH
 
     if(debug) {
         cout << " " << endl;

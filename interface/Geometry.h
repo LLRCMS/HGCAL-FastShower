@@ -57,7 +57,6 @@ class Geometry {
   private:
 
     void setLayer(int klayer);
-    std::string setHgcalPart(int klayer);
     void setZlayer(double zlayer) {zlayer_ = zlayer;}
 
     std::unordered_map<uint32_t, Cell> cells_;
