@@ -33,14 +33,16 @@ void Event::fillPDGid(uint32_t id, int PDGid) {
 }
 
 void Event::fillThick(uint32_t id, int thick) {
-    if (!(thick_.find(id) != thick_.end()))
+    if (thick_.find(id) != thick_.end()) {
         thick_.emplace(id, thick);
+    }
 }
 
 void Event::fillCells(uint32_t id, const Cell& cell) {
     // if the cell is already in map, don't add it
-    if (!(cells_.find(id) != cells_.end()))
+    if (cells_.find(id) != cells_.end()) {
         cells_.emplace(id, cell);
+    }
 }
 
 void Event::setnPart(uint32_t part) {
