@@ -34,8 +34,8 @@ class OutputService {
     unsigned run_;
     unsigned event_;
     unsigned npart_;
-    std::vector<int> PDGid_;
-    std::vector<int> thick_;
+    std::vector<int> gen_PDGid_;
+    std::vector<int> cell_thickness_;
 
     unsigned cell_n_;
 
