@@ -44,7 +44,7 @@ class Geometry {
     const Cell* closestCell(double x, double y) const;
 
     // getters
-    std::unordered_map<uint32_t, Cell> getCells() const {return cells_;}
+    const std::unordered_map<uint32_t, Cell>& getCells() const {return cells_;}
     int getLayer() const {return klayer_;}
     double getZlayer() const {return zlayer_;}
 
