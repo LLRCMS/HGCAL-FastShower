@@ -30,6 +30,9 @@ Parameters::Geometry::Geometry():
     layers_z(0),
     small_cell_side(0),
     large_cell_side(0),
+    EE_limit_layer(0),
+    FH_limit_layer(0),
+    BH_limit_layer(0),
     limit_first_zone(0),
     limit_second_zone(0),
     eta_min(0.),
@@ -113,6 +116,9 @@ void Parameters::fillGeometry(const python::dict& dict) {
     if(geometry_.type!=Geometry::Type::External) {
         geometry_.small_cell_side = python::extract<double>(dict["geometry_small_cell_side"]);
         geometry_.large_cell_side = python::extract<double>(dict["geometry_large_cell_side"]);
+        geometry_.EE_limit_layer = python::extract<int>(dict["geometry_EE_limit_layer"]);
+        geometry_.FH_limit_layer = python::extract<int>(dict["geometry_FH_limit_layer"]);
+        geometry_.BH_limit_layer = python::extract<int>(dict["geometry_BH_limit_layer"]);
         geometry_.limit_first_zone = python::extract<double>(dict["geometry_limit_first_zone"]);
         geometry_.limit_second_zone = python::extract<double>(dict["geometry_limit_second_zone"]);
         geometry_.eta_min = python::extract<double>(dict["geometry_eta_min"]);

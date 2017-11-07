@@ -4,7 +4,7 @@ import math as m
 # Cells types : Hexagons, Triangles, External
 geometry_type = 'Hexagons'
 
-geometry_layer = -1
+geometry_layer = 1
 # layers' z positions
 # from CMSSW V7 geometry: https://indico.cern.ch/event/458374/contribution/9/attachments/1179028/
 # 1828217/Andreev_29Oct2015.pdf 
@@ -22,6 +22,10 @@ geometry_layers_z[:] = [z+z0 for z in geometry_layers_z]
 # multiply cell side by sqrt(6) for triangles to get equal area
 geometry_small_cell_side = 0.476
 geometry_large_cell_side = 0.648
+
+geometry_EE_limit_layer = 27
+geometry_FH_limit_layer = 40
+geometry_BH_limit_layer = 52
 
 # limits position of the different zones (100, 200, 300 um silicium)
 if geometry_layer in range(0, 27): #EE

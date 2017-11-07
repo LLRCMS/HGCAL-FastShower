@@ -29,6 +29,9 @@ class Parameters {
       // internal infinite geometries
       double small_cell_side;
       double large_cell_side;
+      int EE_limit_layer;
+      int FH_limit_layer;
+      int BH_limit_layer;
       double limit_first_zone;
       double limit_second_zone;
       double eta_min;
