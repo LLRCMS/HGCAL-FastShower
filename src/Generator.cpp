@@ -285,7 +285,7 @@ simulate() {
 
       std::vector<double > cell_x;
       std::vector<double > cell_y;
-      for (auto& c : cell_collection[layer_id]) {
+      for (const auto& c : cell_collection[layer_id]) {
         cell_x.push_back(c.getX());
         cell_y.push_back(c.getY());
       }
@@ -310,7 +310,7 @@ simulate() {
       Tree* tree = new Tree(plan, 5);
       float x_c, y_c;
       double side;
-      for(auto& c : cell_collection[layer_id]) {
+      for (const auto& c : cell_collection[layer_id]) {
 
         x_c = float(c.getX());
         y_c = float(c.getY());
@@ -466,7 +466,11 @@ simulate() {
             r_shower = gun_.Exp(r0_electro); // exponential exp(-r/r0)
           }
           else { // for hadronic shower templates parametrization
-            r_shower = 108 * gun_.Exp(r0_hadro/19.3) + 95 * gun_.Exp(r0_hadro/76.);
+            double a_core = 108.;
+            double b_core = 19.3;
+            double a_halo = 95.;
+            double b_halo = 76.;
+            r_shower = a_core * gun_.Exp(r0_hadro/b_core) + a_halo * gun_.Exp(r0_hadro/b_halo);
           }
 
           double phi_shower = gun_.Rndm()*TMath::TwoPi();
