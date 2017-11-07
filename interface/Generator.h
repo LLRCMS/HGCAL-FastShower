@@ -24,7 +24,7 @@
 
 
 const int NB_LAYERS = 52;
-const int NB_PARAM = 3;
+const int NB_SI_THICKNESS = 3;
 
 class Generator
 {
@@ -37,7 +37,7 @@ class Generator
 
     std::unique_ptr<TCanvas> display(const std::unordered_map<uint32_t,TH1F>& hCellEnergyEvtMap , std::vector<Cell>& , int ievt=0);
 
-    std::array<std::array<double, NB_PARAM>, NB_LAYERS> readCalibration(const std::string& filename);
+    std::array<std::array<double, NB_SI_THICKNESS>, NB_LAYERS> readCalibration(const std::string& filename);
 
   private:
     TRandom3 gun_;
