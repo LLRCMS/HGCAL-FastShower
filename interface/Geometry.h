@@ -17,6 +17,17 @@
 #endif
 
 
+const int NB_VTX_DIM = 4;
+const int NB_OFFSET_MAX = 6;
+const int NB_COORD_DIFF_MAX = 4; //triangle : up, up, down, down
+const int NB_DERIV = 3;
+const int NB_SEGMENT = 5;
+const int NB_COORD_CART = 2;  //x and y
+const int NB_PTS_WINDOWS = 4;  //imin, imax, jmin, jmax
+const int NB_TOT_PTS_GEOMETRY = 9;
+const int NB_COORD_CART_CYL = 4; //x, y, r, phi
+
+
 class Geometry {
 
   // a tesselation of the plane with polygonal cells
@@ -31,14 +42,14 @@ class Geometry {
     void constructFromParameters(bool, int, int);
     void constructFromJson(bool, int);
 
-    std::array<double, 4> dimensions(double side);
-    std::array< std::array<double, 6>, 4> hexagonoffset(double side);
-    std::array< std::array<double, 6>, 4> triangleoffset(double side);
-    std::array<double, 3> derivative(double side, Parameters::Geometry::Type itype);
-    std::array< std::array<double, 5>, 2> dxdyFirstZone(std::array<double, 9>, std::array<double, 9>);
-    std::array< std::array<double, 5>, 2>  dxdySecondZone(std::array<double, 9>, std::array<double, 9>);
-    std::array< int, 4> ijWindows(int zone, std::array<double, 9>, std::array<double, 9>, double side, Parameters::Geometry::Type itype);
-    std::array< double, 4> XYrPhi(int i, int j, double side, Parameters::Geometry::Type itype, std::array<double, 9>, std::array<double, 9>, double zone);
+    std::array<double, NB_VTX_DIM> dimensions(double side);
+    std::array< std::array<double, NB_OFFSET_MAX>, NB_COORD_DIFF_MAX> hexagonoffset(double);
+    std::array< std::array<double, NB_OFFSET_MAX>, NB_COORD_DIFF_MAX> triangleoffset(double);
+    std::array<double, NB_DERIV> derivative(double side, Parameters::Geometry::Type);
+    std::array< std::array<double, NB_SEGMENT>, NB_COORD_CART> dxdyFirstZone(std::array<double, NB_TOT_PTS_GEOMETRY>, std::array<double, NB_TOT_PTS_GEOMETRY>);
+    std::array< std::array<double, NB_SEGMENT>, NB_COORD_CART>  dxdySecondZone(std::array<double, NB_TOT_PTS_GEOMETRY>, std::array<double, NB_TOT_PTS_GEOMETRY>);
+    std::array< int, NB_PTS_WINDOWS> ijWindows(int, std::array<double, NB_TOT_PTS_GEOMETRY>, std::array<double, NB_TOT_PTS_GEOMETRY>, double, Parameters::Geometry::Type);
+    std::array< double, NB_COORD_CART_CYL> XYrPhi(int, int, double, Parameters::Geometry::Type, std::array<double, NB_TOT_PTS_GEOMETRY>, std::array<double, NB_TOT_PTS_GEOMETRY>, double);
 
     bool isInCell(const TVectorD& position, const Cell& cell) const; // test if a point is within a cell
     const Cell* closestCell(double x, double y) const;
