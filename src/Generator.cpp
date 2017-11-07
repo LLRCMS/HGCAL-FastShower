@@ -40,7 +40,6 @@ Generator::Generator(const Parameters& params): geometry_(params.geometry()),
 Generator::~Generator(){
 }
 
-
 std::array<std::array<double, NB_SI_THICKNESS>, NB_LAYERS> Generator::readCalibration(const std::string& filename) {
 
     std::array<std::array<double, NB_SI_THICKNESS>, NB_LAYERS> calib;
@@ -57,7 +56,7 @@ std::array<std::array<double, NB_SI_THICKNESS>, NB_LAYERS> Generator::readCalibr
 
     if (my_calib_file) {
 
-        int layer_col;
+        int layer_;
         double mip[NB_SI_THICKNESS];
         double noise[NB_SI_THICKNESS];
         double sampl, MIP;
@@ -83,23 +82,23 @@ std::array<std::array<double, NB_SI_THICKNESS>, NB_LAYERS> Generator::readCalibr
 
             istringstream strm(line);
 
-            strm >> layer_col;
-
+            strm >> layer_;
             strm >> mip[2];
             strm >> mip[1];
             strm >> mip[0];
-
             strm >> noise[2];
             strm >> noise[1];
             strm >> noise[0];
 
             for (int i = 0; i < NB_SI_THICKNESS; i++) {
                 sampl = mip[i];
-                if (layer_col <= 40)
+                if (layer_ <= parameters_.geometry().FH_limit_layer) {
                     MIP = sampl/100;
-                else
+                }
+                else {
                     MIP = sampl/10;
-                calib[layer_col-1][i] = noise[i]*MIP/sampl;
+                }
+                calib[layer_-1][i] = noise[i]*MIP/sampl;
             }
         }
     }
