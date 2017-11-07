@@ -285,7 +285,7 @@ simulate() {
 
       std::vector<double > cell_x;
       std::vector<double > cell_y;
-      for (const auto& c : cell_collection[layer_id]) {
+      for (auto& c : cell_collection[layer_id]) {
         cell_x.push_back(c.getX());
         cell_y.push_back(c.getY());
       }
@@ -310,7 +310,7 @@ simulate() {
       Tree* tree = new Tree(plan, 5);
       float x_c, y_c;
       double side;
-      for (const auto& c : cell_collection[layer_id]) {
+      for (auto& c : cell_collection[layer_id]) {
 
         x_c = float(c.getX());
         y_c = float(c.getY());
@@ -482,7 +482,7 @@ simulate() {
           pos(1)=y;
 
           double side = 0;
-          const Cell* closestCells = NULL;
+          const Cell* closestCells = nullptr;
 
           if (parameters_.geometry().type!=Parameters::Geometry::Type::External) {
 
