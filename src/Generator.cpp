@@ -11,6 +11,8 @@
 #include "TMarker.h"
 #include <fstream>
 #include <string>
+#include <algorithm>
+
 
 #ifdef STANDALONE
 #include "Generator.h"
@@ -39,58 +41,83 @@ Generator::~Generator(){
 }
 
 
-std::array<std::array<double, NB_PARAM>, NB_LAYERS> Generator::readCalibration(const std::string& filename) {
+std::array<std::array<double, NB_SI_THICKNESS>, NB_LAYERS> Generator::readCalibration(const std::string& filename) {
 
-    std::array<std::array<double, NB_PARAM>, NB_LAYERS> calib;
+    std::array<std::array<double, NB_SI_THICKNESS>, NB_LAYERS> calib;
 
-    ifstream my_calib_file(filename);
-    string line;
+    std::ifstream my_calib_file(filename);
+    std::stringstream ss;
+    std::string line, temp;
+
+    int col_counter = 0;
+    int line_counter = 0;
+    // There is one col for the layer id. MIP and noise have both same number of column as the
+    // number of silicium thickness
+    int dim_column = 1 + NB_SI_THICKNESS * 2;
 
     if (my_calib_file) {
-        while(getline(my_calib_file, line)) {
+
+        int layer_col;
+        double mip[NB_SI_THICKNESS];
+        double noise[NB_SI_THICKNESS];
+        double sampl, MIP;
+
+        while(std::getline(my_calib_file, line)) {
 
             // Remove comment lines (beginning with #)
             if (line.find("#") != std::string::npos) {
+                std::cout<<"This line begins with #. It is considered as comment -> discarded"<<std::endl;
                 continue;
             }
             else {
-                int layer_col;
-                double mip[NB_PARAM];
-                double noise[NB_PARAM];
-
-                istringstream strm(line);
-
-                strm >> layer_col;
-                strm >> mip[2];
-                strm >> mip[1];
-                strm >> mip[0];
-
-                strm >> noise[2];
-                strm >> noise[2];
-                strm >> noise[2];
-                strm >> noise[2];
-                strm >> noise[1];
-                strm >> noise[0];
-
-                for (int i = 0; i < NB_PARAM; i++) {
-                    double sampl = mip[i];
-                    double MIP;
-                    if (layer_col <= 40)
-                        MIP = sampl/100;
-                    else
-                        MIP = sampl/10;
-                    calib[layer_col-1][i] = noise[i]*MIP/sampl;
+                // Some checks for the file format : columns and lines
+                if (col_counter == 0) {
+                    ss.clear();
+                    ss << line;
+                    while (ss >> temp) {
+                        col_counter++;
+                    }
                 }
+                line_counter++;
+            }
+
+            istringstream strm(line);
+
+            strm >> layer_col;
+
+            strm >> mip[2];
+            strm >> mip[1];
+            strm >> mip[0];
+
+            strm >> noise[2];
+            strm >> noise[1];
+            strm >> noise[0];
+
+            for (int i = 0; i < NB_SI_THICKNESS; i++) {
+                sampl = mip[i];
+                if (layer_col <= 40)
+                    MIP = sampl/100;
+                else
+                    MIP = sampl/10;
+                calib[layer_col-1][i] = noise[i]*MIP/sampl;
             }
         }
     }
-    else
+    else {
         cout << "Wrong file path or the file does not exit"<<endl;
+    }
+
+    if (col_counter != dim_column && line_counter != NB_LAYERS){
+        std::cout << "WARNING : check the format of the calibration file"<<endl;
+        std::cout << "You should have 7 columns (layer, 3 MIP and 3 noise for the different Si thickness)"<<endl;
+        std::cout << "and one line per layer."<<endl;
+    }
 
     my_calib_file.close();
 
     return calib;
 }
+
 
 void Generator::simulate() {
     unsigned nevents = parameters_.general().events;
@@ -195,7 +222,7 @@ void Generator::simulate() {
     cout << "Done !"<<endl;
 
     // Noise calibration of each cells for all layers
-    std::array<std::array<double, NB_PARAM>, NB_LAYERS> calibratednoise;
+    std::array<std::array<double, NB_SI_THICKNESS>, NB_LAYERS> calibratednoise;
 
     if (parameters_.generation().noise) {
         cout << "Noise calibration ..."<<endl;
@@ -212,7 +239,7 @@ void Generator::simulate() {
                 else
                     mip = sampl/10;
 
-                for (int i = 0; i<NB_PARAM; i++)
+                for (int i = 0; i<NB_SI_THICKNESS; i++)
                     calibratednoise[layer_id][i] = sigma_noise*mip/sampl;
             }
         }
