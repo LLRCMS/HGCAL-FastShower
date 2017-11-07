@@ -12,8 +12,6 @@
 
 using namespace std;
 
-const int NB_LAYERS = 52;
-const int NB_SI_THICKNESS = 3;
 
 class ShowerParametrization {
 

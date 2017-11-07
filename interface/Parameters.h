@@ -9,6 +9,9 @@
 
 #include <vector>
 
+const int NB_LAYERS = 52;
+const int NB_SI_THICKNESS = 3;
+
 class Parameters {
   public:
     struct General {
