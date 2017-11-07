@@ -12,9 +12,9 @@
 class ShowerShape {
 
   // a class for groups of cells
-  
+
   public:
-  
+
     ShowerShape(const std::unordered_map<uint32_t,double>&,
         const std::unordered_map<uint32_t,Cell>&);
     ~ShowerShape() {}
@@ -28,7 +28,7 @@ class ShowerShape {
     double energySum() {return energySum_;} // total energy
 
   protected:
-  
+
     const std::unordered_map<uint32_t,double>& enrjMap_;
     const std::unordered_map<uint32_t,Cell>& cellMap_;  // cell 1D indexing
     const Cell* maxCell_; // hotest cell
@@ -37,7 +37,7 @@ class ShowerShape {
     int jmax_; // hotest cell j index
     int k;
     double energySum_;
-  
+
 };
 
 #endif

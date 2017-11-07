@@ -11,9 +11,9 @@
 class ShowerShapeHexagon: public ShowerShape {
 
   // a class for groups of cells
-  
+
   public:
-  
+
     ShowerShapeHexagon(const std::unordered_map<uint32_t,double>& enrjMap,
         const std::unordered_map<uint32_t,Cell>& cellMap): ShowerShape(enrjMap, cellMap) {}
     ~ShowerShapeHexagon() {}
@@ -21,7 +21,7 @@ class ShowerShapeHexagon: public ShowerShape {
     double firstNeighboors(int i, int j, int k);
 
   private:
-  
+
 };
 
 #endif
