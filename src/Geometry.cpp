@@ -46,9 +46,7 @@ if (type != "FH" && type != "VHH") {
 }
 
 
-void Geometry::
-setLayer(int klayer)
-{
+void Geometry::setLayer(int klayer) {
   if (klayer<0 || unsigned(klayer)>=parameters_.layers_z.size()) {
     std::stringstream error;
     error << "[Geometry] error, invalid klayer " << klayer;
@@ -58,9 +56,7 @@ setLayer(int klayer)
 }
 
 
-std::array<double, NB_VTX_DIM> Geometry::
-dimensions(double side)
-{
+std::array<double, NB_VTX_DIM> Geometry::dimensions(double side) {
   std::array<double, NB_VTX_DIM> dim;
 
   dim[0] = side*sqrt(3.); //asqrt3_
@@ -72,9 +68,7 @@ dimensions(double side)
 }
 
 
-std::array< std::array<double, NB_OFFSET_MAX>, NB_COORD_DIFF_MAX> Geometry::
-hexagonoffset(double side)
-{
+std::array< std::array<double, NB_OFFSET_MAX>, NB_COORD_DIFF_MAX> Geometry::hexagonoffset(double side) {
   // pic on top
   std::array<double, NB_VTX_DIM> dim = dimensions(side);
 
@@ -88,9 +82,7 @@ hexagonoffset(double side)
 }
 
 
-std::array< std::array<double, NB_OFFSET_MAX>, NB_COORD_DIFF_MAX> Geometry::
-triangleoffset(double side)
-{
+std::array< std::array<double, NB_OFFSET_MAX>, NB_COORD_DIFF_MAX> Geometry::triangleoffset(double side) {
   // up, up, down, down
   std::array<double, NB_VTX_DIM> dim = dimensions(side);
   return {{ {{dim[2], 0., -dim[2]}},
@@ -135,9 +127,9 @@ derivative(double side, Parameters::Geometry::Type itype)
 }
 
 
-std::array< std::array<double, NB_SEGMENT>, NB_COORD_CART> Geometry::
-dxdyFirstZone(std::array<double, NB_TOT_PTS_GEOMETRY> xs, std::array<double, NB_TOT_PTS_GEOMETRY> ys)
-{
+std::array< std::array<double, NB_SEGMENT>, NB_COORD_CART> Geometry::dxdyFirstZone(
+      std::array<double, NB_TOT_PTS_GEOMETRY> xs, std::array<double, NB_TOT_PTS_GEOMETRY> ys) {
+
   std::array<double, NB_SEGMENT> dx;
   std::array<double, NB_SEGMENT> dy;
 
@@ -152,9 +144,9 @@ dxdyFirstZone(std::array<double, NB_TOT_PTS_GEOMETRY> xs, std::array<double, NB_
 }
 
 
-std::array< std::array<double, NB_SEGMENT>, NB_COORD_CART> Geometry::
-dxdySecondZone(std::array<double, NB_TOT_PTS_GEOMETRY> xs, std::array<double, NB_TOT_PTS_GEOMETRY> ys)
-{
+std::array< std::array<double, NB_SEGMENT>, NB_COORD_CART> Geometry::dxdySecondZone(
+      std::array<double, NB_TOT_PTS_GEOMETRY> xs, std::array<double, NB_TOT_PTS_GEOMETRY> ys) {
+
   std::array<double, NB_SEGMENT> dx;
   std::array<double, NB_SEGMENT> dy;
 
@@ -174,10 +166,9 @@ dxdySecondZone(std::array<double, NB_TOT_PTS_GEOMETRY> xs, std::array<double, NB
 }
 
 
-std::array< int, NB_PTS_WINDOWS> Geometry::
-ijWindows(int layer_region, std::array<double, NB_TOT_PTS_GEOMETRY> xs,
-          std::array<double, NB_TOT_PTS_GEOMETRY> ys, double side, Parameters::Geometry::Type itype)
-{
+std::array< int, NB_PTS_WINDOWS> Geometry::ijWindows(int layer_region, std::array<double, NB_TOT_PTS_GEOMETRY> xs,
+                    std::array<double, NB_TOT_PTS_GEOMETRY> ys, double side, Parameters::Geometry::Type itype) {
+
   // compute i,j window needed to cover the x,y window
 
   std::array< int, NB_PTS_WINDOWS> windows;    //imin, imax, jmin, jmax
@@ -218,11 +209,10 @@ ijWindows(int layer_region, std::array<double, NB_TOT_PTS_GEOMETRY> xs,
 }
 
 
-std::array< double, NB_COORD_CART_CYL> Geometry::
-XYrPhi(int i, int j, double side, Parameters::Geometry::Type itype,
-       std::array<double, NB_TOT_PTS_GEOMETRY> xs, std::array<double, NB_TOT_PTS_GEOMETRY> ys,
-       double layer_region)
-{
+std::array< double, NB_COORD_CART_CYL> Geometry::XYrPhi(int i, int j, double side, Parameters::Geometry::Type itype,
+                             std::array<double, NB_TOT_PTS_GEOMETRY> xs, std::array<double, NB_TOT_PTS_GEOMETRY> ys,
+                             double layer_region) {
+
   std::array< double, NB_COORD_CART_CYL> xyrPhi;
 
   std::array<double, NB_DERIV> der = derivative(side, itype);
@@ -253,9 +243,7 @@ XYrPhi(int i, int j, double side, Parameters::Geometry::Type itype,
 }
 
 
-void Geometry::
-constructFromJson(bool debug, int layer_id)
-{
+void Geometry::constructFromJson(bool debug, int layer_id) {
   itype_ = Parameters::Geometry::Type::External;
   const std::string& filename = parameters_.file;
 
@@ -435,9 +423,7 @@ constructFromJson(bool debug, int layer_id)
 }
 
 
-void Geometry::
-constructFromParameters(bool debug, int layer_id, int display_layer)
-{
+void Geometry::constructFromParameters(bool debug, int layer_id, int display_layer) {
   // a tesselation of the plane with polygons
 
   Parameters::Geometry::Type itype(parameters_.type);
@@ -737,9 +723,7 @@ constructFromParameters(bool debug, int layer_id, int display_layer)
 }
 
 
-void Geometry::
-print()
-{
+void Geometry::print() {
   std::cout << "Printing the geometry : " << std::endl;
   if (klayer_ != -1) {
     std::cout<<"the layer plane is "<<klayer_<< " at z position "<<parameters_.layers_z[klayer_]<<std::endl;
@@ -755,9 +739,7 @@ print()
   }
 }
 
-bool Geometry::
-isInCell(const TVectorD& position, const Cell& cell) const
-{
+bool Geometry::isInCell(const TVectorD& position, const Cell& cell) const {
   // implementation below works for any convex cell described by its vertices
   // assumes vertices are consecutive along the cell perimeter and ordered along direct rotation
 
@@ -776,9 +758,7 @@ isInCell(const TVectorD& position, const Cell& cell) const
 
 
 // For the external geometry
-const Cell* Geometry::
-closestCell(double x, double y) const
-{
+const Cell* Geometry::closestCell(double x, double y) const {
   // beware that this function does not explicit check that the point is within
   // the cell, therefore if the cell grid is too small it will return
   // the closest cell (as the name indicates)

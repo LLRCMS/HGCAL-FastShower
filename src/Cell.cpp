@@ -1,4 +1,5 @@
 
+
 #include "TMath.h"
 #ifdef STANDALONE
 #include "Cell.h"
@@ -15,17 +16,20 @@ uint32_t Cell::id(uint16_t i, uint16_t j, uint16_t k) {
 }
 
 
-Cell::Cell(TVectorD&& position,
-           std::vector<TVectorD>&& vertices,
-           double orientation,
-           int i_index,
-           int j_index,
-           int k_index):
-            position_(std::move(position)),
-            vertices_(std::move(vertices)),
-            orientation_(orientation)
+Cell::Cell(TVectorD&& position, std::vector<TVectorD>&& vertices, double orientation, int i_index, int j_index, int k_index):
+  position_(std::move(position)),
+  vertices_(std::move(vertices)),
+  orientation_(orientation)
 {
 
+  if(i_index<std::numeric_limits<int16_t>::min() ||
+    i_index>std::numeric_limits<int16_t>::max() ||
+    j_index<std::numeric_limits<int16_t>::min() ||
+    j_index>std::numeric_limits<int16_t>::max()
+  )
+  {
+    throw std::string("Cell index outside of 16bits integer limits");
+  }
   i_index_ = (int16_t)i_index;
   j_index_ = (int16_t)j_index;
   k_index_ = (int16_t)k_index;

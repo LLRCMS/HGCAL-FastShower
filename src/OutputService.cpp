@@ -1,3 +1,4 @@
+
 #ifdef STANDALONE
 #include "OutputService.h"
 #else
@@ -5,7 +6,8 @@
 #endif
 
 
-OutputService::OutputService(const std::string& file_name):
+OutputService::
+OutputService(const std::string& file_name):
   file_(TFile::Open(file_name.c_str(), "recreate")),
   tree_(new TTree("tree", "tree")),
   run_(0),
@@ -13,7 +15,8 @@ OutputService::OutputService(const std::string& file_name):
   npart_(0),
   gen_PDGid_(0),
   cell_thickness_(0),
-  cell_n_() {
+  cell_n_()
+{
     tree_->Branch("run", &run_, "run/i");
     tree_->Branch("event", &event_, "event/i");
     tree_->Branch("npart", &npart_, "npart/i");
@@ -34,20 +37,25 @@ OutputService::OutputService(const std::string& file_name):
     tree_->Branch("cell_phi", &cell_phi_);
 }
 
-OutputService::~OutputService() {
+OutputService::
+~OutputService() {
 }
 
 
-void OutputService::fillTree(const Event& event) {
+void
+OutputService::
+fillTree(const Event& event)
+{
   clear();
   run_ = event.run();
   event_ = event.event();
   npart_ = event.npart();
 
   for(auto& id_hit : event.hits()) {
+
     // skip zero and negative energies
-    if(id_hit.second<=0.)
-        continue;
+    if(id_hit.second<=0.) continue;
+
     cell_energy_.emplace_back(id_hit.second);
   }
   cell_n_ = cell_energy_.size();
@@ -73,16 +81,21 @@ void OutputService::fillTree(const Event& event) {
   }
 
   for(const auto& id_part : event.generatedEnergy()) {
-    if(id_part.second<=0.)
-        continue;
+
+    if(id_part.second<=0.) continue;
+
     gen_energy_.emplace_back(id_part.second);
   }
-  for(const auto& id_part : event.generatedEta())
+
+  for(const auto& id_part : event.generatedEta()){
     gen_eta_.emplace_back(id_part.second);
-  for(const auto& id_part : event.generatedPhi())
+  }
+  for(const auto& id_part : event.generatedPhi()){
     gen_phi_.emplace_back(id_part.second);
-  for(const auto& id_part : event.pdg_id())
+  }
+  for(const auto& id_part : event.pdg_id()){
     gen_PDGid_.emplace_back(id_part.second);
+  }
   for(const auto& id_part : event.thick()) {
     cell_thickness_.emplace_back(id_part.second);
   }
@@ -90,12 +103,18 @@ void OutputService::fillTree(const Event& event) {
 tree_->Fill();
 }
 
-void OutputService::saveTree(){
+void
+OutputService::
+saveTree()
+{
   tree_->Write();
   file_->Close();
 }
 
-void OutputService::clear() {
+void
+OutputService::
+clear()
+{
   run_ = 0;
   event_ = 0;
   npart_ = 0.;
