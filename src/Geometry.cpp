@@ -158,7 +158,7 @@ std::array< std::array<double, 5>, 2> Geometry::dxdySecondZone(std::array<double
     return {{ dx, dy}};
 }
 
-std::array< int, 4> Geometry::ijWindows(int zone, std::array<double, 9> xs, std::array<double, 9> ys, double side, Parameters::Geometry::Type itype) {
+std::array< int, 4> Geometry::ijWindows(int layer_region, std::array<double, 9> xs, std::array<double, 9> ys, double side, Parameters::Geometry::Type itype) {
     // compute i,j window needed to cover the x,y window
 
     std::array< int, 4> windows;    //imin, imax, jmin, jmax
@@ -170,7 +170,8 @@ std::array< int, 4> Geometry::ijWindows(int zone, std::array<double, 9> xs, std:
     array<double,6> js_second;
     array<double,6> is_second;
 
-    if (zone == 1) {
+    // layer_region = part of layer : 1 = small cells part, 2 = large cells part
+    if (layer_region == 1) {
         dxdy = dxdyFirstZone(xs, ys);
         js_first[0] = 0;
         is_first[0] = 0;
@@ -198,12 +199,12 @@ std::array< int, 4> Geometry::ijWindows(int zone, std::array<double, 9> xs, std:
 }
 
 
-std::array< double, 4> Geometry::XYrPhi(int i, int j, double side, Parameters::Geometry::Type itype, std::array<double, 9> xs, std::array<double, 9> ys, double zone) {
+std::array< double, 4> Geometry::XYrPhi(int i, int j, double side, Parameters::Geometry::Type itype, std::array<double, 9> xs, std::array<double, 9> ys, double layer_region) {
     std::array< double, 4> xyrPhi;
 
     std::array<double, 3> der = derivative(side, itype);
     // peak on top
-    if (zone == 1) {
+    if (layer_region == 1) {
         xyrPhi[0] = xs[0] + i*der[0] + j*der[1];
         xyrPhi[1] = ys[0] + j*der[2];
     }
@@ -486,7 +487,10 @@ void Geometry::constructFromParameters(bool debug, int layer_id, int display_lay
         n_vertices = 3;
 
     double side1 = parameters_.small_cell_side;
-    int zone1 = 1;
+
+    //cell_size_region = 1 -> small cell part
+    //cell_size_region = 2 -> large cell part
+    int cell_size_region = 1;
 
     std::array< std::array<double, 6>, 4> offset1;
     if (itype==Parameters::Geometry::Type::Hexagons) {
@@ -495,7 +499,7 @@ void Geometry::constructFromParameters(bool debug, int layer_id, int display_lay
     else
         offset1 = triangleoffset(side1);
 
-    std::array< int, 4> windows1 = ijWindows(zone1, xs, ys, side1, itype);
+    std::array< int, 4> windows1 = ijWindows(cell_size_region, xs, ys, side1, itype);
 
 
     double orientation = 90.;
@@ -507,7 +511,7 @@ void Geometry::constructFromParameters(bool debug, int layer_id, int display_lay
         real_j = 0;
         for (int j = windows1[2]; j <= windows1[3]; j++) {
 
-            std::array< double, 4> xyrPhi = XYrPhi(i, j, side1, itype, xs, ys,zone1);
+            std::array< double, 4> xyrPhi = XYrPhi(i, j, side1, itype, xs, ys,cell_size_region);
 
             // check if cell is inside boundaries. If not, skip it
             if(!(xyrPhi[2] >= r_min &&
@@ -587,6 +591,7 @@ void Geometry::constructFromParameters(bool debug, int layer_id, int display_lay
     }
 
     double side2 = parameters_.large_cell_side;
+    cell_size_region = 2;
 
     std::array< std::array<double, 6>, 4> offset2;
     if (itype==Parameters::Geometry::Type::Hexagons)
@@ -594,7 +599,7 @@ void Geometry::constructFromParameters(bool debug, int layer_id, int display_lay
     else
         offset2 = triangleoffset(side2);
 
-    std::array< int, 4> windows2 = ijWindows(2, xs, ys, side2, itype);
+    std::array< int, 4> windows2 = ijWindows(cell_size_region, xs, ys, side2, itype);
 
   // build cells inside the requested window
     int real_i2 = 0;
@@ -603,7 +608,7 @@ void Geometry::constructFromParameters(bool debug, int layer_id, int display_lay
         real_j2 = 0;
         for (int j = windows2[2]; j<=windows2[3]; j++) {
 
-            std::array< double, 4> xyrPhi = XYrPhi(i, j, side2, itype, xs, ys, 2);
+            std::array< double, 4> xyrPhi = XYrPhi(i, j, side2, itype, xs, ys, cell_size_region);
 
             // check if cell is inside boundaries. If not, skip it
             if(!(xyrPhi[2]>=limit_first_zone &&
