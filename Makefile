@@ -19,6 +19,7 @@ SRCPP = main.cpp\
 	Geometry.cpp\
 	Generator.cpp\
 	Parameters.cpp\
+	ShowerParametrization.cpp\
 	ShowerShape.cpp\
 	ShowerShapeHexagon.cpp\
 	ShowerShapeTriangle.cpp\
