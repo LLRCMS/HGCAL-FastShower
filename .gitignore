@@ -5,6 +5,5 @@
 *.root
 *.exe
 *.py
-*.txt
 
 lib/
