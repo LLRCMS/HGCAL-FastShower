@@ -13,7 +13,6 @@
 #include <string>
 #include <algorithm>
 
-
 #ifdef STANDALONE
 #include "Generator.h"
 #include "ShowerShapeHexagon.h"
@@ -27,7 +26,6 @@
 #include "HGCalSimulation/FastShower/interface/ShowerShapeTriangle.h"
 #include "HGCalSimulation/FastShower/interface/Event.h"
 #endif
-
 using namespace std;
 
 Generator::
@@ -44,9 +42,7 @@ Generator::~Generator(){
 }
 
 
-std::array<std::array<double, NB_SI_THICKNESS>, NB_LAYERS> Generator::
-readCalibration(const std::string& filename)
-{
+std::array<std::array<double, NB_SI_THICKNESS>, NB_LAYERS> Generator::readCalibration(const std::string& filename) {
 
   std::array<std::array<double, NB_SI_THICKNESS>, NB_LAYERS> calib;
 
@@ -125,8 +121,7 @@ readCalibration(const std::string& filename)
 }
 
 
-void Generator::
-simulate() {
+void Generator::simulate() {
   unsigned nevents = parameters_.general().events;
 
   std::unordered_map<uint32_t, TH1F> hCellEnergyMap;
