@@ -1,8 +1,8 @@
-#ifndef POINT_H_
-#define POINT_H_
+#ifndef __HGCalSimulation_FastShower_point_h__
+#define __HGCalSimulation_FastShower_point_h__
 
 class Point {
-public:
+  public:
     float x;
     float y;
 
