@@ -11,18 +11,18 @@
 class Rectangle {
 
 private:
-  Point* topLeft;
-  Point* bottomRight;
+  Point topLeft;
+  Point bottomRight;
 
 public:
-  Rectangle(Point*, Point*);
+  Rectangle(Point = 0, Point = 0);
   ~Rectangle();
 
-  bool contains(Point*);
-  Point* getCenter();
+  bool contains(Point);
+  Point getCenter();
 
-  Point* getTopLeft();
-  Point* getBottomRight();
+  Point getTopLeft();
+  Point getBottomRight();
 };
 
 

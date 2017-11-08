@@ -8,7 +8,7 @@
 #endif
 
 Tree::
-Tree(Rectangle* r, int levels)
+Tree(Rectangle r, int levels)
 {
   rectangle = r;
   cells = nullptr;
@@ -23,7 +23,7 @@ Tree::
     delete cells;
   }
 
-  delete rectangle;
+  // delete rectangle;
 
   delete nw;
   delete sw;
@@ -75,40 +75,40 @@ getCells()
 Tree* Tree::
 getLeaf(float x, float y)
 {
-  Point* p = new Point(x, y);
+  Point p = Point(x, y);
   return getLeaf(p);
 }
 
 Tree* Tree::
-getLeaf(Point* p)
+getLeaf(Point p)
 {
   if(cells != nullptr) return this;
 
-  if(nw->rectangle->contains(p)) {
+  if(nw->rectangle.contains(p)) {
     // std::cout << "Going to subtree nw" << std::endl;
     return nw->getLeaf(p);
   }
 
-  if(sw->rectangle->contains(p)) {
+  if(sw->rectangle.contains(p)) {
     // std::cout << "Going to subtree sw" << std::endl;
     return sw->getLeaf(p);
   }
 
-  if(ne->rectangle->contains(p)) {
+  if(ne->rectangle.contains(p)) {
     // std::cout << "Going to subtree ne" << std::endl;
     return ne->getLeaf(p);
   }
 
-  if(se->rectangle->contains(p)) {
+  if(se->rectangle.contains(p)) {
     // std::cout << "Going to subtree se" << std::endl;
     return se->getLeaf(p);
   }
 
-  // std::cout << "Looking for (" << p->x << ", " << p->y << ") "<< std::endl;
-  // std::cout << "topLeft is (" << rectangle->getTopLeft()->x << ", "
-  //     << rectangle->getTopLeft()->y << ")" << std::endl;
-  // std::cout << "BottomRight is (" << rectangle->getBottomRight()->x << ", "
-  //     << rectangle->getBottomRight()->y << ")" << std::endl;
+  // std::cout << "Looking for (" << p.x << ", " << p.y << ") "<< std::endl;
+  // std::cout << "topLeft is (" << rectangle.getTopLeft().x << ", "
+  //     << rectangle.getTopLeft().y << ")" << std::endl;
+  // std::cout << "BottomRight is (" << rectangle.getBottomRight().x << ", "
+  //     << rectangle.getBottomRight().y << ")" << std::endl;
   throw std::string("Coordinates not found.");
 }
 
@@ -120,21 +120,21 @@ subdivide(int remainingLevels)
     return;
   }
 
-  Point* center = rectangle->getCenter();
+  Point center = rectangle.getCenter();
 
-  Rectangle* r_nw = new Rectangle(rectangle->getTopLeft(), center);
+  Rectangle r_nw = Rectangle(rectangle.getTopLeft(), center);
 
-  Rectangle* r_sw = new Rectangle(
-    new Point(rectangle->getTopLeft()->x, center->y),
-    new Point(center->x, rectangle->getBottomRight()->y)
+  Rectangle r_sw = Rectangle(
+    Point(rectangle.getTopLeft().x, center.y),
+    Point(center.x, rectangle.getBottomRight().y)
   );
 
-  Rectangle* r_ne = new Rectangle(
-    new Point(center->x, rectangle->getTopLeft()->y),
-    new Point(rectangle->getBottomRight()->x, center->y)
+  Rectangle r_ne = Rectangle(
+    Point(center.x, rectangle.getTopLeft().y),
+    Point(rectangle.getBottomRight().x, center.y)
   );
 
-  Rectangle* r_se = new Rectangle(center, rectangle->getBottomRight());
+  Rectangle r_se = Rectangle(center, rectangle.getBottomRight());
 
   nw = new Tree(r_nw, remainingLevels - 1);
   sw = new Tree(r_sw, remainingLevels - 1);

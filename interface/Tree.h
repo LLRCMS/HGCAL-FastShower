@@ -14,14 +14,14 @@
 class Tree {
 
   public:
-    Tree(Rectangle*, int);
+    Tree(Rectangle, int);
     ~Tree();
 
     bool empty();
     void addCell(Cell*);
     int countCells();
     std::vector<Cell*>* getCells();
-    Tree* getLeaf(Point*);
+    Tree* getLeaf(Point);
     Tree* getLeaf(float, float);
 
   private:
@@ -37,7 +37,7 @@ class Tree {
   std::vector<Cell*>* cells;
 
   protected:
-  Rectangle* rectangle;
+  Rectangle rectangle;
 };
 
 #endif
