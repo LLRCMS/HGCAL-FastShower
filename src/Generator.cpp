@@ -279,7 +279,7 @@ void Generator::simulate() {
 
       std::vector<double > cell_x;
       std::vector<double > cell_y;
-      for (auto& c : cell_collection[layer_id]) {
+      for (const auto& c : cell_collection[layer_id]) {
         cell_x.push_back(c.getX());
         cell_y.push_back(c.getY());
       }
