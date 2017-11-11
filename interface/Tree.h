@@ -10,6 +10,7 @@
 #endif
 
 #include <vector>
+# include <memory>
 
 class Tree {
 
@@ -26,10 +27,10 @@ class Tree {
 
   private:
     //4 childrens
-    Tree* nw;
-    Tree* ne;
-    Tree* sw;
-    Tree* se;
+    std::unique_ptr<Tree> nw;
+    std::unique_ptr<Tree> ne;
+    std::unique_ptr<Tree> sw;
+    std::unique_ptr<Tree> se;
 
   void subdivide(int);
 

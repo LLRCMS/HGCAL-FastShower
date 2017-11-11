@@ -25,10 +25,10 @@ Tree::
 
   // delete rectangle;
 
-  delete nw;
-  delete sw;
-  delete ne;
-  delete se;
+  nw.reset();
+  sw.reset();
+  ne.reset();
+  se.reset();
 }
 
 //
@@ -136,8 +136,8 @@ subdivide(int remainingLevels)
 
   Rectangle r_se = Rectangle(center, rectangle.getBottomRight());
 
-  nw = new Tree(r_nw, remainingLevels - 1);
-  sw = new Tree(r_sw, remainingLevels - 1);
-  ne = new Tree(r_ne, remainingLevels - 1);
-  se = new Tree(r_se, remainingLevels - 1);
+  nw = std::make_unique<Tree>(r_nw, remainingLevels - 1);
+  sw = std::make_unique<Tree>(r_sw, remainingLevels - 1);
+  ne = std::make_unique<Tree>(r_ne, remainingLevels - 1);
+  se = std::make_unique<Tree>(r_se, remainingLevels - 1);
 }
