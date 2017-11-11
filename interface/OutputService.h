@@ -40,8 +40,8 @@ class OutputService {
     std::vector<double> gen_eta_;
     std::vector<double> gen_phi_;
 
-    unsigned cell_n_;
     std::vector<int> cell_thickness_;
+    unsigned cell_n_;
     std::vector<double> cell_energy_;
     std::vector<double> cell_x_;
     std::vector<double> cell_y_;
