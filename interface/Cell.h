@@ -49,10 +49,6 @@ class Cell {
     uint32_t id_;
 
     double orientation_; // orientation for halh cells
-
-    double x_;
-    double y_;
-    double z_;
 };
 
 #endif

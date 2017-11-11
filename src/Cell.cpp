@@ -34,21 +34,18 @@ Cell::Cell(TVectorD&& position, std::vector<TVectorD>&& vertices, double orienta
   j_index_ = (int16_t)j_index;
   k_index_ = (int16_t)k_index;
   id_ = Cell::id(i_index_, j_index_, k_index_);
-  x_ = this->getPosition()(0);
-  y_ = this->getPosition()(1);
-  z_ = this->getPosition()(2);
 }
 
 double Cell::getX() const {
-    return x_;
+    return this->getPosition()(0);
 }
 
 double Cell::getY() const{
-    return y_;
+    return this->getPosition()(1);
 }
 
 double Cell::getZ() const{
-    return z_;
+    return this->getPosition()(2);
 }
 
 int Cell::getIIndex() const{
