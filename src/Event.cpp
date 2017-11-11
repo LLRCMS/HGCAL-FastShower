@@ -1,9 +1,11 @@
 
+
 #ifdef STANDALONE
 #include "Event.h"
 #else
 #include "HGCalSimulation/FastShower/interface/Event.h"
 #endif
+
 
 Event::
 Event(uint32_t run, uint32_t event):
@@ -58,9 +60,9 @@ fillThickness(uint32_t id, int thickness)
 
 void
 Event::
-fillCells(uint32_t id, const Cell& cell)
+fillHitCells(uint32_t id, const Cell& hit_cell)
 {
-  cells_.emplace(id, cell);
+  hit_cells_.emplace(id, hit_cell);
 }
 
 void

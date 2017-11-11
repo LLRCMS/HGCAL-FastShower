@@ -1,5 +1,3 @@
-#include <iostream>
-
 
 #ifndef __HGCalSimulation_FastShower_ShowerParametrization_h__
 #define __HGCalSimulation_FastShower_ShowerParametrization_h__

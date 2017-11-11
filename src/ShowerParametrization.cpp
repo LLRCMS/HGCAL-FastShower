@@ -1,3 +1,4 @@
+#include <iostream>
 
 #ifdef STANDALONE
 #include "ShowerParametrization.h"
@@ -52,7 +53,7 @@ getLayerProfile(int pdgid)
 
   map<int, std::vector<double>>::const_iterator pos = layerProfile_.find(pdgid);
 
-  if (pos == layerProfile_.end()) cout << "pdgid doesn't exist"<<endl;
+  if (pos == layerProfile_.end()) std::cout << "pdgid doesn't exist"<<std::endl;
   else {
     int index = 0;
     for (auto& list_iter : pos->second){
@@ -71,7 +72,7 @@ spotEnergy(int pdgid)
   map<int, std::vector<double>>::const_iterator pos = alpha_.find(pdgid);
 
   if (pos == alpha_.end()) {
-      cout << "pdgid doesn't exist"<<endl;
+      std::cout << "pdgid doesn't exist"<<std::endl;
   } else {
       int index = 0;
       for (auto& list_iter : pos->second){

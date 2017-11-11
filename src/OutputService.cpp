@@ -15,7 +15,7 @@ OutputService(const std::string& file_name):
   npart_(0),
   gen_PDGid_(0),
   cell_thickness_(0),
-  cell_n_()
+  cell_n_(0)
 {
     tree_->Branch("run", &run_, "run/i");
     tree_->Branch("event", &event_, "event/i");
@@ -60,7 +60,7 @@ fillTree(const Event& event)
   }
   cell_n_ = cell_energy_.size();
 
-  for(auto& c : event.cells()) {
+  for(auto& c : event.hitCells()) {
 
     double x = c.second.getX();
     double y = c.second.getY();

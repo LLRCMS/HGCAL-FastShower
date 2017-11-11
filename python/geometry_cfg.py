@@ -4,7 +4,7 @@ import math as m
 # Cells types : Hexagons, Triangles, External
 geometry_type = 'Hexagons'
 
-geometry_layer = 1
+geometry_layer = -1
 # layers' z positions
 # from CMSSW V7 geometry: https://indico.cern.ch/event/458374/contribution/9/attachments/1179028/
 # 1828217/Andreev_29Oct2015.pdf 

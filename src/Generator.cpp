@@ -26,7 +26,6 @@
 #include "HGCalSimulation/FastShower/interface/ShowerShapeTriangle.h"
 #include "HGCalSimulation/FastShower/interface/Event.h"
 #endif
-using namespace std;
 
 Generator::
 Generator(const Parameters& params):
@@ -106,13 +105,13 @@ std::array<std::array<double, NB_SI_THICKNESS>, NB_LAYERS> Generator::readCalibr
     }
   }
   else {
-  cout << "Wrong file path or the file does not exit"<<endl;
+  std::cout << "Wrong file path or the file does not exit"<< std::endl;
   }
 
   if (col_counter != dim_column && line_counter != NB_LAYERS){
-    std::cout << "WARNING : check the format of the calibration file"<<endl;
-    std::cout << "You should have 7 columns (layer, 3 MIP and 3 noise for the different Si thickness)"<<endl;
-    std::cout << "and one line per layer."<<endl;
+    std::cout << "WARNING : check the format of the calibration file"<< std::endl;
+    std::cout << "You should have 7 columns (layer, 3 MIP and 3 noise for the different Si thickness)"<<std::endl;
+    std::cout << "and one line per layer."<<std::endl;
   }
 
   my_calib_file.close();
@@ -136,7 +135,7 @@ void Generator::simulate() {
   double energyrec=0.;
 
   // Geometry
-  cout<<"I'm building the geometry, please wait..." <<endl;
+  std::cout<<"I'm building the geometry, please wait..." <<std::endl;
 
   // Shower parametrization
   ShowerParametrization aShowerParametrization(parameters_.shower());
@@ -163,7 +162,7 @@ void Generator::simulate() {
 
   for (int layer_id = layer_min; layer_id < layer_max; layer_id++) {
 
-    cout << "=====> Layer " <<layer_id + 1 << " / "<< layer_max << '\r' << flush;
+    std::cout << "=====> Layer " <<layer_id + 1 << " / "<< layer_max << '\r' << flush;
 
     if (parameters_.geometry().type!=Parameters::Geometry::Type::External) {
       geometry_.constructFromParameters(parameters_.general().debug, layer_id, display_layer);
@@ -224,13 +223,13 @@ void Generator::simulate() {
     geometry_.print();
   }
 
-  cout << "Done !"<<endl;
+  std::cout << "Done !"<<std::endl;
 
   // Noise calibration of each cells for all layers
   std::array<std::array<double, NB_SI_THICKNESS>, NB_LAYERS> calibratednoise;
 
   if (parameters_.generation().noise) {
-    cout << "Noise calibration ..."<<endl;
+    std::cout << "Noise calibration ..."<<std::endl;
 
     if (parameters_.generation().gentype == Parameters::Generation::GenType::Personnal) {
 
@@ -256,7 +255,7 @@ void Generator::simulate() {
       calibratednoise = readCalibration(parameters_.generation().calib_file);
     }
   }
-  cout << "Done !"<<endl;
+  std::cout << "Done !"<<std::endl;
 
   // start main loop on all events
   double hit_outside_geom = 0.;
@@ -358,7 +357,7 @@ void Generator::simulate() {
   int thickness = 0;
 
   for (unsigned iev=1; iev <= nevents; iev++) {
-    cout << "================ Simulating event: " << iev << " ================" << endl;
+    std::cout << "================ Simulating event: " << iev << " ================" << std::endl;
 
     // initialize event
     Event event(0, iev); // default run number =0
@@ -507,7 +506,7 @@ void Generator::simulate() {
             leafCells = tree_map[layer_id]->getLeaf(float(x), float(y))->getCells();
 
             for (auto& leafCell : *leafCells) {
-              // cout << "leafCell : "<<leafCell->getX()<<"; "<<leafCell->getY()<<endl;
+              // std::cout << "leafCell : "<<leafCell->getX()<<"; "<<leafCell->getY()<<std::endl;
               double leafCell_x = leafCell->getX();
               double leafCell_y = leafCell->getY();
               double r = (leafCell_x - x) * (leafCell_x - x)
@@ -530,22 +529,20 @@ void Generator::simulate() {
           // first cell found
           const Cell& cell = *closestCells;
 
-          // cout << "closestCell : "<<cell.getX()<<"; "<<cell.getY()<<endl;
-
           bool isincell = geometry_.isInCell(pos, cell);
 
           double enoise = 0;
           if (!isincell) {
             if (parameters_.general().debug) {
-              cout << "[main] point is not inside the closest cell (hit in boarder cells or in hole at the limit)  x,y " << x << " " << y <<
+              std::cout << "[main] point is not inside the closest cell (hit in boarder cells or in hole at the limit)  x,y " << x << " " << y <<
                       " cell position " << cell.getX() << " " << cell.getY() <<
                       " closest cell indices " << cell.getIIndex() << " " <<  cell.getJIndex()<<
-                      " layer Id : "<<layer_id + 1<< endl;
+                      " layer Id : "<<layer_id + 1<< std::endl;
             }
             hit_outside_geom++;
           }
           else {
-            event.fillCells(closestCells->getId(), cell);
+            event.fillHitCells(closestCells->getId(), cell);
 
             energyrec += real_energy;
             energygenincells += real_energy;
@@ -577,9 +574,9 @@ void Generator::simulate() {
       }
     }
 
-    cout << "simulated energy " << energygen << endl;
-    cout << "simulated energy inside cells " << energygenincells << endl;
-    cout << "reconstructed energy inside cells (includes noise) " << energyrec << endl;
+    std::cout << "simulated energy " << energygen << std::endl;
+    std::cout << "simulated energy inside cells " << energygenincells << std::endl;
+    std::cout << "reconstructed energy inside cells (includes noise) " << energyrec << std::endl;
 
     //Not changed since all layers implementation. 
     //FIX ME: Change the following lines in order to return for each layer or one layer the 
@@ -640,15 +637,15 @@ void Generator::simulate() {
   // hSpotEnergy.Write();
   // hEnergySum.Write();
 
-  cout<<endl;
-  cout<< "---------> Simulation information : "<<endl;
-  cout << nevents << " events generated " << endl;
-  cout<<hit_outside_geom<<" hits are outside or at the boarder of the geometry for a total of "
-      <<tot_hits<<" hits ("<<hit_outside_geom*100./tot_hits<<"\%)."<< endl;
+  std::cout<<std::endl;
+  std::cout<< "---------> Simulation information : "<<std::endl;
+  std::cout << nevents << " events generated " << std::endl;
+  std::cout<<hit_outside_geom<<" hits are outside or at the boarder of the geometry for a total of "
+      <<tot_hits<<" hits ("<<hit_outside_geom*100./tot_hits<<"\%)."<< std::endl;
 
   t.Stop();
   t.Print();
-  cout << endl;
+  std::cout << std::endl;
 }
 
 
