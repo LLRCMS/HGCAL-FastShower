@@ -185,7 +185,7 @@ void Generator::simulate() {
       geometry_histo->Write();
       delete geometry_histo;
 
-      for (Cell c : cell_collection[display_layer]) {
+      for (auto& c : cell_collection[display_layer]) {
         int i = c.getIIndex();
         int j = c.getJIndex();
         int k = c.getLayer();
@@ -201,7 +201,7 @@ void Generator::simulate() {
       }
 
       if (parameters_.display().events > 0) {
-        for (Cell c : cell_collection[display_layer]) {
+        for (auto& c : cell_collection[display_layer]) {
           int i = c.getIIndex();
           int j = c.getJIndex();
           int k = c.getLayer();
@@ -370,7 +370,7 @@ void Generator::simulate() {
     unsigned npart = parameters_.general().part_type.size();
     event.setnPart(npart);
 
-    for (int ip : parameters_.general().part_type) {
+    for (auto& ip : parameters_.general().part_type) {
 
       // particle incidents parameters
       double eta_incident, phi_incident;
@@ -452,7 +452,7 @@ void Generator::simulate() {
         double real_energy = 0;
 
         // loop over hits
-        for (int i = 0; i<nhits; i++) {
+        for (int i = 0; i < nhits; i++) {
           // Compute the position of each hit
 
           double r_shower = 0;
@@ -680,7 +680,7 @@ std::unique_ptr<TCanvas> Generator::display(const std::unordered_map<uint32_t,TH
   TH2Poly* energy_map = (TH2Poly*)geometry_.cellHistogram()->Clone(std::string("test"+std::to_string(ievt)).c_str());
 
   for (auto& hist : hCellEnergyEvtMap) {
-    for(Cell& c : cell_collection) {
+    for(auto& c : cell_collection) {
       if (c.getId() == hist.first) {
         double enrj = hist.second.GetMean();
         energy_map->Fill(c.getX(), c.getY(), enrj);
