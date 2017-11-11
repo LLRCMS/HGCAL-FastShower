@@ -309,7 +309,7 @@ void Generator::simulate() {
 
         x_c = float(c.getX());
         y_c = float(c.getY());
-        float cell_radius = sqrt((x_c*x_c)+(y_c-y_c));
+        float cell_radius = sqrt((x_c*x_c)+(y_c*y_c));
 
         if (cell_radius <= float(parameters_.geometry().limit_first_zone)) {
           side = parameters_.geometry().small_cell_side;
@@ -355,7 +355,7 @@ void Generator::simulate() {
     }
   }
 
-  int thick = 0;
+  int thickness = 0;
 
   for (unsigned iev=1; iev <= nevents; iev++) {
     cout << "================ Simulating event: " << iev << " ================" << endl;
@@ -486,18 +486,18 @@ void Generator::simulate() {
             if (hit_pos <= parameters_.geometry().limit_first_zone) {
               real_energy = aShowerParametrization.spotEnergy(ip)[0];
               side = parameters_.geometry().small_cell_side;
-              thick = 100;
+              thickness = 100;
             }
             else if (hit_pos >= parameters_.geometry().limit_first_zone &&
                      hit_pos <= parameters_.geometry().limit_second_zone){
               real_energy = aShowerParametrization.spotEnergy(ip)[1];
               side = parameters_.geometry().large_cell_side;
-              thick = 200;
+              thickness = 200;
             }
             else {
               real_energy = denrj;
               side = parameters_.geometry().large_cell_side;
-              thick = 300;
+              thickness = 300;
             }
             energygen += real_energy;
 
@@ -506,7 +506,8 @@ void Generator::simulate() {
             std::vector<Cell*>* leafCells;
             leafCells = tree_map[layer_id]->getLeaf(float(x), float(y))->getCells();
 
-            for (Cell* leafCell : *leafCells) {
+            for (auto& leafCell : *leafCells) {
+              // cout << "leafCell : "<<leafCell->getX()<<"; "<<leafCell->getY()<<endl;
               double leafCell_x = leafCell->getX();
               double leafCell_y = leafCell->getY();
               double r = (leafCell_x - x) * (leafCell_x - x)
@@ -522,13 +523,14 @@ void Generator::simulate() {
             energygen += denrj;
             closestCells = geometry_.closestCell(x,y);
           }
-
           // for half-cell or boarder cells, check it is within the cell
           // add energy to corresponding cell
           // Note : isincell search the position of the hit in the closest cell. When it finds the
           // cell it stop : remove the limit line problem because the hit is attributed to the 
           // first cell found
           const Cell& cell = *closestCells;
+
+          // cout << "closestCell : "<<cell.getX()<<"; "<<cell.getY()<<endl;
 
           bool isincell = geometry_.isInCell(pos, cell);
 
@@ -551,12 +553,12 @@ void Generator::simulate() {
 
             // loop on cells for the noise generation from the cells calibration
             if (parameters_.generation().noise) {
-              enoise = gun_.Gaus(0., calibratednoise[layer_id][thick/100 - 1]);
+              enoise = gun_.Gaus(0., calibratednoise[layer_id][thickness/100 - 1]);
               event.fillHit(closestCells->getId(), enoise);
               energyrec += enoise;
             }
 
-            event.fillThick(closestCells->getId(), thick);
+            event.fillThickness(closestCells->getId(), thickness);
           }
 
           // fill shower histograms
