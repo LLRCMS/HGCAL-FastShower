@@ -16,6 +16,9 @@ vpath %.cpp ./bin
 
 SRCPP = main.cpp\
 	Cell.cpp\
+	Point.cpp\
+	Rectangle.cpp\
+	Tree.cpp\
 	Geometry.cpp\
 	Generator.cpp\
 	Parameters.cpp\
@@ -26,9 +29,6 @@ SRCPP = main.cpp\
 	Event.cpp\
 	OutputService.cpp\
 	jsoncpp.cpp\
-	Point.cpp\
-	Rectangle.cpp\
-	Tree.cpp
 
 #OBJCPP = $(SRCPP:.cpp=.o)
 OBJCPP = $(patsubst %.cpp,lib/%.o,$(SRCPP))
