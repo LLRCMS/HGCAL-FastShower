@@ -357,7 +357,7 @@ void Generator::simulate() {
   int thickness = 0;
 
   for (unsigned iev=1; iev <= nevents; iev++) {
-    std::cout << "================ Simulating event: " << iev << " ================" << std::endl;
+    // std::cout << "================ Simulating event: " << iev << " ================" << std::endl;
 
     // initialize event
     Event event(0, iev); // default run number =0
@@ -503,19 +503,31 @@ void Generator::simulate() {
             double rmin = numeric_limits<double>::max();
 
             std::vector<Cell*>* leafCells;
-            leafCells = tree_map[layer_id]->getLeaf(float(x), float(y))->getCells();
+
+            try {
+              leafCells = tree_map[layer_id]->getLeaf(float(x), float(y))->getCells();
+            } catch(std::string errorString) {
+              std::cout << "WARNING: " << errorString << std::endl;
+              std::cout << "WARNING: not processing this hit." << std::endl;
+              continue;
+            }
+            
 
             for (auto& leafCell : *leafCells) {
               // std::cout << "leafCell : "<<leafCell->getX()<<"; "<<leafCell->getY()<<std::endl;
               double leafCell_x = leafCell->getX();
               double leafCell_y = leafCell->getY();
-              double r = (leafCell_x - x) * (leafCell_x - x)
-                          + (leafCell_y - y) * (leafCell_y - y);
+              double r = sqrt((leafCell_x - x) * (leafCell_x - x)
+                          + (leafCell_y - y) * (leafCell_y - y));
 
               if (r < rmin) {
                 rmin = r;
                 closestCells = leafCell;
               }
+            }
+
+            if (closestCells == nullptr) {
+              std::cout << "The list had " << leafCells->size() << " cells" << std::endl;
             }
           }
           else {
@@ -527,6 +539,12 @@ void Generator::simulate() {
           // Note : isincell search the position of the hit in the closest cell. When it finds the
           // cell it stop : remove the limit line problem because the hit is attributed to the 
           // first cell found
+          
+          if (closestCells == nullptr) {
+            std::cout << "closestCells is null; not processing this hit" << std::endl;
+            continue;
+          }
+
           const Cell& cell = *closestCells;
 
           bool isincell = geometry_.isInCell(pos, cell);
@@ -574,9 +592,9 @@ void Generator::simulate() {
       }
     }
 
-    std::cout << "simulated energy " << energygen << std::endl;
-    std::cout << "simulated energy inside cells " << energygenincells << std::endl;
-    std::cout << "reconstructed energy inside cells (includes noise) " << energyrec << std::endl;
+    // std::cout << "simulated energy " << energygen << std::endl;
+    // std::cout << "simulated energy inside cells " << energygenincells << std::endl;
+    // std::cout << "reconstructed energy inside cells (includes noise) " << energyrec << std::endl;
 
     //Not changed since all layers implementation. 
     //FIX ME: Change the following lines in order to return for each layer or one layer the 

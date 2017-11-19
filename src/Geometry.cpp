@@ -743,6 +743,9 @@ bool Geometry::isInCell(const TVectorD& position, const Cell& cell) const {
   // implementation below works for any convex cell described by its vertices
   // assumes vertices are consecutive along the cell perimeter and ordered along direct rotation
 
+  // if (cell == nullptr) std::cout << "hello" << std::endl;
+  // std::cout << cell.getId() << std::endl;
+
   // loop on pair of consective vertices 
   const auto& vertices = cell.getVertices();
   for (unsigned int i=0;i<vertices.size()-1;i++) {
