@@ -4,7 +4,7 @@ import math as m
 # Cells types : Hexagons, Triangles, External
 geometry_type = 'Hexagons'
 
-geometry_layer = 8
+geometry_layer = -1
 # layers' z positions
 # from CMSSW V7 geometry: https://indico.cern.ch/event/458374/contribution/9/attachments/1179028/
 # 1828217/Andreev_29Oct2015.pdf 
@@ -38,8 +38,8 @@ else: #FH-BH
 # Define (eta,phi) windows to build the geometry
 geometry_eta_min = 1.475
 geometry_eta_max = 3.
-geometry_phi_min = -m.pi/30.
-geometry_phi_max = m.pi/30.
+geometry_phi_min = -m.pi/8.
+geometry_phi_max = m.pi/8.
 
 # If the geometry_type is External, precise the geometry file to use
 geometry_file = 'data/AC_11.json'

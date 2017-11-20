@@ -534,7 +534,7 @@ void Generator::simulate() {
           // Note : isincell search the position of the hit in the closest cell. When it finds the
           // cell it stop : remove the limit line problem because the hit is attributed to the 
           // first cell found
-          
+
           if (closestCells == nullptr) {
             std::cout << "closestCells is null; not processing this hit" << std::endl;
             continue;
