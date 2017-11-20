@@ -104,11 +104,11 @@ getLeaf(Point p)
     return se->getLeaf(p);
   }
 
-  std::cout << "Looking for (" << p.x << ", " << p.y << ") "<< std::endl;
-  std::cout << "topLeft is (" << rectangle.getTopLeft().x << ", "
-      << rectangle.getTopLeft().y << ")" << std::endl;
-  std::cout << "BottomRight is (" << rectangle.getBottomRight().x << ", "
-      << rectangle.getBottomRight().y << ")" << std::endl;
+  // std::cout << "Looking for (" << p.x << ", " << p.y << ") "<< std::endl;
+  // std::cout << "topLeft is (" << rectangle.getTopLeft().x << ", "
+  //     << rectangle.getTopLeft().y << ")" << std::endl;
+  // std::cout << "BottomRight is (" << rectangle.getBottomRight().x << ", "
+  //     << rectangle.getBottomRight().y << ")" << std::endl;
   throw std::string("Coordinates not found.");
 }
 
