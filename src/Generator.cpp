@@ -476,7 +476,7 @@ void Generator::simulate() {
           pos(1)=y;
 
           double side = 0;
-          const Cell* closestCells;
+          const Cell* closestCells = nullptr;
 
           if (parameters_.geometry().type!=Parameters::Geometry::Type::External) {
 
@@ -514,7 +514,6 @@ void Generator::simulate() {
             
 
             for (auto& leafCell : *leafCells) {
-              // std::cout << "leafCell : "<<leafCell->getX()<<"; "<<leafCell->getY()<<std::endl;
               double leafCell_x = leafCell->getX();
               double leafCell_y = leafCell->getY();
               double r = sqrt((leafCell_x - x) * (leafCell_x - x)
@@ -536,10 +535,10 @@ void Generator::simulate() {
           // cell it stop : remove the limit line problem because the hit is attributed to the 
           // first cell found
           
-          // if (closestCells == nullptr) {
-          //   std::cout << "closestCells is null; not processing this hit" << std::endl;
-          //   continue;
-          // }
+          if (closestCells == nullptr) {
+            std::cout << "closestCells is null; not processing this hit" << std::endl;
+            continue;
+          }
 
           const Cell& cell = *closestCells;
 
