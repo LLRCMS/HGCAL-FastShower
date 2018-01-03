@@ -43,7 +43,7 @@ empty()
 }
 
 void Tree::
-addCell(Cell* c)
+addCell(const Cell* c)
 {
   cells->push_back(c);
 }
@@ -66,7 +66,7 @@ countCells()
   return cellCount;
 }
 
-std::vector<Cell*>* Tree::
+std::vector< const Cell*>* Tree::
 getCells()
 {
   return cells;
@@ -116,7 +116,7 @@ void Tree::
 subdivide(int remainingLevels)
 {
   if(remainingLevels == 0) {
-    cells = new std::vector<Cell*>;
+    cells = new std::vector<const Cell*>;
     return;
   }
 

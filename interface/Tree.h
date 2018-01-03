@@ -19,9 +19,9 @@ class Tree {
     ~Tree();
 
     bool empty();
-    void addCell(Cell*);
+    void addCell(const Cell*);
     int countCells();
-    std::vector<Cell*>* getCells();
+    std::vector<const Cell*>* getCells();
     Tree* getLeaf(Point);
     Tree* getLeaf(float, float);
 
@@ -35,7 +35,7 @@ class Tree {
   void subdivide(int);
 
   // Cells selected in the tree
-  std::vector<Cell*>* cells;
+  std::vector<const Cell*>* cells;
 
   protected:
   Rectangle rectangle;

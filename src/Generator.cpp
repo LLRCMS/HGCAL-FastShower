@@ -304,7 +304,7 @@ void Generator::simulate() {
       Tree* tree = new Tree(plan, 5);
       float x_c, y_c;
       double side;
-      for (auto& c : cell_collection[layer_id]) {
+      for (const auto& c : cell_collection[layer_id]) {
 
         x_c = float(c.getX());
         y_c = float(c.getY());
@@ -475,7 +475,7 @@ void Generator::simulate() {
           pos(0)=x;
           pos(1)=y;
 
-          // double side = 0;
+          double side = 0;
           const Cell* closestCells = nullptr;
 
           if (parameters_.geometry().type!=Parameters::Geometry::Type::External) {
@@ -502,7 +502,7 @@ void Generator::simulate() {
 
             double rmin = numeric_limits<double>::max();
 
-            std::vector<Cell*>* leafCells;
+            std::vector<const Cell*>* leafCells;
 
             try {
               leafCells = tree_map[layer_id]->getLeaf(float(x), float(y))->getCells();
@@ -511,9 +511,9 @@ void Generator::simulate() {
               std::cout << "WARNING: not processing this hit." << std::endl;
               continue;
             }
-            
 
-            for (auto& leafCell : *leafCells) {
+
+            for (const auto& leafCell : *leafCells) {
               double leafCell_x = leafCell->getX();
               double leafCell_y = leafCell->getY();
               double r = sqrt((leafCell_x - x) * (leafCell_x - x)
