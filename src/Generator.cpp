@@ -261,14 +261,14 @@ void Generator::simulate() {
   double hit_outside_geom = 0.;
   double tot_hits = 0;
 
-  // Histograms for transverse profile
-  TH1F *hTransverseProfile[layer_max-layer_min];
-  char* hTransProfName = new char[30];
+  // // Histograms for transverse profile
+  // TH1F *hTransverseProfile[layer_max-layer_min];
+  // char* hTransProfName = new char[30];
 
-  for (int i = layer_min; i < layer_max; i++) {
-    sprintf(hTransProfName, "hTransverseProfile_%d", i);
-    hTransverseProfile[i] = new TH1F(hTransProfName, "Generated transverse profile (cm)", 600, 0., 120);
-  }
+  // for (int i = layer_min; i < layer_max; i++) {
+  //   sprintf(hTransProfName, "hTransverseProfile_%d", i);
+  //   hTransverseProfile[i] = new TH1F(hTransProfName, "Generated transverse profile (cm)", 600, 0., 120);
+  // }
 
   // Build the tree map (except for external geometry) ; one key corresponds to one layer
   std::unordered_map<int, Tree*> tree_map;
@@ -475,7 +475,7 @@ void Generator::simulate() {
           pos(0)=x;
           pos(1)=y;
 
-          double side = 0;
+          // double side = 0;
           const Cell* closestCells = nullptr;
 
           if (parameters_.geometry().type!=Parameters::Geometry::Type::External) {
@@ -571,15 +571,15 @@ void Generator::simulate() {
             event.fillThickness(closestCells->getId(), thickness);
           }
 
-          // fill shower histograms
-          double deltaR = side*sqrt(3);
-          double deltaS = 2*TMath::Pi()*r_shower*deltaR;
-          if (ip == 211) {
-            hTransverseProfile[layer_id]->Fill(abs(r_shower), abs((real_energy + enoise)/deltaS));
-          }
-          else {
-            hTransverseProfile[layer_id]->Fill(abs(r_shower), real_energy + enoise);
-          }
+          // // fill shower histograms
+          // double deltaR = side*sqrt(3);
+          // double deltaS = 2*TMath::Pi()*r_shower*deltaR;
+          // if (ip == 211) {
+          //   hTransverseProfile[layer_id]->Fill(abs(r_shower), abs((real_energy + enoise)/deltaS));
+          // }
+          // else {
+          //   hTransverseProfile[layer_id]->Fill(abs(r_shower), real_energy + enoise);
+          // }
 
           //  hPhiProfile.Fill(phi_shower,real_energy);
           //  hSpotEnergy.Fill(real_energy);
@@ -631,10 +631,10 @@ void Generator::simulate() {
     output_.fillTree(event);
   }
 
-  // Exporting histograms to file
-  for (int i = layer_min; i < layer_max; i++) {
-    hTransverseProfile[i]->Write();
-  }
+  // // Exporting histograms to file
+  // for (int i = layer_min; i < layer_max; i++) {
+  //   hTransverseProfile[i]->Write();
+  // }
 
   if (!hCellEnergyMap.empty()) {
     canvas.emplace_back(display(hCellEnergyMap, cell_collection[display_layer]));
