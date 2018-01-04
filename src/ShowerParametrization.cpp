@@ -65,20 +65,28 @@ getLayerProfile(int pdgid)
   return partLayerProfile_;
 }
 
-std::array<double, NB_SI_THICKNESS> ShowerParametrization::
-spotEnergy(int pdgid)
+double ShowerParametrization::
+spotEnergy(int pdgid, int thickness)
 {
 
   map<int, std::vector<double>>::const_iterator pos = alpha_.find(pdgid);
 
   if (pos == alpha_.end()) {
-      std::cout << "pdgid doesn't exist"<<std::endl;
+
+    std::cout << "pdgid doesn't exist"<<std::endl;
+
   } else {
-      int index = 0;
-      for (auto& list_iter : pos->second){
-          alphasquare_[index] = (list_iter)*(list_iter);
-          index++;
-      }
+
+    if (thickness == 100) {
+      alphasquare_ = pos->second[0] * pos->second[0];
+    }
+    else if (thickness == 200) {
+      alphasquare_ = pos->second[1] * pos->second[1];
+    }
+    else {
+      alphasquare_ = pos->second[2] * pos->second[2];
+    }
   }
+
   return alphasquare_;
 }

@@ -443,7 +443,7 @@ void Generator::simulate() {
             nhits = int(energy_incident*layer_weight*parameters_.generation().number_of_hits_per_gev);
         }
         else {
-            denrj = aShowerParametrization.spotEnergy(ip)[2];
+            denrj = aShowerParametrization.spotEnergy(ip, 300);
             nhits = gun_.Poisson(energy_incident*layer_weight/denrj);
         }
         tot_hits += nhits;
@@ -474,7 +474,7 @@ void Generator::simulate() {
           pos(0)=x;
           pos(1)=y;
 
-          double side = 0;
+          // double side = 0;
           const Cell* closestCells = nullptr;
 
           if (parameters_.geometry().type!=Parameters::Geometry::Type::External) {
@@ -482,20 +482,20 @@ void Generator::simulate() {
             // hit position on layer (EE, FH or BH). Energy attribution
             int hit_pos = sqrt(x*x+y*y);
             if (hit_pos <= parameters_.geometry().limit_first_zone) {
-              real_energy = aShowerParametrization.spotEnergy(ip)[0];
-              side = parameters_.geometry().small_cell_side;
               thickness = 100;
+              real_energy = aShowerParametrization.spotEnergy(ip, thickness);
+              // side = parameters_.geometry().small_cell_side;
             }
             else if (hit_pos >= parameters_.geometry().limit_first_zone &&
                      hit_pos <= parameters_.geometry().limit_second_zone){
-              real_energy = aShowerParametrization.spotEnergy(ip)[1];
-              side = parameters_.geometry().large_cell_side;
               thickness = 200;
+              real_energy = aShowerParametrization.spotEnergy(ip, thickness);
+              // side = parameters_.geometry().large_cell_side;
             }
             else {
               real_energy = denrj;
-              side = parameters_.geometry().large_cell_side;
               thickness = 300;
+              // side = parameters_.geometry().large_cell_side;
             }
             energygen += real_energy;
 

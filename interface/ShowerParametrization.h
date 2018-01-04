@@ -35,7 +35,7 @@ class ShowerParametrization {
     double r0_hadro_(int klayer, int pdgid) { return (a0_hadro + a1_hadro*klayer + a2_hadro*klayer*klayer)/tot_layer_Hadro;}
 
     // fluctuations
-    std::array<double, NB_SI_THICKNESS> spotEnergy(int pdgid);
+    double spotEnergy(int pdgid, int thickness);
 
 private:
     // average medium parameters
@@ -60,7 +60,7 @@ private:
 
     // for fluctuation
     std::map<int, std::vector<double>> alpha_;
-    std::array<double, NB_SI_THICKNESS> alphasquare_; // the stochastic coefficient in GeV^1/2
+    double alphasquare_; // the stochastic coefficient in GeV^1/2
 };
 
 #endif
