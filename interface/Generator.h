@@ -32,7 +32,7 @@ class Generator
 
     void simulate();
 
-    std::unique_ptr<TCanvas> display(const std::unordered_map<uint32_t,TH1F>& hCellEnergyEvtMap , std::vector<Cell>& , int ievt=0);
+    std::unique_ptr<TCanvas> display(const std::unordered_map<uint32_t,TH1F>& hCellEnergyEvtMap , int ievt=0);
 
     std::array<std::array<double, NB_SI_THICKNESS>, NB_LAYERS> readCalibration(const std::string& filename);
 

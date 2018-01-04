@@ -158,8 +158,6 @@ void Generator::simulate() {
     display_layer = layer_min;
   }
 
-  std::vector<Cell> cell_collection[NB_LAYERS];
-
   for (int layer_id = layer_min; layer_id < layer_max; layer_id++) {
 
     std::cout << "=====> Layer " <<layer_id + 1 << " / "<< layer_max << '\r' << flush;
@@ -171,12 +169,6 @@ void Generator::simulate() {
       geometry_.constructFromJson(parameters_.general().debug, layer_id);
     }
 
-    for (auto& cell : geometry_.getCells()){
-      if (cell.second.getLayer() == layer_id){
-        cell_collection[layer_id].push_back(cell.second);
-      }
-    }
-
     if (display_layer == layer_id) {
       std::string hName;
       hName = "geometry_";
@@ -185,35 +177,37 @@ void Generator::simulate() {
       geometry_histo->Write();
       delete geometry_histo;
 
-      for (auto& c : cell_collection[display_layer]) {
-        int i = c.getIIndex();
-        int j = c.getJIndex();
-        int k = c.getLayer();
+      for (const auto& c : geometry_.getCells()) {
+        if (c.second.getLayer() == display_layer) {
+          int i = c.second.getIIndex();
+          int j = c.second.getJIndex();
 
-        hName="hCellEnergy_[";
-        hName += std::to_string(i);
-        hName += ",";
-        hName += std::to_string(j);
-        hName += ",";
-        hName += std::to_string(k);
-        hName += "]";
-        hCellEnergyMap.emplace(c.getId(), TH1F(hName.c_str(),"Energy in cell [i,j,k])",100,0.,100.));
-      }
-
-      if (parameters_.display().events > 0) {
-        for (auto& c : cell_collection[display_layer]) {
-          int i = c.getIIndex();
-          int j = c.getJIndex();
-          int k = c.getLayer();
-
-          hName="hCellEnergyEvt[";
+          hName="hCellEnergy_[";
           hName += std::to_string(i);
           hName += ",";
           hName += std::to_string(j);
           hName += ",";
-          hName += std::to_string(k);
+          hName += std::to_string(display_layer);
           hName += "]";
-          hCellEnergyEvtMap.emplace(c.getId(),TH1F(hName.c_str(),"Event Energy in cell [i,j,k])", 100, 0., 100.));
+          hCellEnergyMap.emplace(c.first, TH1F(hName.c_str(),"Energy in cell [i,j,k])",100,0.,100.));
+        }
+      }
+
+      if (parameters_.display().events > 0) {
+        for (const auto& c : geometry_.getCells()) {
+          if (c.second.getLayer() == display_layer) {
+            int i = c.second.getIIndex();
+            int j = c.second.getJIndex();
+
+            hName="hCellEnergyEvt[";
+            hName += std::to_string(i);
+            hName += ",";
+            hName += std::to_string(j);
+            hName += ",";
+            hName += std::to_string(display_layer);
+            hName += "]";
+            hCellEnergyEvtMap.emplace(c.first,TH1F(hName.c_str(),"Event Energy in cell [i,j,k])", 100, 0., 100.));
+          }
         }
       }
     }
@@ -279,9 +273,11 @@ void Generator::simulate() {
 
       std::vector<double > cell_x;
       std::vector<double > cell_y;
-      for (const auto& c : cell_collection[layer_id]) {
-        cell_x.push_back(c.getX());
-        cell_y.push_back(c.getY());
+      for (const auto& c : geometry_.getCells()) {
+        if (c.second.getLayer() == layer_id) {
+          cell_x.push_back(c.second.getX());
+          cell_y.push_back(c.second.getY());
+        }
       }
 
       double x_min = *std::minmax_element(cell_x.begin(), cell_x.end()).first;
@@ -304,49 +300,52 @@ void Generator::simulate() {
       Tree* tree = new Tree(plan, 5);
       float x_c, y_c;
       double side;
-      for (const auto& c : cell_collection[layer_id]) {
+      for (const auto& c : geometry_.getCells()) {
 
-        x_c = float(c.getX());
-        y_c = float(c.getY());
-        float cell_radius = sqrt((x_c*x_c)+(y_c*y_c));
+        if (c.second.getLayer() == layer_id) {
 
-        if (cell_radius <= float(parameters_.geometry().limit_first_zone)) {
-          side = parameters_.geometry().small_cell_side;
-        }
-        else {
-          side = parameters_.geometry().large_cell_side;
-        }
+          x_c = float(c.second.getX());
+          y_c = float(c.second.getY());
+          float cell_radius = sqrt((x_c*x_c)+(y_c*y_c));
 
-        Point cornerA = Point(x_c - float(side*sqrt(3)/2), y_c + float(side));
-        Point cornerB = Point(x_c + float(side*sqrt(3)/2), y_c + float(side));
-        Point cornerC = Point(x_c + float(side*sqrt(3)/2), y_c - float(side));
-        Point cornerD = Point(x_c - float(side*sqrt(3)/2), y_c - float(side));
+          if (cell_radius <= float(parameters_.geometry().limit_first_zone)) {
+            side = parameters_.geometry().small_cell_side;
+          }
+          else {
+            side = parameters_.geometry().large_cell_side;
+          }
 
-        std::set<Tree*> alreadyAdded;
+          Point cornerA = Point(x_c - float(side*sqrt(3)/2), y_c + float(side));
+          Point cornerB = Point(x_c + float(side*sqrt(3)/2), y_c + float(side));
+          Point cornerC = Point(x_c + float(side*sqrt(3)/2), y_c - float(side));
+          Point cornerD = Point(x_c - float(side*sqrt(3)/2), y_c - float(side));
 
-        Tree* leafA = tree->getLeaf(cornerA);
-        leafA->addCell(&c);
-        alreadyAdded.insert(leafA);
+          std::set<Tree*> alreadyAdded;
 
-        Tree* leafB = tree->getLeaf(cornerB);
+          Tree* leafA = tree->getLeaf(cornerA);
+          leafA->addCell(&(c.second));
+          alreadyAdded.insert(leafA);
 
-        if(alreadyAdded.count(leafB) == 0) {
-          leafB->addCell(&c);
-          alreadyAdded.insert(leafB);
-        }
+          Tree* leafB = tree->getLeaf(cornerB);
 
-        Tree* leafC = tree->getLeaf(cornerC);
+          if(alreadyAdded.count(leafB) == 0) {
+            leafB->addCell(&(c.second));
+            alreadyAdded.insert(leafB);
+          }
 
-        if(alreadyAdded.count(leafC) == 0) {
-          leafC->addCell(&c);
-          alreadyAdded.insert(leafC);
-        }
+          Tree* leafC = tree->getLeaf(cornerC);
 
-        Tree* leafD = tree->getLeaf(cornerD);
+          if(alreadyAdded.count(leafC) == 0) {
+            leafC->addCell(&(c.second));
+            alreadyAdded.insert(leafC);
+          }
 
-        if(alreadyAdded.count(leafD) == 0) {
-          leafD->addCell(&c);
-          alreadyAdded.insert(leafD);
+          Tree* leafD = tree->getLeaf(cornerD);
+
+          if(alreadyAdded.count(leafD) == 0) {
+            leafD->addCell(&(c.second));
+            alreadyAdded.insert(leafD);
+          }
         }
       }
 
@@ -621,7 +620,8 @@ void Generator::simulate() {
             hCellEnergyEvtMap.at(hit.first).Fill(hit.second);
           }
         }
-        canvas.emplace_back(display(hCellEnergyEvtMap, cell_collection[display_layer], iev));
+
+        canvas.emplace_back(display(hCellEnergyEvtMap, iev));
       }
     }
 
@@ -637,7 +637,7 @@ void Generator::simulate() {
   // }
 
   if (!hCellEnergyMap.empty()) {
-    canvas.emplace_back(display(hCellEnergyMap, cell_collection[display_layer]));
+    canvas.emplace_back(display(hCellEnergyMap));
     // Writing energy map plots
     for(const auto& canvas_ptr : canvas) {
       canvas_ptr->Write();
@@ -662,7 +662,7 @@ void Generator::simulate() {
 }
 
 
-std::unique_ptr<TCanvas> Generator::display(const std::unordered_map<uint32_t,TH1F>& hCellEnergyEvtMap, std::vector<Cell>& cell_collection, int ievt) {
+std::unique_ptr<TCanvas> Generator::display(const std::unordered_map<uint32_t,TH1F>& hCellEnergyEvtMap, int ievt) {
 
   // FIXME: build titles without using char[]
   std::string title1, title2, title4;
@@ -692,15 +692,12 @@ std::unique_ptr<TCanvas> Generator::display(const std::unordered_map<uint32_t,TH
   std::unique_ptr<TCanvas> c1(new TCanvas(title.c_str(),title.c_str(),700,700));
   TH2Poly* energy_map = (TH2Poly*)geometry_.cellHistogram()->Clone(std::string("test"+std::to_string(ievt)).c_str());
 
-  for (auto& hist : hCellEnergyEvtMap) {
-    for(auto& c : cell_collection) {
-      if (c.getId() == hist.first) {
+  for (const auto& hist : hCellEnergyEvtMap) {
+    const auto& cell = geometry_.getCells().at(hist.first);
         double enrj = hist.second.GetMean();
-        energy_map->Fill(c.getX(), c.getY(), enrj);
+        energy_map->Fill(cell.getX(), cell.getY(), enrj);
         // FIXME: no sprintf
         sprintf(str,"%4.1f",hist.second.GetMean());
-      }
-    }
   }
 
   energy_map->Draw("colz");

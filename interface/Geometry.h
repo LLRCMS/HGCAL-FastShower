@@ -36,7 +36,7 @@ class Geometry {
 
   public:
 
-    Geometry(const Parameters::Geometry& params):parameters_(params){}
+    Geometry(const Parameters::Geometry& params):parameters_(params){};
     ~Geometry();
 
     void constructFromParameters(bool, int, int);
