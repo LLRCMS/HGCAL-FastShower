@@ -7,7 +7,7 @@
 class Cell {
 
   public:
-    static uint64_t id(uint16_t i, uint16_t j, uint16_t k);
+    static uint32_t id(uint16_t i, uint16_t j, uint16_t k);
 
   private:
     Cell() {}; // don't use default constructor
@@ -33,7 +33,7 @@ class Cell {
     int getIIndex() const;
     int getJIndex() const;
     int getLayer() const;
-    uint64_t getId() const;
+    uint32_t getId() const;
 
     bool isFullCell() const {return orientation_==90.;}
     bool isHalfCell() const {return int(orientation_)%60==0;}
@@ -47,7 +47,7 @@ class Cell {
     uint16_t k_index_;
     // |  k_index  |  j_index  |  i_index  |
     // |47 ----- 32|31 ----- 16| 15 ----- 0|
-    uint64_t id_;
+    uint32_t id_;
 
     double orientation_; // orientation for halh cells
 };
