@@ -1,6 +1,4 @@
 
-
-#include <iostream>
 #ifdef STANDALONE
 #include "Rectangle.h"
 #else
