@@ -62,7 +62,7 @@ std::array<double, NB_VTX_DIM> Geometry::dimensions(double side) {
   dim[0] = side*sqrt(3.); //asqrt3_
   dim[1] = dim[0]/2.;  //asqrt3over2_
   dim[2] = side/2.;          //aover2_
-  dim[3] = dim[2]*3.;      //a3over2
+  dim[3] = dim[2]*3.;      //a3over2_
 
   return dim;
 }
@@ -77,8 +77,9 @@ std::array< std::array<double, NB_OFFSET_MAX>, NB_COORD_DIFF_MAX> Geometry::hexa
          }};
 
   // Hexagons flat side on top
-  // const array<double, nvertices> hexagonoffsetx = {{aover2_,a_,aover2_,-aover2_,-a,-aover2_}};
-  // const array<double, nvertices> hexagonoffsety = {{-asqrt3over2_,0,asqrt3over2_,asqrt3over2_,0.,-asqrt3over2_}};
+  // return {{ {{dim[2], side, dim[2], -dim[2], -side, -dim[2]}},
+  //           {{-dim[1], 0, dim[1], dim[1], 0, -dim[1]}}
+  // }};
 }
 
 
@@ -103,14 +104,15 @@ derivative(double side, Parameters::Geometry::Type itype)
   switch(itype) {
     case Parameters::Geometry::Type::Hexagons: {
       // peak on top
-      derivative[0] = dim[0];
-      derivative[1] = dim[1];
-      derivative[2] = dim[3];
+      derivative[0] = dim[0]; //dxdi
+      derivative[1] = dim[1]; //dxdj
+      derivative[2] = dim[3]; //dydj
 
-      // // flat side on top 
-      // dydj = asqrt3_;
-      // dxdj = asqrt3over2_;
-      // dxdi = a3over2_;
+      // // flat side on top
+      // derivative[0] = dim[3]; //dxdi
+      // derivative[1] = dim[1]; //dxdj
+      // derivative[2] = dim[0]; //dydj
+
       break;
     }
     case Parameters::Geometry::Type::Triangles: {
@@ -227,8 +229,8 @@ std::array< double, NB_COORD_CART_CYL> Geometry::XYrPhi(int i, int j, double sid
   }
 
   // //flat side on top
-  // double x = xs[0] + i*dxdi;
-  // double y = ys[0] + j*dydj + i*dxdj;
+  // xyrPhi[0] = xs[0] + i*der[0];
+  // xyrPhi[1] = ys[0] + j*der[2] + i*der[1];
 
   // up and down triangle barycenters are not aligned
   if(itype==Parameters::Geometry::Type::Triangles && i%2) {
@@ -742,9 +744,6 @@ void Geometry::print() {
 bool Geometry::isInCell(const TVectorD& position, const Cell& cell) const {
   // implementation below works for any convex cell described by its vertices
   // assumes vertices are consecutive along the cell perimeter and ordered along direct rotation
-
-  // if (cell == nullptr) std::cout << "hello" << std::endl;
-  // std::cout << cell.getId() << std::endl;
 
   // loop on pair of consective vertices 
   const auto& vertices = cell.getVertices();
