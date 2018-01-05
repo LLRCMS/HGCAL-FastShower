@@ -554,11 +554,9 @@ void Generator::simulate() {
             hit_outside_geom++;
           }
           else {
-            event.fillHitCells(closestCells->getId(), cell);
 
             energyrec += real_energy;
             energygenincells += real_energy;
-            event.fillHit(closestCells->getId(), real_energy);
 
             // loop on cells for the noise generation from the cells calibration
             if (parameters_.generation().noise) {
@@ -567,6 +565,7 @@ void Generator::simulate() {
               energyrec += enoise;
             }
 
+            event.fillHit(closestCells->getId(), energyrec);
             event.fillThickness(closestCells->getId(), thickness);
           }
 
@@ -633,7 +632,7 @@ void Generator::simulate() {
     // fill global histograms
     // hEnergySum.Fill(energyrec,1.);
     // hEnergyGen.Fill(energygenincells,1.);
-    output_.fillTree(event);
+    output_.fillTree(event, geometry_);
   }
 
   // // Exporting histograms to file

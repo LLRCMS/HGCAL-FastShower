@@ -3,8 +3,6 @@
 
 
 #include <unordered_map>
-#include "Cell.h"
-
 
 class Event
 {
@@ -22,7 +20,6 @@ class Event
     void fillGenPhi(uint32_t, double);
     void fillPDGid(uint32_t, int);
     void fillThickness(uint32_t, int);
-    void fillHitCells(uint32_t, const Cell&);
     void setnPart(uint32_t);
     void clear();
 
@@ -35,14 +32,12 @@ class Event
     const std::unordered_map<uint32_t, double>& generatedPhi() const {return generated_phi_;}
     const std::unordered_map<uint32_t, double>& pdg_id() const {return pdgid_;}
     const std::unordered_map<uint32_t, int>& thickness() const {return thickness_;}
-    const std::unordered_map<uint32_t, Cell>& hitCells() const {return hit_cells_;}
 
   private:
     uint32_t run_;
     uint32_t event_;
     uint32_t npart_;
     std::unordered_map<uint32_t, double> hits_;
-    std::unordered_map<uint32_t, Cell> hit_cells_;
     std::unordered_map<uint32_t, double> generated_energy_;
     std::unordered_map<uint32_t, double> generated_eta_;
     std::unordered_map<uint32_t, double> generated_phi_;

@@ -60,13 +60,6 @@ fillThickness(uint32_t id, int thickness)
 
 void
 Event::
-fillHitCells(uint32_t id, const Cell& hit_cell)
-{
-  hit_cells_.emplace(id, hit_cell);
-}
-
-void
-Event::
 setnPart(uint32_t part)
 {
   npart_ = part;

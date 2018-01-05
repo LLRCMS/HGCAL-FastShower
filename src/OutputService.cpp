@@ -44,7 +44,7 @@ OutputService::
 
 void
 OutputService::
-fillTree(const Event& event)
+fillTree(const Event& event, const Geometry& geometry)
 {
   clear();
   run_ = event.run();
@@ -55,16 +55,12 @@ fillTree(const Event& event)
 
     // skip zero and negative energies
     if(id_hit.second<=0.) continue;
-
     cell_energy_.emplace_back(id_hit.second);
-  }
-  cell_n_ = cell_energy_.size();
 
-  for(auto& c : event.hitCells()) {
-
-    double x = c.second.getX();
-    double y = c.second.getY();
-    double z = c.second.getZ();
+    const auto& cell = geometry.getCells().at(id_hit.first);
+    double x = cell.getX();
+    double y = cell.getY();
+    double z = cell.getZ();
 
     double r = std::sqrt(x*x + y*y);
     double theta = std::atan(r/z);
@@ -77,9 +73,10 @@ fillTree(const Event& event)
     cell_eta_.emplace_back(eta);
     cell_phi_.emplace_back(phi);
 
-    double layer = c.second.getLayer();
+    double layer = cell.getLayer();
     cell_layer_.emplace_back(layer);
   }
+  cell_n_ = cell_energy_.size();
 
 
   for(const auto& id_part : event.generatedEnergy()) {
