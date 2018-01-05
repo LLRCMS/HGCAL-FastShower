@@ -51,8 +51,7 @@ std::array<std::array<double, NB_SI_THICKNESS>, NB_LAYERS> Generator::readCalibr
 
   int col_counter = 0;
   int line_counter = 0;
-  // There is one col for the layer id. MIP and noise have both same number of column as the
-  // number of silicium thickness
+
   int dim_column = 1 + NB_SI_THICKNESS * 2;
 
   if (my_calib_file) {
@@ -129,21 +128,9 @@ void Generator::simulate() {
   TStopwatch t;
   t.Start();
 
-  // some initializations
-  double energygen=0.;
-  double energygenincells=0.;
-  double energyrec=0.;
-
-  // Geometry
+  // Build geometry
   std::cout<<"I'm building the geometry, please wait..." <<std::endl;
 
-  // Shower parametrization
-  ShowerParametrization aShowerParametrization(parameters_.shower());
-
-  // Canvas for the geometry map in rootfile
-  std::vector<std::unique_ptr<TCanvas>> canvas;
-
-  // Build geometry
   int layer_min, layer_max;
   int display_layer;
 
@@ -251,6 +238,7 @@ void Generator::simulate() {
   }
   std::cout << "Done !"<<std::endl;
 
+
   // start main loop on all events
   double hit_outside_geom = 0.;
   double tot_hits = 0;
@@ -353,7 +341,20 @@ void Generator::simulate() {
     }
   }
 
+
+  // some initializations
+  double energygen=0.;
+  double energygenincells=0.;
+  double energyrec=0.;
+
   int thickness = 0;
+
+  // Shower parametrization
+  ShowerParametrization aShowerParametrization(parameters_.shower());
+
+  // Canvas for the geometry map in rootfile
+  std::vector<std::unique_ptr<TCanvas>> canvas;
+
 
   for (unsigned iev=1; iev <= nevents; iev++) {
     std::cout << "================ Simulating event: " << iev << " ================" << std::endl;
@@ -510,7 +511,6 @@ void Generator::simulate() {
               std::cout << "WARNING: not processing this hit." << std::endl;
               continue;
             }
-
 
             for (const auto& leafCell : *leafCells) {
               double leafCell_x = leafCell->getX();
