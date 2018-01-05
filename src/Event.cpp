@@ -78,13 +78,3 @@ clear()
 {
   hits_.clear();
 }
-
-
-int
-Event::
-getLayerFromId(int cell_id)
-{
-  int len = std::to_string(cell_id).length();
-
-  return atoi(std::to_string(cell_id).substr(len -2, len).c_str());
-}

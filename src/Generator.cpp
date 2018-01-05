@@ -607,7 +607,9 @@ void Generator::simulate() {
 
       for (const auto& hit : event.hits()) {
 
-        if (event.getLayerFromId(hit.first) == display_layer) {
+        const auto& cell = geometry_.getCells().at(hit.first);
+
+        if (cell.getLayer() == display_layer) {
           hCellEnergyMap.at(hit.first).Fill(hit.second);
         }
       }
@@ -615,7 +617,10 @@ void Generator::simulate() {
       // if requested display a few events
       if (iev<=parameters_.display().events) {
         for (const auto& hit : event.hits()) {
-          if (event.getLayerFromId(hit.first) == display_layer) {
+
+        const auto& cell = geometry_.getCells().at(hit.first);
+
+        if (cell.getLayer() == display_layer) {
             hCellEnergyEvtMap.at(hit.first).Reset();
             hCellEnergyEvtMap.at(hit.first).Fill(hit.second);
           }

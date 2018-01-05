@@ -37,8 +37,6 @@ class Event
     const std::unordered_map<uint32_t, int>& thickness() const {return thickness_;}
     const std::unordered_map<uint32_t, Cell>& hitCells() const {return hit_cells_;}
 
-    int getLayerFromId(int);
-
   private:
     uint32_t run_;
     uint32_t event_;
