@@ -1,5 +1,5 @@
-#ifndef __HGCalSimulation_FastShower_rectangle_h__
-#define __HGCalSimulation_FastShower_rectangle_h__
+#ifndef __HGCalSimulation_FastShower_Rectangle_h__
+#define __HGCalSimulation_FastShower_Rectangle_h__
 
 #ifdef STANDALONE
 #include "Point.h"
@@ -24,6 +24,5 @@ public:
   Point getTopLeft();
   Point getBottomRight();
 };
-
 
 #endif

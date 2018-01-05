@@ -15,6 +15,7 @@
 
 #ifdef STANDALONE
 #include "Generator.h"
+#include "ShowerParametrization.h"
 #include "ShowerShapeHexagon.h"
 #include "ShowerShapeTriangle.h"
 #include "Event.h"
@@ -25,6 +26,7 @@
 #include "HGCalSimulation/FastShower/interface/ShowerShapeHexagon.h"
 #include "HGCalSimulation/FastShower/interface/ShowerShapeTriangle.h"
 #include "HGCalSimulation/FastShower/interface/Event.h"
+#include "HGCalSimulation/FastShower/interface/Tree.h"
 #endif
 
 Generator::

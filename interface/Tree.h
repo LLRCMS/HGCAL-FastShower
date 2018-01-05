@@ -1,5 +1,5 @@
-#ifndef __HGCalSimulation_FastShower_tree_h__
-#define __HGCalSimulation_FastShower_tree_h__
+#ifndef __HGCalSimulation_FastShower_Tree_h__
+#define __HGCalSimulation_FastShower_Tree_h__
 
 #ifdef STANDALONE
 #include "Cell.h"

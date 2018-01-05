@@ -1,5 +1,5 @@
-#ifndef __HGCalSimulation_FastShower_point_h__
-#define __HGCalSimulation_FastShower_point_h__
+#ifndef __HGCalSimulation_FastShower_Point_h__
+#define __HGCalSimulation_FastShower_Point_h__
 
 class Point {
   public:

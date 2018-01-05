@@ -9,27 +9,12 @@
 
 #include <vector>
 
-#include <iostream>
-using namespace std;
 
-
-// uint32_t Cell::id(uint16_t i, uint16_t j, uint16_t k) {
-//     // id format = iiijjjkk
-//     return i*100000 + j*100 + k;
-// }
-
-
-
-uint64_t Cell::id(uint16_t i, uint16_t j, uint16_t k)
-{
-  uint64_t id = 0;
-  id |= i;
-  id |= (j<<16);
-  id |= (k<<31);
-
-  cout << "i : "<< i << " ; j : "<< j << "; k = " << k <<" ==> id :" <<id <<endl;
-  return id;
+uint32_t Cell::id(uint16_t i, uint16_t j, uint16_t k) {
+    // id format = iiijjjkk
+    return i*100000 + j*100 + k;
 }
+
 
 Cell::Cell(TVectorD&& position, std::vector<TVectorD>&& vertices, double orientation, int i_index, int j_index, int k_index):
   position_(std::move(position)),
@@ -75,6 +60,6 @@ int Cell::getLayer() const{
     return k_index_;
 }
 
-uint64_t Cell::getId() const{
+uint32_t Cell::getId() const{
     return id_;
 }
