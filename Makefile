@@ -10,9 +10,9 @@ UCFLAGS = -O3 -Wall -DSTANDALONE
 # RUCFLAGS := $(shell root-config --cflags) -I./interface/ -I/usr/include/python2.6/ -std=c++14
 # LIBS :=  $(shell root-config --libs) -lpython2.6 -lboost_python 
 
-PYTHONPATH := $(shell dirname `which python`)/../
-RUCFLAGS := $(shell root-config --cflags) -I./interface/ -I$(PYTHONPATH)/include/python2.7/ -std=c++14
-LIBS :=  $(shell root-config --libs) -lpython2.7 -lboost_python
+
+RUCFLAGS := $(shell root-config --cflags) -I./interface/  -I/opt/rh/python27/root/usr/include/python2.7 -std=c++14
+LIBS := $(shell root-config --libs) -L/opt/rh/python27/root/usr/lib64 -lpython2.7 -lboost_python 
 
 vpath %.cpp ./src/json
 vpath %.cpp ./src
