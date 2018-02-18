@@ -30,9 +30,18 @@ shower_layers_energy = {11 : [1.5874, 3.3291, 6.1224, 10.6888, 14.4497, 20.3249,
 shower_transverse_parameters_electro = dict(a0=8.93, a1=0.046, a2=0.081)
 shower_transverse_parameters_hadro = dict(a0=28, a1=0.3350, a2=0.052)
 
+# coefficient core and halo for the transverse hadronic shower defines as :
+# a_core * exp(r0_hadro/b_core) + a_halo * exp(r0_halo/b_halo)
+a_core_hadro = 108.
+b_core_hadro = 19.3
+a_halo_hadro = 95.
+b_halo_hadro = 76.
+
 # energy resolution, determines nhitspergev if fluctuation is true
 # [100, 200, 300] um
 shower_alpha = {11 : [0.243, 0.214, 0.199],
                 22 : [0.243, 0.214, 0.199],
                 211 : [0.75, 0.75, 0.75]
                 }
+
+

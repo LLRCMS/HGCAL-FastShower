@@ -56,7 +56,11 @@ Shower():
   transverse_parameters_electro(),
   transverse_parameters_hadro(),
   map_layers_energy(),
-  map_alpha()
+  map_alpha(),
+  a_halo(0.),
+  b_halo(0.),
+  a_core(0.),
+  b_core(0.)
 {
 }
 
@@ -170,6 +174,11 @@ fillShower(const python::dict& dict)
   shower_.map_layers_energy = toStdMapVector<int,double>(shower_layers_energy);
   python::dict alpha = python::extract<python::dict>(dict["shower_alpha"]);
   shower_.map_alpha = toStdMapVector<int,double>(alpha);
+
+  shower_.a_halo = python::extract<double>(dict["a_halo_hadro"]);
+  shower_.b_halo = python::extract<double>(dict["b_halo_hadro"]);
+  shower_.a_core = python::extract<double>(dict["a_core_hadro"]);
+  shower_.b_core = python::extract<double>(dict["b_core_hadro"]);
 }
 
 void

@@ -54,6 +54,10 @@ class Parameters {
       // std::vector<double> layers_energy;
       std::map<int, std::vector<double>> map_layers_energy;
       std::map<int, std::vector<double>> map_alpha;
+      double a_halo;
+      double b_halo;
+      double a_core;
+      double b_core;
     };
 
     struct Generation {

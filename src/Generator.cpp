@@ -444,12 +444,12 @@ void Generator::simulate() {
         int nhits;
 
         if (!parameters_.generation().fluctuation){
-            denrj = 1./parameters_.generation().number_of_hits_per_gev;
-            nhits = int(energy_incident*layer_weight*parameters_.generation().number_of_hits_per_gev);
+          denrj = 1./parameters_.generation().number_of_hits_per_gev;
+          nhits = int(energy_incident*layer_weight*parameters_.generation().number_of_hits_per_gev);
         }
         else {
-            denrj = aShowerParametrization.spotEnergy(ip, 300);
-            nhits = gun_.Poisson(energy_incident*layer_weight/denrj);
+          denrj = aShowerParametrization.spotEnergy(ip, 300);
+          nhits = gun_.Poisson(energy_incident*layer_weight/denrj);
         }
         tot_hits += nhits;
 
@@ -464,11 +464,8 @@ void Generator::simulate() {
             r_shower = gun_.Exp(r0_electro); // exponential exp(-r/r0)
           }
           else { // for hadronic shower templates parametrization
-            double a_core = 108.;
-            double b_core = 19.3;
-            double a_halo = 95.;
-            double b_halo = 76.;
-            r_shower = a_core * gun_.Exp(r0_hadro/b_core) + a_halo * gun_.Exp(r0_hadro/b_halo);
+            r_shower = parameters_.shower().a_core * gun_.Exp(r0_hadro/parameters_.shower().b_core)
+                     + parameters_.shower().a_halo * gun_.Exp(r0_hadro/parameters_.shower().b_halo);
           }
 
           double phi_shower = gun_.Rndm()*TMath::TwoPi();
