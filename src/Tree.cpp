@@ -10,8 +10,8 @@
 Tree::
 Tree(const Rectangle r, int levels)
 {
-  rectangle = r;
-  cells = nullptr;
+  rectangle_ = r;
+  cells_ = nullptr;
 
   subdivide(levels);
 }
@@ -19,16 +19,16 @@ Tree(const Rectangle r, int levels)
 Tree::
 ~Tree()
 {
-  if(cells != nullptr) {
-    delete cells;
+  if(cells_ != nullptr) {
+    delete cells_;
   }
 
-  // delete rectangle;
+  // delete rectangle_;
 
-  nw.reset();
-  sw.reset();
-  ne.reset();
-  se.reset();
+  nw_.reset();
+  sw_.reset();
+  ne_.reset();
+  se_.reset();
 }
 
 //
@@ -38,30 +38,30 @@ Tree::
 bool Tree::
 empty()
 {
-  if (cells == nullptr) return true;
+  if (cells_ == nullptr) return true;
   else return false;
 }
 
 void Tree::
 addCell(const Cell* c)
 {
-  cells->push_back(c);
+  cells_->push_back(c);
 }
 
 int Tree::
 countCells()
 {
-  if(cells != nullptr) {
-    // std::cout << "This leaf has " << cells->size() << " elements" << std::endl;
-    return cells->size();
+  if(cells_ != nullptr) {
+    // std::cout << "This leaf has " << cells_->size() << " elements" << std::endl;
+    return cells_->size();
   }
 
   int cellCount = 0;
 
-  cellCount += nw->countCells();
-  cellCount += sw->countCells();
-  cellCount += ne->countCells();
-  cellCount += se->countCells();
+  cellCount += nw_->countCells();
+  cellCount += sw_->countCells();
+  cellCount += ne_->countCells();
+  cellCount += se_->countCells();
 
   return cellCount;
 }
@@ -69,46 +69,46 @@ countCells()
 std::vector< const Cell*>* Tree::
 getCells()
 {
-  return cells;
+  return cells_;
 }
 
 Tree* Tree::
 getLeaf(float x, float y)
 {
-  const Point p = Point(x, y);
+  const Point p(x, y);
   return getLeaf(p);
 }
 
 Tree* Tree::
 getLeaf(const Point p)
 {
-  if(cells != nullptr) return this;
+  if(cells_ != nullptr) return this;
 
-  if(nw->rectangle.contains(p)) {
-    // std::cout << "Going to subtree nw" << std::endl;
-    return nw->getLeaf(p);
+  if(nw_->rectangle_.contains(p)) {
+    // std::cout << "Going to subtree nw_" << std::endl;
+    return nw_->getLeaf(p);
   }
 
-  if(sw->rectangle.contains(p)) {
+  if(sw_->rectangle_.contains(p)) {
     // std::cout << "Going to subtree sw" << std::endl;
-    return sw->getLeaf(p);
+    return sw_->getLeaf(p);
   }
 
-  if(ne->rectangle.contains(p)) {
+  if(ne_->rectangle_.contains(p)) {
     // std::cout << "Going to subtree ne" << std::endl;
-    return ne->getLeaf(p);
+    return ne_->getLeaf(p);
   }
 
-  if(se->rectangle.contains(p)) {
+  if(se_->rectangle_.contains(p)) {
     // std::cout << "Going to subtree se" << std::endl;
-    return se->getLeaf(p);
+    return se_->getLeaf(p);
   }
 
   // std::cout << "Looking for (" << p.x << ", " << p.y << ") "<< std::endl;
-  // std::cout << "topLeft is (" << rectangle.getTopLeft().x << ", "
-  //     << rectangle.getTopLeft().y << ")" << std::endl;
-  // std::cout << "BottomRight is (" << rectangle.getBottomRight().x << ", "
-  //     << rectangle.getBottomRight().y << ")" << std::endl;
+  // std::cout << "topLeft is (" << rectangle_.getTopLeft().x << ", "
+  //     << rectangle_.getTopLeft().y << ")" << std::endl;
+  // std::cout << "BottomRight is (" << rectangle_.getBottomRight().x << ", "
+  //     << rectangle_.getBottomRight().y << ")" << std::endl;
   throw std::string("Coordinates not found.");
 }
 
@@ -116,28 +116,29 @@ void Tree::
 subdivide(int remainingLevels)
 {
   if(remainingLevels == 0) {
-    cells = new std::vector<const Cell*>;
+    cells_ = new std::vector<const Cell*>;
     return;
   }
+  else {
+    Point center = rectangle_.getCenter();
 
-  Point center = rectangle.getCenter();
+    Rectangle r_nw(rectangle_.getTopLeft(), center);
 
-  Rectangle r_nw = Rectangle(rectangle.getTopLeft(), center);
+    Rectangle r_sw(
+      Point(rectangle_.getTopLeft().x, center.y),
+      Point(center.x, rectangle_.getBottomRight().y)
+    );
 
-  Rectangle r_sw = Rectangle(
-    Point(rectangle.getTopLeft().x, center.y),
-    Point(center.x, rectangle.getBottomRight().y)
-  );
+    Rectangle r_ne(
+      Point(center.x, rectangle_.getTopLeft().y),
+      Point(rectangle_.getBottomRight().x, center.y)
+    );
 
-  Rectangle r_ne = Rectangle(
-    Point(center.x, rectangle.getTopLeft().y),
-    Point(rectangle.getBottomRight().x, center.y)
-  );
+    Rectangle r_se(center, rectangle_.getBottomRight());
 
-  Rectangle r_se = Rectangle(center, rectangle.getBottomRight());
-
-  nw = std::make_unique<Tree>(r_nw, remainingLevels - 1);
-  sw = std::make_unique<Tree>(r_sw, remainingLevels - 1);
-  ne = std::make_unique<Tree>(r_ne, remainingLevels - 1);
-  se = std::make_unique<Tree>(r_se, remainingLevels - 1);
+    nw_ = std::make_unique<Tree>(r_nw, remainingLevels - 1);
+    sw_ = std::make_unique<Tree>(r_sw, remainingLevels - 1);
+    ne_ = std::make_unique<Tree>(r_ne, remainingLevels - 1);
+    se_ = std::make_unique<Tree>(r_se, remainingLevels - 1);
+  }
 }

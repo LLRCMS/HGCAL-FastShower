@@ -27,18 +27,17 @@ class Tree {
 
   private:
     //4 childrens
-    std::unique_ptr<Tree> nw;
-    std::unique_ptr<Tree> ne;
-    std::unique_ptr<Tree> sw;
-    std::unique_ptr<Tree> se;
+    std::unique_ptr<Tree> nw_;
+    std::unique_ptr<Tree> ne_;
+    std::unique_ptr<Tree> sw_;
+    std::unique_ptr<Tree> se_;
 
     void subdivide(int);
 
     // Cells selected in the tree
-    std::vector<const Cell*>* cells;
+    std::vector<const Cell*>* cells_;
 
-  protected:
-  Rectangle rectangle;
+    Rectangle rectangle_;
 };
 
 #endif
