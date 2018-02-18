@@ -8,7 +8,7 @@
 #endif
 
 Tree::
-Tree(Rectangle r, int levels)
+Tree(const Rectangle r, int levels)
 {
   rectangle = r;
   cells = nullptr;
@@ -75,12 +75,12 @@ getCells()
 Tree* Tree::
 getLeaf(float x, float y)
 {
-  Point p = Point(x, y);
+  const Point p = Point(x, y);
   return getLeaf(p);
 }
 
 Tree* Tree::
-getLeaf(Point p)
+getLeaf(const Point p)
 {
   if(cells != nullptr) return this;
 

@@ -15,14 +15,14 @@ private:
   Point bottomRight;
 
 public:
-  Rectangle(Point = 0, Point = 0);
+  Rectangle(const Point = 0, const Point = 0);
   ~Rectangle();
 
-  bool contains(Point);
-  Point getCenter();
+  bool contains(const Point);
+  const Point getCenter();
 
-  Point getTopLeft();
-  Point getBottomRight();
+  const Point getTopLeft();
+  const Point getBottomRight();
 };
 
 #endif

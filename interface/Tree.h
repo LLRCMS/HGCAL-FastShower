@@ -15,14 +15,14 @@
 class Tree {
 
   public:
-    Tree(Rectangle, int);
+    Tree(const Rectangle, int);
     ~Tree();
 
     bool empty();
     void addCell(const Cell*);
     int countCells();
     std::vector<const Cell*>* getCells();
-    Tree* getLeaf(Point);
+    Tree* getLeaf(const Point);
     Tree* getLeaf(float, float);
 
   private:
@@ -32,10 +32,10 @@ class Tree {
     std::unique_ptr<Tree> sw;
     std::unique_ptr<Tree> se;
 
-  void subdivide(int);
+    void subdivide(int);
 
-  // Cells selected in the tree
-  std::vector<const Cell*>* cells;
+    // Cells selected in the tree
+    std::vector<const Cell*>* cells;
 
   protected:
   Rectangle rectangle;

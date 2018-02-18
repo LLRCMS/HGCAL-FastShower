@@ -10,7 +10,7 @@
 //
 
 Rectangle::
-Rectangle(Point topLeft, Point bottomRight)
+Rectangle(const Point topLeft, const Point bottomRight)
 {
   this->topLeft = topLeft;
   this->bottomRight = bottomRight;
@@ -23,7 +23,7 @@ Rectangle::~Rectangle() { }
 //
 
 bool Rectangle::
-contains(Point p)
+contains(const Point p)
 {
   return p.x >= topLeft.x
       && p.x <= bottomRight.x
@@ -31,7 +31,7 @@ contains(Point p)
       && p.y <= topLeft.y;
 }
 
-Point Rectangle::
+const Point Rectangle::
 getCenter()
 {
   float dx = bottomRight.x - topLeft.x;
@@ -44,13 +44,13 @@ getCenter()
 // Getters
 //
 
-Point Rectangle::
+const Point Rectangle::
 getTopLeft()
 {
   return topLeft;
 }
 
-Point Rectangle::
+const Point Rectangle::
 getBottomRight()
 {
   return bottomRight;
