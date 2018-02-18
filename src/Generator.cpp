@@ -270,10 +270,12 @@ void Generator::simulate() {
         }
       }
 
-      double x_min = *std::minmax_element(cell_x.begin(), cell_x.end()).first;
-      double x_max = *std::minmax_element(cell_x.begin(), cell_x.end()).second;
-      double y_min = *std::minmax_element(cell_y.begin(), cell_y.end()).first;
-      double y_max = *std::minmax_element(cell_y.begin(), cell_y.end()).second;
+      auto minmax_x = std::minmax_element(cell_x.begin(), cell_x.end());
+      auto minmax_y = std::minmax_element(cell_y.begin(), cell_y.end());
+      double x_min = *minmax_x.first;
+      double x_max = *minmax_x.second;
+      double y_min = *minmax_y.first;
+      double y_max = *minmax_y.second;
 
       // Geometry build with the cell center position, add a margin for the
       // square corners containing the boarder cells
@@ -305,10 +307,10 @@ void Generator::simulate() {
             side = parameters_.geometry().large_cell_side;
           }
 
-          Point cornerA = Point(x_c - float(side*sqrt(3)/2), y_c + float(side));
-          Point cornerB = Point(x_c + float(side*sqrt(3)/2), y_c + float(side));
-          Point cornerC = Point(x_c + float(side*sqrt(3)/2), y_c - float(side));
-          Point cornerD = Point(x_c - float(side*sqrt(3)/2), y_c - float(side));
+          Point cornerA(x_c - float(side*sqrt(3)/2), y_c + float(side));
+          Point cornerB(x_c + float(side*sqrt(3)/2), y_c + float(side));
+          Point cornerC(x_c + float(side*sqrt(3)/2), y_c - float(side));
+          Point cornerD(x_c - float(side*sqrt(3)/2), y_c - float(side));
 
           std::set<Tree*> alreadyAdded;
 
