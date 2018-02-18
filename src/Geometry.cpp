@@ -56,7 +56,7 @@ void Geometry::setLayer(int klayer) {
 }
 
 
-std::array<double, NB_VTX_DIM> Geometry::dimensions(double side) {
+const std::array<double, NB_VTX_DIM> Geometry::dimensions(double side) {
   std::array<double, NB_VTX_DIM> dim;
 
   dim[0] = side*sqrt(3.); //asqrt3_
@@ -68,7 +68,7 @@ std::array<double, NB_VTX_DIM> Geometry::dimensions(double side) {
 }
 
 
-std::array< std::array<double, NB_OFFSET_MAX>, NB_COORD_DIFF_MAX> Geometry::hexagonoffset(double side) {
+const std::array< std::array<double, NB_OFFSET_MAX>, NB_COORD_DIFF_MAX> Geometry::hexagonoffset(double side) {
   // pic on top
   std::array<double, NB_VTX_DIM> dim = dimensions(side);
 
@@ -83,7 +83,7 @@ std::array< std::array<double, NB_OFFSET_MAX>, NB_COORD_DIFF_MAX> Geometry::hexa
 }
 
 
-std::array< std::array<double, NB_OFFSET_MAX>, NB_COORD_DIFF_MAX> Geometry::triangleoffset(double side) {
+const std::array< std::array<double, NB_OFFSET_MAX>, NB_COORD_DIFF_MAX> Geometry::triangleoffset(double side) {
   // up, up, down, down
   std::array<double, NB_VTX_DIM> dim = dimensions(side);
   return {{ {{dim[2], 0., -dim[2]}},
@@ -94,7 +94,7 @@ std::array< std::array<double, NB_OFFSET_MAX>, NB_COORD_DIFF_MAX> Geometry::tria
 }
 
 
-std::array<double, NB_DERIV> Geometry::
+const std::array<double, NB_DERIV> Geometry::
 derivative(double side, Parameters::Geometry::Type itype)
 {
   std::array<double, NB_DERIV> derivative;
@@ -129,7 +129,7 @@ derivative(double side, Parameters::Geometry::Type itype)
 }
 
 
-std::array< std::array<double, NB_SEGMENT>, NB_COORD_CART> Geometry::dxdyFirstZone(
+const std::array< std::array<double, NB_SEGMENT>, NB_COORD_CART> Geometry::dxdyFirstZone(
       std::array<double, NB_TOT_PTS_GEOMETRY> xs, std::array<double, NB_TOT_PTS_GEOMETRY> ys) {
 
   std::array<double, NB_SEGMENT> dx;
@@ -146,7 +146,7 @@ std::array< std::array<double, NB_SEGMENT>, NB_COORD_CART> Geometry::dxdyFirstZo
 }
 
 
-std::array< std::array<double, NB_SEGMENT>, NB_COORD_CART> Geometry::dxdySecondZone(
+const std::array< std::array<double, NB_SEGMENT>, NB_COORD_CART> Geometry::dxdySecondZone(
       std::array<double, NB_TOT_PTS_GEOMETRY> xs, std::array<double, NB_TOT_PTS_GEOMETRY> ys) {
 
   std::array<double, NB_SEGMENT> dx;
@@ -168,7 +168,7 @@ std::array< std::array<double, NB_SEGMENT>, NB_COORD_CART> Geometry::dxdySecondZ
 }
 
 
-std::array< int, NB_PTS_WINDOWS> Geometry::ijWindows(int layer_region, std::array<double, NB_TOT_PTS_GEOMETRY> xs,
+const std::array< int, NB_PTS_WINDOWS> Geometry::ijWindows(int layer_region, std::array<double, NB_TOT_PTS_GEOMETRY> xs,
                     std::array<double, NB_TOT_PTS_GEOMETRY> ys, double side, Parameters::Geometry::Type itype) {
 
   // compute i,j window needed to cover the x,y window
@@ -211,7 +211,7 @@ std::array< int, NB_PTS_WINDOWS> Geometry::ijWindows(int layer_region, std::arra
 }
 
 
-std::array< double, NB_COORD_CART_CYL> Geometry::XYrPhi(int i, int j, double side, Parameters::Geometry::Type itype,
+const std::array< double, NB_COORD_CART_CYL> Geometry::XYrPhi(int i, int j, double side, Parameters::Geometry::Type itype,
                              std::array<double, NB_TOT_PTS_GEOMETRY> xs, std::array<double, NB_TOT_PTS_GEOMETRY> ys,
                              double layer_region) {
 
