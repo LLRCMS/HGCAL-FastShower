@@ -58,14 +58,14 @@ std::array<std::array<double, NB_SI_THICKNESS>, NB_LAYERS> Generator::readCalibr
 
   if (my_calib_file) {
 
-    int layer_;
+    int layer;
     double mip[NB_SI_THICKNESS];
     double noise[NB_SI_THICKNESS];
     double sampl, MIP;
 
     while(std::getline(my_calib_file, line)) {
 
-      // Remove comment lines (beginning with #)
+      // Discarde lines containing #
       if (line.find("#") != std::string::npos) {
         std::cout<<"This line begins with #. It is considered as comment -> discarded"<<std::endl;
         continue;
@@ -84,7 +84,7 @@ std::array<std::array<double, NB_SI_THICKNESS>, NB_LAYERS> Generator::readCalibr
 
       istringstream strm(line);
 
-      strm >> layer_;
+      strm >> layer;
       strm >> mip[2];
       strm >> mip[1];
       strm >> mip[0];
@@ -95,18 +95,18 @@ std::array<std::array<double, NB_SI_THICKNESS>, NB_LAYERS> Generator::readCalibr
       for (int i = 0; i < NB_SI_THICKNESS; i++) {
         sampl = mip[i];
 
-        if (layer_ <= parameters_.geometry().FH_limit_layer) {
+        if (layer <= parameters_.geometry().FH_limit_layer) {
           MIP = sampl/100;
         }
         else {
           MIP = sampl/10;
         }
-        calib[layer_-1][i] = noise[i]*MIP/sampl;
+        calib[layer-1][i] = noise[i]*MIP/sampl;
       }
     }
   }
   else {
-  std::cout << "Wrong file path or the file does not exit"<< std::endl;
+    std::cout << "Wrong file path or the file does not exit"<< std::endl;
   }
 
   if (col_counter != dim_column && line_counter != NB_LAYERS){
@@ -137,9 +137,9 @@ void Generator::simulate() {
   int display_layer;
 
   if (parameters_.geometry().layer==-1) {
-      layer_min = 0;
-      layer_max = parameters_.geometry().layers_z.size();
-      display_layer = parameters_.display().layer;
+    layer_min = 0;
+    layer_max = parameters_.geometry().layers_z.size();
+    display_layer = parameters_.display().layer;
   }
   else {
     layer_min = parameters_.geometry().layer;
@@ -255,7 +255,7 @@ void Generator::simulate() {
   // }
 
   // Build the tree map (except for external geometry) ; one key corresponds to one layer
-  std::unordered_map<int, Tree*> tree_map;
+  std::unordered_map<int, std::unique_ptr<Tree> > tree_map;
 
   if (parameters_.geometry().type!=Parameters::Geometry::Type::External) {
 
@@ -287,7 +287,7 @@ void Generator::simulate() {
         Point((float)x_max, (float)y_min)
       );
 
-      Tree* tree = new Tree(plan, 5);
+      std::unique_ptr<Tree> tree(new Tree(plan, 5));
       float x_c, y_c;
       double side;
       for (const auto& c : geometry_.getCells()) {
@@ -339,7 +339,7 @@ void Generator::simulate() {
         }
       }
 
-      tree_map.insert({layer_id, tree});
+      tree_map.insert(std::make_pair(layer_id, std::move(tree)));
     }
   }
 
