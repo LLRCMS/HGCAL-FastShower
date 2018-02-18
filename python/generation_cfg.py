@@ -29,7 +29,7 @@ generation_number_of_hits_per_gev = 1000
 generation_noise = True
 # Calibration (noise true) : External or Personnal
 generation_calib_type = "External"
-generation_file = './calibration.txt'
+generation_file = './data/calibration.txt'
 
 # If the personnal mode is activated for the noise calibration
 # mev per MIP for 200 um
