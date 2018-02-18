@@ -90,65 +90,65 @@ class Parameters {
       int layer;
     };
 
-public:
-  Parameters();
-  ~Parameters() {};
+  public:
+    Parameters();
+    ~Parameters() {};
 
-  void read(const std::string&);
-  void print() const;
+    void read(const std::string&);
+    void print() const;
 
-  const General& general() const {return general_;}
-  const Geometry& geometry() const {return geometry_;}
-  const Shower& shower() const {return shower_;}
-  const Generation& generation() const {return generation_;}
-  const Display& display() const {return display_;}
+    const General& general() const {return general_;}
+    const Geometry& geometry() const {return geometry_;}
+    const Shower& shower() const {return shower_;}
+    const Generation& generation() const {return generation_;}
+    const Display& display() const {return display_;}
 
-private:
-  void fillGeneral(const boost::python::dict& dict);
-  void fillGeometry(const boost::python::dict& dict);
-  void fillShower(const boost::python::dict& dict);
-  void fillGeneration(const boost::python::dict& dict);
-  void fillDisplay(const boost::python::dict& dict);
+  private:
+    void fillGeneral(const boost::python::dict& dict);
+    void fillGeometry(const boost::python::dict& dict);
+    void fillShower(const boost::python::dict& dict);
+    void fillGeneration(const boost::python::dict& dict);
+    void fillDisplay(const boost::python::dict& dict);
 
-  // Converters to std objects
-  template<typename T>
-  std::vector<T> toStdVector(const boost::python::list& plist) {
-      boost::python::stl_input_iterator<T> begin(plist), end;
-      return std::vector<T>(begin,end);
-  }
-  template<typename Key, typename Value>
-  std::map<Key,Value> toStdMap(const boost::python::dict& pdict) {
-    std::map<Key, Value> output;
-    boost::python::list keys = pdict.keys();
-
-    for(unsigned i=0; i<len(keys);++i) {
-      Key key = boost::python::extract<Key>(keys[i]);
-      Value value = boost::python::extract<Value>(pdict[key]);
-      output.emplace(key, value);
+    // Converters to std objects
+    template<typename T>
+    std::vector<T> toStdVector(const boost::python::list& plist) {
+        boost::python::stl_input_iterator<T> begin(plist), end;
+        return std::vector<T>(begin,end);
     }
-    return output;
-  }
+    template<typename Key, typename Value>
+    std::map<Key,Value> toStdMap(const boost::python::dict& pdict) {
+      std::map<Key, Value> output;
+      boost::python::list keys = pdict.keys();
 
-  template<typename Key, typename Value>
-  std::map<Key, std::vector<Value>> toStdMapVector(const boost::python::dict& pdict) {
-
-    std::map<Key, std::vector<Value>> output;
-    boost::python::list keys = pdict.keys();
-
-    for(unsigned i=0; i<len(keys);++i) {
-      Key key = boost::python::extract<Key>(keys[i]);
-      boost::python::list value_list = boost::python::extract<boost::python::list>(pdict[key]);
-      std::vector<Value> vector_value = toStdVector<Value>(value_list);
-      output.emplace(key, vector_value);
+      for(unsigned i=0; i<len(keys);++i) {
+        Key key = boost::python::extract<Key>(keys[i]);
+        Value value = boost::python::extract<Value>(pdict[key]);
+        output.emplace(key, value);
+      }
+      return output;
     }
-    return output;
-  }
 
-  General general_;
-  Geometry geometry_;
-  Shower shower_;
-  Generation generation_;
-  Display display_;
+    template<typename Key, typename Value>
+    std::map<Key, std::vector<Value>> toStdMapVector(const boost::python::dict& pdict) {
+
+      std::map<Key, std::vector<Value>> output;
+      boost::python::list keys = pdict.keys();
+
+      for(unsigned i=0; i<len(keys);++i) {
+        Key key = boost::python::extract<Key>(keys[i]);
+        boost::python::list value_list = boost::python::extract<boost::python::list>(pdict[key]);
+        std::vector<Value> vector_value = toStdVector<Value>(value_list);
+        output.emplace(key, vector_value);
+      }
+      return output;
+    }
+
+    General general_;
+    Geometry geometry_;
+    Shower shower_;
+    Generation generation_;
+    Display display_;
 
 };
 
