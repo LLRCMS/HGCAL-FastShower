@@ -26,10 +26,10 @@ std::string fixedLength(int value, int digits = 5, std::string type="FH") {
   //  for value say -50 -> it should return -050
   //  for value say -110 -> it should return -110
 
-if (type != "FH" && type != "VHH") {
-  std::cout << "Unknown cell type name " << type << std::endl;
-  return "";
-}
+  if (type != "FH" && type != "VHH") {
+    std::cout << "Unknown cell type name " << type << std::endl;
+    return "";
+  }
 
   unsigned int uvalue = value;
   std::string result;
@@ -446,7 +446,7 @@ void Geometry::constructFromParameters(bool debug, int layer_id, int display_lay
       std::cout << "with triangular cells " << std::endl;
     }
     else {
-        std::cout<<"WARNING: Unknown cell type"<<std::endl;
+      std::cout<<"WARNING: Unknown cell type"<<std::endl;
     }
   }
 
