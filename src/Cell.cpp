@@ -12,27 +12,33 @@
 
 uint32_t Cell::id(uint16_t i, uint16_t j, uint16_t k) {
     // id format = iiijjjkk
-    return i*100000 + j*100 + k;
+    // return i*100000 + j*100 + k;
+  uint32_t id = 0;
+  id |= k & 0x3F;
+  id |= ((j & 0x1FFF) << 6);
+  id |= ((i & 0x1FFF) << 19);
+
+return id;
 }
 
 
-Cell::Cell(TVectorD&& position, std::vector<TVectorD>&& vertices, double orientation, int i_index, int j_index, int k_index):
+Cell::Cell(TVectorD&& position, std::vector<TVectorD>&& vertices, double orientation, uint16_t i_index, uint16_t j_index, uint16_t k_index):
   position_(std::move(position)),
   vertices_(std::move(vertices)),
   orientation_(orientation)
 {
 
-  if(i_index<std::numeric_limits<int16_t>::min() ||
-    i_index>std::numeric_limits<int16_t>::max() ||
-    j_index<std::numeric_limits<int16_t>::min() ||
-    j_index>std::numeric_limits<int16_t>::max()
+  if(i_index<std::numeric_limits<uint16_t>::min() ||
+    i_index>std::numeric_limits<uint16_t>::max() ||
+    j_index<std::numeric_limits<uint16_t>::min() ||
+    j_index>std::numeric_limits<uint16_t>::max()
   )
   {
     throw std::string("Cell index outside of 16bits integer limits");
   }
-  i_index_ = (int16_t)i_index;
-  j_index_ = (int16_t)j_index;
-  k_index_ = (int16_t)k_index;
+  i_index_ = (uint16_t)i_index;
+  j_index_ = (uint16_t)j_index;
+  k_index_ = (uint16_t)k_index;
   id_ = Cell::id(i_index_, j_index_, k_index_);
 }
 
@@ -48,15 +54,15 @@ double Cell::getZ() const{
     return this->getPosition()(2);
 }
 
-int Cell::getIIndex() const{
+uint16_t Cell::getIIndex() const{
     return i_index_;
 }
 
-int Cell::getJIndex() const{
+uint16_t Cell::getJIndex() const{
     return j_index_;
 }
 
-int Cell::getLayer() const{
+uint16_t Cell::getLayer() const{
     return k_index_;
 }
 
