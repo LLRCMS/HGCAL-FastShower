@@ -20,10 +20,8 @@ Tree::
 ~Tree()
 {
   if(cells_ != nullptr) {
-    delete cells_;
+    cells_.reset();
   }
-
-  // delete rectangle_;
 
   nw_.reset();
   sw_.reset();
@@ -66,10 +64,10 @@ countCells()
   return cellCount;
 }
 
-std::vector< const Cell*>* Tree::
+std::unique_ptr<std::vector< const Cell*>> Tree::
 getCells()
 {
-  return cells_;
+  return std::move(cells_);
 }
 
 Tree* Tree::
@@ -115,30 +113,24 @@ getLeaf(const Point p)
 void Tree::
 subdivide(int remainingLevels)
 {
-  if(remainingLevels == 0) {
-    cells_ = new std::vector<const Cell*>;
-    return;
-  }
-  else {
-    Point center = rectangle_.getCenter();
+  const Point center = rectangle_.getCenter();
 
-    Rectangle r_nw(rectangle_.getTopLeft(), center);
+  const Rectangle r_nw(rectangle_.getTopLeft(), center);
 
-    Rectangle r_sw(
-      Point(rectangle_.getTopLeft().x, center.y),
-      Point(center.x, rectangle_.getBottomRight().y)
-    );
+  const Rectangle r_sw(
+    Point(rectangle_.getTopLeft().x, center.y),
+    Point(center.x, rectangle_.getBottomRight().y)
+  );
 
-    Rectangle r_ne(
-      Point(center.x, rectangle_.getTopLeft().y),
-      Point(rectangle_.getBottomRight().x, center.y)
-    );
+  const Rectangle r_ne(
+    Point(center.x, rectangle_.getTopLeft().y),
+    Point(rectangle_.getBottomRight().x, center.y)
+  );
 
-    Rectangle r_se(center, rectangle_.getBottomRight());
+  const Rectangle r_se(center, rectangle_.getBottomRight());
 
-    nw_ = std::make_unique<Tree>(r_nw, remainingLevels - 1);
-    sw_ = std::make_unique<Tree>(r_sw, remainingLevels - 1);
-    ne_ = std::make_unique<Tree>(r_ne, remainingLevels - 1);
-    se_ = std::make_unique<Tree>(r_se, remainingLevels - 1);
-  }
+  nw_ = std::make_unique<Tree>(r_nw, remainingLevels - 1);
+  sw_ = std::make_unique<Tree>(r_sw, remainingLevels - 1);
+  ne_ = std::make_unique<Tree>(r_ne, remainingLevels - 1);
+  se_ = std::make_unique<Tree>(r_se, remainingLevels - 1);
 }
