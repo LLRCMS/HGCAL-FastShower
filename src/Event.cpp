@@ -25,30 +25,30 @@ fillHit(uint32_t id, double energy)
 
 void
 Event::
-fillGenEn(uint32_t id, double energy)
+fillGenEn(double energy)
 {
-  generated_energy_.emplace(id, energy);
+  generated_energy_.push_back(energy);
 }
 
 void
 Event::
-fillGenEta(uint32_t id, double eta)
+fillGenEta(double eta)
 {
-  generated_eta_.emplace(id, eta);
+  generated_eta_.push_back(eta);
 }
 
 void
 Event::
-fillGenPhi(uint32_t id, double phi)
+fillGenPhi(double phi)
 {
-  generated_phi_.emplace(id, phi);
+  generated_phi_.push_back(phi);
 }
 
 void
 Event::
-fillPDGid(uint32_t id, int PDGid)
+fillPDGid(int PDGid)
 {
-  pdgid_.emplace(id, PDGid);
+  pdgid_.push_back(PDGid);
 }
 
 void

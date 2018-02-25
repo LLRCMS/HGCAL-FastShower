@@ -79,28 +79,28 @@ fillTree(const Event& event, const Geometry& geometry)
   cell_n_ = cell_energy_.size();
 
 
-  for(const auto& id_part : event.generatedEnergy()) {
-    if(id_part.second<=0.) continue;
-    gen_energy_.emplace_back(id_part.second);
+  for(const auto& energy : event.generatedEnergy()) {
+  //   if(id_part.second<=0.) continue;
+    gen_energy_.emplace_back(energy);
   }
 
-  for(const auto& id_part : event.generatedEta()){
-    gen_eta_.emplace_back(id_part.second);
+  for(const auto& eta: event.generatedEta()){
+    gen_eta_.emplace_back(eta);
   }
 
-  for(const auto& id_part : event.generatedPhi()){
-    gen_phi_.emplace_back(id_part.second);
+  for(const auto& phi : event.generatedPhi()){
+    gen_phi_.emplace_back(phi);
   }
 
-  for(const auto& id_part : event.pdg_id()){
-    gen_PDGid_.emplace_back(id_part.second);
+  for(const auto& id: event.pdg_id()){
+    gen_PDGid_.emplace_back(id);
   }
 
   for(const auto& id_part : event.thickness()) {
     cell_thickness_.emplace_back(id_part.second);
   }
 
-tree_->Fill();
+  tree_->Fill();
 }
 
 void

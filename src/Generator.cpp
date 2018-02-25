@@ -82,7 +82,7 @@ std::array<std::array<double, NB_SI_THICKNESS>, NB_LAYERS> Generator::readCalibr
         line_counter++;
       }
 
-      istringstream strm(line);
+      std::istringstream strm(line);
 
       strm >> layer;
       strm >> mip[2];
@@ -149,7 +149,7 @@ void Generator::simulate() {
 
   for (int layer_id = layer_min; layer_id < layer_max; layer_id++) {
 
-    std::cout << "=====> Layer " <<layer_id + 1 << " / "<< layer_max << '\r' << flush;
+    std::cout << "=====> Layer " <<layer_id + 1 << " / "<< layer_max << '\r' << std::flush;
 
     if (parameters_.geometry().type!=Parameters::Geometry::Type::External) {
       geometry_.constructFromParameters(parameters_.general().debug, layer_id, display_layer);
@@ -345,7 +345,6 @@ void Generator::simulate() {
     }
   }
 
-
   // some initializations
   double energygen=0.;
   double energygenincells=0.;
@@ -412,11 +411,10 @@ void Generator::simulate() {
         }
       }
 
-      int position = &ip-&parameters_.general().part_type[0];
-      event.fillGenEn(position, energy_incident);
-      event.fillGenEta(position, eta_incident);
-      event.fillGenPhi(position, phi_incident);
-      event.fillPDGid(position, ip);
+      event.fillGenEn(energy_incident);
+      event.fillGenEta(eta_incident);
+      event.fillGenPhi(phi_incident);
+      event.fillPDGid(ip);
 
       // Number of hits
       // as the hits are not generated yet, the energy is computed with the smaller energy
@@ -501,9 +499,9 @@ void Generator::simulate() {
             }
             energygen += real_energy;
 
-            double rmin = numeric_limits<double>::max();
+            double rmin = std::numeric_limits<double>::max();
 
-            std::vector<const Cell*>* leafCells;
+            std::unique_ptr <std::vector<const Cell*>> leafCells;
 
             try {
               leafCells = tree_map[layer_id]->getLeaf(float(x), float(y))->getCells();
