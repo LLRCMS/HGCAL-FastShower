@@ -51,7 +51,7 @@ std::array<double, NB_LAYERS>& ShowerParametrization::
 getLayerProfile(int pdgid)
 {
 
-  map<int, std::vector<double>>::const_iterator pos = layerProfile_.find(pdgid);
+  std::map<int, std::vector<double>>::const_iterator pos = layerProfile_.find(pdgid);
 
   if (pos == layerProfile_.end()) std::cout << "pdgid doesn't exist"<<std::endl;
   else {
@@ -69,7 +69,7 @@ double ShowerParametrization::
 spotEnergy(int pdgid, int thickness)
 {
 
-  map<int, std::vector<double>>::const_iterator pos = alpha_.find(pdgid);
+  std::map<int, std::vector<double>>::const_iterator pos = alpha_.find(pdgid);
 
   if (pos == alpha_.end()) {
 

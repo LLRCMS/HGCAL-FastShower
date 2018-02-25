@@ -8,8 +8,6 @@
 #include "HGCalSimulation/FastShower/interface/Parameters.h"
 #endif
 
-using namespace std;
-
 
 class ShowerParametrization {
 
