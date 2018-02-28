@@ -130,7 +130,7 @@ derivative(double side, Parameters::Geometry::Type itype)
 
 
 const std::array< std::array<double, NB_SEGMENT>, NB_COORD_CART> Geometry::dxdyFirstZone(
-      std::array<double, NB_TOT_PTS_GEOMETRY> xs, std::array<double, NB_TOT_PTS_GEOMETRY> ys) {
+      const std::array<double, NB_TOT_PTS_GEOMETRY>& xs, const std::array<double, NB_TOT_PTS_GEOMETRY>& ys) {
 
   std::array<double, NB_SEGMENT> dx;
   std::array<double, NB_SEGMENT> dy;
@@ -147,7 +147,7 @@ const std::array< std::array<double, NB_SEGMENT>, NB_COORD_CART> Geometry::dxdyF
 
 
 const std::array< std::array<double, NB_SEGMENT>, NB_COORD_CART> Geometry::dxdySecondZone(
-      std::array<double, NB_TOT_PTS_GEOMETRY> xs, std::array<double, NB_TOT_PTS_GEOMETRY> ys) {
+      const std::array<double, NB_TOT_PTS_GEOMETRY>& xs, const std::array<double, NB_TOT_PTS_GEOMETRY>& ys) {
 
   std::array<double, NB_SEGMENT> dx;
   std::array<double, NB_SEGMENT> dy;
@@ -168,8 +168,8 @@ const std::array< std::array<double, NB_SEGMENT>, NB_COORD_CART> Geometry::dxdyS
 }
 
 
-const std::array< int, NB_PTS_WINDOWS> Geometry::ijWindows(int layer_region, std::array<double, NB_TOT_PTS_GEOMETRY> xs,
-                    std::array<double, NB_TOT_PTS_GEOMETRY> ys, double side, Parameters::Geometry::Type itype) {
+const std::array< int, NB_PTS_WINDOWS> Geometry::ijWindows(int layer_region, const std::array<double, NB_TOT_PTS_GEOMETRY>& xs,
+                    const std::array<double, NB_TOT_PTS_GEOMETRY>& ys, double side, Parameters::Geometry::Type itype) {
 
   // compute i,j window needed to cover the x,y window
 
@@ -212,7 +212,7 @@ const std::array< int, NB_PTS_WINDOWS> Geometry::ijWindows(int layer_region, std
 
 
 const std::array< double, NB_COORD_CART_CYL> Geometry::XYrPhi(int i, int j, double side, Parameters::Geometry::Type itype,
-                             std::array<double, NB_TOT_PTS_GEOMETRY> xs, std::array<double, NB_TOT_PTS_GEOMETRY> ys,
+                             const std::array<double, NB_TOT_PTS_GEOMETRY>& xs, const std::array<double, NB_TOT_PTS_GEOMETRY>& ys,
                              double layer_region) {
 
   std::array< double, NB_COORD_CART_CYL> xyrPhi;

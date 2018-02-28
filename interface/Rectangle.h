@@ -10,19 +10,19 @@
 
 class Rectangle {
 
-private:
-  Point topLeft;
-  Point bottomRight;
+  public:
+    Rectangle(const Point& = 0, const Point& = 0);
+    ~Rectangle();
 
-public:
-  Rectangle(const Point = 0, const Point = 0);
-  ~Rectangle();
+    bool contains(const Point&);
+    const Point getCenter();
 
-  bool contains(const Point);
-  const Point getCenter();
+    const Point& getTopLeft();
+    const Point& getBottomRight();
 
-  const Point getTopLeft();
-  const Point getBottomRight();
+  private:
+    Point topLeft_;
+    Point bottomRight_;
 };
 
 #endif

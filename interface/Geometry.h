@@ -46,10 +46,10 @@ class Geometry {
     const std::array< std::array<double, NB_OFFSET_MAX>, NB_COORD_DIFF_MAX> hexagonoffset(double);
     const std::array< std::array<double, NB_OFFSET_MAX>, NB_COORD_DIFF_MAX> triangleoffset(double);
     const std::array<double, NB_DERIV> derivative(double side, Parameters::Geometry::Type);
-    const std::array< std::array<double, NB_SEGMENT>, NB_COORD_CART> dxdyFirstZone(std::array<double, NB_TOT_PTS_GEOMETRY>, std::array<double, NB_TOT_PTS_GEOMETRY>);
-    const std::array< std::array<double, NB_SEGMENT>, NB_COORD_CART>  dxdySecondZone(std::array<double, NB_TOT_PTS_GEOMETRY>, std::array<double, NB_TOT_PTS_GEOMETRY>);
-    const std::array< int, NB_PTS_WINDOWS> ijWindows(int, std::array<double, NB_TOT_PTS_GEOMETRY>, std::array<double, NB_TOT_PTS_GEOMETRY>, double, Parameters::Geometry::Type);
-    const std::array< double, NB_COORD_CART_CYL> XYrPhi(int, int, double, Parameters::Geometry::Type, std::array<double, NB_TOT_PTS_GEOMETRY>, std::array<double, NB_TOT_PTS_GEOMETRY>, double);
+    const std::array< std::array<double, NB_SEGMENT>, NB_COORD_CART> dxdyFirstZone(const std::array<double, NB_TOT_PTS_GEOMETRY>&, const std::array<double, NB_TOT_PTS_GEOMETRY>&);
+    const std::array< std::array<double, NB_SEGMENT>, NB_COORD_CART> dxdySecondZone(const std::array<double, NB_TOT_PTS_GEOMETRY>&, const std::array<double, NB_TOT_PTS_GEOMETRY>&);
+    const std::array< int, NB_PTS_WINDOWS> ijWindows(int, const std::array<double, NB_TOT_PTS_GEOMETRY>&, const std::array<double, NB_TOT_PTS_GEOMETRY>&, double, Parameters::Geometry::Type);
+    const std::array< double, NB_COORD_CART_CYL> XYrPhi(int, int, double, Parameters::Geometry::Type, const std::array<double, NB_TOT_PTS_GEOMETRY>&, const std::array<double, NB_TOT_PTS_GEOMETRY>&, double);
 
     bool isInCell(const TVectorD& position, const Cell& cell) const; // test if a point is within a cell
     const Cell* closestCell(double x, double y) const;

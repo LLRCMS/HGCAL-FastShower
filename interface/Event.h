@@ -28,10 +28,10 @@ class Event
     const uint32_t npart() const {return npart_;}
     const std::unordered_map<uint32_t, double>& hits() const {return hits_;}
     const std::unordered_map<uint32_t, int>& thickness() const {return thickness_;}
-    const std::vector<double> generatedEnergy() const {return generated_energy_;}
-    const std::vector<double> generatedEta() const {return generated_eta_;}
-    const std::vector<double> generatedPhi() const {return generated_phi_;}
-    const std::vector<double> pdg_id() const {return pdgid_;}
+    const std::vector<double>& generatedEnergy() const {return generated_energy_;}
+    const std::vector<double>& generatedEta() const {return generated_eta_;}
+    const std::vector<double>& generatedPhi() const {return generated_phi_;}
+    const std::vector<double>& pdg_id() const {return pdgid_;}
 
   private:
     uint32_t run_;
