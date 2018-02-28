@@ -501,7 +501,7 @@ void Generator::simulate() {
 
             double rmin = std::numeric_limits<double>::max();
 
-            std::unique_ptr <std::vector<const Cell*>> leafCells;
+            std::vector<const Cell*> leafCells;
 
             try {
               leafCells = tree_map[layer_id]->getLeaf(float(x), float(y))->getCells();
@@ -511,7 +511,7 @@ void Generator::simulate() {
               continue;
             }
 
-            for (const auto& leafCell : *leafCells) {
+            for (const auto& leafCell : leafCells) {
               double leafCell_x = leafCell->getX();
               double leafCell_y = leafCell->getY();
               double r = sqrt((leafCell_x - x) * (leafCell_x - x)

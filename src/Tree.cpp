@@ -8,10 +8,11 @@
 #endif
 
 Tree::
-Tree(const Rectangle r, int levels)
+Tree(const Rectangle& r, int levels)
 {
   rectangle_ = r;
-  cells_ = nullptr;
+  // cells_ = nullptr;
+  cells_.empty();
 
   subdivide(levels);
 }
@@ -19,8 +20,8 @@ Tree(const Rectangle r, int levels)
 Tree::
 ~Tree()
 {
-  if(cells_ != nullptr) {
-    cells_.reset();
+  if(cells_.size() != 0) {
+    cells_.empty();
   }
 
   nw_.reset();
@@ -36,22 +37,22 @@ Tree::
 bool Tree::
 empty()
 {
-  if (cells_ == nullptr) return true;
+  if (cells_.size() == 0) return true;
   else return false;
 }
 
 void Tree::
 addCell(const Cell* c)
 {
-  cells_->push_back(c);
+  cells_.push_back(c);
 }
 
 int Tree::
 countCells()
 {
-  if(cells_ != nullptr) {
+  if(cells_.size() != 0) {
     // std::cout << "This leaf has " << cells_->size() << " elements" << std::endl;
-    return cells_->size();
+    return cells_.size();
   }
 
   int cellCount = 0;
@@ -64,10 +65,10 @@ countCells()
   return cellCount;
 }
 
-std::unique_ptr<std::vector< const Cell*>> Tree::
+const std::vector< const Cell*> Tree::
 getCells()
 {
-  return std::move(cells_);
+  return cells_;
 }
 
 Tree* Tree::
@@ -80,7 +81,7 @@ getLeaf(float x, float y)
 Tree* Tree::
 getLeaf(const Point p)
 {
-  if(cells_ != nullptr) return this;
+  if(cells_.size() != 0) return this;
 
   if(nw_->rectangle_.contains(p)) {
     // std::cout << "Going to subtree nw_" << std::endl;
