@@ -28,13 +28,8 @@ Cell::Cell(TVectorD&& position, std::vector<TVectorD>&& vertices, double orienta
   orientation_(orientation)
 {
 
-  if(i_index<std::numeric_limits<uint16_t>::min() ||
-    i_index>std::numeric_limits<uint16_t>::max() ||
-    j_index<std::numeric_limits<uint16_t>::min() ||
-    j_index>std::numeric_limits<uint16_t>::max()
-  )
-  {
-    throw std::string("Cell index outside of 16bits integer limits");
+  if(i_index > 0x1FFF || j_index > 0x1FFF ) {
+    throw std::string("Cell index outside of 13bits integer limits");
   }
   i_index_ = (uint16_t)i_index;
   j_index_ = (uint16_t)j_index;
