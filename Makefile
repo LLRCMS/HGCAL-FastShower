@@ -13,8 +13,8 @@ UCFLAGS = -O3 -Wall -DSTANDALONE
 
 PYTHONPATH :=$(shell dirname `which python`)/../
 
-RUCFLAGS := $(shell root-config --cflags) -I./interface/  -I/include/python2.7 -std=c++14
-LIBS := $(shell root-config --libs) -L/opt/rh/python27/root/usr/lib64 -lpython2.7 -lboost_python 
+RUCFLAGS := $(shell root-config --cflags) -I./interface/ -I$(PYTHONPATH)/include/python2.7 -std=c++14
+LIBS := $(shell root-config --libs) -L$(PYTHONPATH)/lib64 -lpython2.7 -lboost_python
 
 vpath %.cpp ./src/json
 vpath %.cpp ./src
