@@ -10,10 +10,10 @@
 //
 
 Rectangle::
-Rectangle(const Point topLeft, const Point bottomRight)
+Rectangle(const Point& topLeft, const Point& bottomRight)
 {
-  this->topLeft = topLeft;
-  this->bottomRight = bottomRight;
+  this->topLeft_ = topLeft;
+  this->bottomRight_ = bottomRight;
 }
 
 Rectangle::~Rectangle() { }
@@ -23,35 +23,35 @@ Rectangle::~Rectangle() { }
 //
 
 bool Rectangle::
-contains(const Point p)
+contains(const Point& p)
 {
-  return p.x >= topLeft.x
-      && p.x <= bottomRight.x
-      && p.y >= bottomRight.y
-      && p.y <= topLeft.y;
+  return p.x >= topLeft_.x
+      && p.x <= bottomRight_.x
+      && p.y >= bottomRight_.y
+      && p.y <= topLeft_.y;
 }
 
 const Point Rectangle::
 getCenter()
 {
-  float dx = bottomRight.x - topLeft.x;
-  float dy = topLeft.y - bottomRight.y;
+  float dx = bottomRight_.x - topLeft_.x;
+  float dy = topLeft_.y - bottomRight_.y;
 
-  return Point(topLeft.x + (dx / 2), bottomRight.y + (dy / 2));
+  return Point(topLeft_.x + (dx / 2), bottomRight_.y + (dy / 2));
 }
 
 //
 // Getters
 //
 
-const Point Rectangle::
+const Point& Rectangle::
 getTopLeft()
 {
-  return topLeft;
+  return topLeft_;
 }
 
-const Point Rectangle::
+const Point& Rectangle::
 getBottomRight()
 {
-  return bottomRight;
+  return bottomRight_;
 }
