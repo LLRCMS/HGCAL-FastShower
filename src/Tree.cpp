@@ -11,8 +11,6 @@ Tree::
 Tree(const Rectangle& r, int levels)
 {
   rectangle_ = r;
-  // cells_ = nullptr;
-  cells_.empty();
 
   subdivide(levels);
 }
@@ -20,10 +18,6 @@ Tree(const Rectangle& r, int levels)
 Tree::
 ~Tree()
 {
-  if(cells_.size() != 0) {
-    cells_.empty();
-  }
-
   nw_.reset();
   sw_.reset();
   ne_.reset();
@@ -65,7 +59,7 @@ countCells()
   return cellCount;
 }
 
-const std::vector< const Cell*> Tree::
+const std::vector< const Cell*>& Tree::
 getCells()
 {
   return cells_;
