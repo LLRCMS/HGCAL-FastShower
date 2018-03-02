@@ -2,6 +2,8 @@
 #define __HGCalSimulation_FastShower_Generator_h__
 
 #include <map>
+#include <unordered_map>
+
 #include "TH1F.h"
 #include "TRandom3.h"
 #include "TCanvas.h"
@@ -21,16 +23,18 @@
 #endif
 
 
-class Generator {
+class Generator
+{
 
   public:
     Generator(const Parameters&);
-    ~Generator() {};
+    ~Generator();
 
     void simulate();
-    //void display(Geometry& geometry, std::map<Cell,TH1F*,CellComp>& hCellEnergyEvtMap, int ievt=0);
-    std::unique_ptr<TCanvas> display(const std::unordered_map<uint32_t,TH1F>& hCellEnergyEvtMap, int ievt=0);
 
+    std::unique_ptr<TCanvas> display(const std::unordered_map<uint32_t,TH1F>& hCellEnergyEvtMap , int ievt=0);
+
+    std::array<std::array<double, NB_SI_THICKNESS>, NB_LAYERS> readCalibration(const std::string& filename);
 
   private:
     TRandom3 gun_;
@@ -38,8 +42,6 @@ class Generator {
     OutputService output_;
     ShowerParametrization shower_;
     const Parameters& parameters_;
-    
-
 };
 
 

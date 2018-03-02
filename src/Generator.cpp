@@ -6,21 +6,28 @@
 #include "TFile.h"
 #include "TText.h"
 #include "TPaveText.h"
+#include <typeinfo>
+
 #include "TMarker.h"
+#include <fstream>
+#include <string>
+#include <algorithm>
 
 #ifdef STANDALONE
 #include "Generator.h"
+#include "ShowerParametrization.h"
 #include "ShowerShapeHexagon.h"
 #include "ShowerShapeTriangle.h"
 #include "Event.h"
+#include "Tree.h"
 #else
 #include "HGCalSimulation/FastShower/interface/Generator.h"
 #include "HGCalSimulation/FastShower/interface/ShowerParametrization.h"
 #include "HGCalSimulation/FastShower/interface/ShowerShapeHexagon.h"
 #include "HGCalSimulation/FastShower/interface/ShowerShapeTriangle.h"
 #include "HGCalSimulation/FastShower/interface/Event.h"
+#include "HGCalSimulation/FastShower/interface/Tree.h"
 #endif
-
 
 Generator::
 Generator(const Parameters& params):
@@ -31,273 +38,631 @@ Generator(const Parameters& params):
 {
 }
 
+
+Generator::~Generator(){
+}
+
+
+std::array<std::array<double, NB_SI_THICKNESS>, NB_LAYERS> Generator::readCalibration(const std::string& filename) {
+
+  std::array<std::array<double, NB_SI_THICKNESS>, NB_LAYERS> calib;
+
+  std::ifstream my_calib_file(filename);
+  std::stringstream ss;
+  std::string line, temp;
+
+  int col_counter = 0;
+  int line_counter = 0;
+
+  int dim_column = 1 + NB_SI_THICKNESS * 2;
+
+  if (my_calib_file) {
+
+    int layer;
+    double mip[NB_SI_THICKNESS];
+    double noise[NB_SI_THICKNESS];
+    double sampl, MIP;
+
+    while(std::getline(my_calib_file, line)) {
+
+      // Discarde lines containing #
+      if (line.find("#") != std::string::npos) {
+        std::cout<<"This line begins with #. It is considered as comment -> discarded"<<std::endl;
+        continue;
+      }
+      else {
+        // Some checks for the file format : columns and lines
+        if (col_counter == 0) {
+          ss.clear();
+          ss << line;
+          while (ss >> temp) {
+            col_counter++;
+          }
+        }
+        line_counter++;
+      }
+
+      std::istringstream strm(line);
+
+      strm >> layer;
+      strm >> mip[2];
+      strm >> mip[1];
+      strm >> mip[0];
+      strm >> noise[2];
+      strm >> noise[1];
+      strm >> noise[0];
+
+      for (int i = 0; i < NB_SI_THICKNESS; i++) {
+        sampl = mip[i];
+
+        if (layer <= parameters_.geometry().FH_limit_layer) {
+          MIP = sampl/100;
+        }
+        else {
+          MIP = sampl/10;
+        }
+        calib[layer-1][i] = noise[i]*MIP/sampl;
+      }
+    }
+  }
+  else {
+    std::cout << "Wrong file path or the file does not exit"<< std::endl;
+  }
+
+  if (col_counter != dim_column && line_counter != NB_LAYERS){
+    std::cout << "WARNING : check the format of the calibration file"<< std::endl;
+    std::cout << "You should have 7 columns (layer, 3 MIP and 3 noise for the different Si thickness)"<<std::endl;
+    std::cout << "and one line per layer."<<std::endl;
+  }
+
+  my_calib_file.close();
+
+  return calib;
+}
+
+
 void Generator::simulate() {
   unsigned nevents = parameters_.general().events;
-  bool debug = parameters_.general().debug;
+
+  std::unordered_map<uint32_t, TH1F> hCellEnergyMap;
+  std::unordered_map<uint32_t, TH1F> hCellEnergyEvtMap;
+
+  TStopwatch t;
+  t.Start();
+
+  // Build geometry
+  std::cout<<"I'm building the geometry, please wait..." <<std::endl;
+
+  int layer_min, layer_max;
+  int display_layer;
+
+  if (parameters_.geometry().layer==-1) {
+    layer_min = 0;
+    layer_max = parameters_.geometry().layers_z.size();
+    display_layer = parameters_.display().layer;
+  }
+  else {
+    layer_min = parameters_.geometry().layer;
+    layer_max = parameters_.geometry().layer + 1;
+    display_layer = layer_min;
+  }
+
+  for (int layer_id = layer_min; layer_id < layer_max; layer_id++) {
+
+    std::cout << "=====> Layer " <<layer_id + 1 << " / "<< layer_max << '\r' << std::flush;
+
+    if (parameters_.geometry().type!=Parameters::Geometry::Type::External) {
+      geometry_.constructFromParameters(parameters_.general().debug, layer_id, display_layer);
+    }
+    else{
+      geometry_.constructFromJson(parameters_.general().debug, layer_id);
+    }
+
+    if (display_layer == layer_id) {
+      std::string hName;
+      hName = "geometry_";
+      hName += std::to_string(display_layer + 1);
+      TH2Poly* geometry_histo = (TH2Poly*)geometry_.cellHistogram()->Clone(hName.c_str());
+      geometry_histo->Write();
+      delete geometry_histo;
+
+      for (const auto& c : geometry_.getCells()) {
+        if (c.second.getLayer() == display_layer) {
+          int i = c.second.getIIndex();
+          int j = c.second.getJIndex();
+
+          hName="hCellEnergy_[";
+          hName += std::to_string(i);
+          hName += ",";
+          hName += std::to_string(j);
+          hName += ",";
+          hName += std::to_string(display_layer);
+          hName += "]";
+          hCellEnergyMap.emplace(c.first, TH1F(hName.c_str(),"Energy in cell [i,j,k])",100,0.,100.));
+        }
+      }
+
+      if (parameters_.display().events > 0) {
+        for (const auto& c : geometry_.getCells()) {
+          if (c.second.getLayer() == display_layer) {
+            int i = c.second.getIIndex();
+            int j = c.second.getJIndex();
+
+            hName="hCellEnergyEvt[";
+            hName += std::to_string(i);
+            hName += ",";
+            hName += std::to_string(j);
+            hName += ",";
+            hName += std::to_string(display_layer);
+            hName += "]";
+            hCellEnergyEvtMap.emplace(c.first,TH1F(hName.c_str(),"Event Energy in cell [i,j,k])", 100, 0., 100.));
+          }
+        }
+      }
+    }
+  }
+
+  if (parameters_.general().debug) {
+    geometry_.print();
+  }
+
+  std::cout << "Done !"<<std::endl;
+
+  // Noise calibration of each cells for all layers
+  std::array<std::array<double, NB_SI_THICKNESS>, NB_LAYERS> calibratednoise;
+
+  if (parameters_.generation().noise) {
+    std::cout << "Noise calibration ..."<<std::endl;
+
+    if (parameters_.generation().gentype == Parameters::Generation::GenType::Personnal) {
+
+      for(int layer_id = layer_min; layer_id < layer_max; layer_id++) {
+
+        double sigma_noise = parameters_.generation().noise_sigma;
+        double mip;
+        double sampl = parameters_.generation().sampling;
+
+        if (layer_id <= parameters_.geometry().FH_limit_layer) {
+          mip = sampl/100;
+        }
+        else {
+          mip = sampl/10;
+        }
+
+        for (int i = 0; i<NB_SI_THICKNESS; i++) {
+          calibratednoise[layer_id][i] = sigma_noise*mip/sampl;
+        }
+      }
+    }
+    else {
+      calibratednoise = readCalibration(parameters_.generation().calib_file);
+    }
+  }
+  std::cout << "Done !"<<std::endl;
+
+
+  // start main loop on all events
+  double hit_outside_geom = 0.;
+  double tot_hits = 0;
+
+  // // Histograms for transverse profile
+  // TH1F *hTransverseProfile[layer_max-layer_min];
+  // char* hTransProfName = new char[30];
+
+  // for (int i = layer_min; i < layer_max; i++) {
+  //   sprintf(hTransProfName, "hTransverseProfile_%d", i);
+  //   hTransverseProfile[i] = new TH1F(hTransProfName, "Generated transverse profile (cm)", 600, 0., 120);
+  // }
+
+  // Build the tree map (except for external geometry) ; one key corresponds to one layer
+  std::unordered_map<int, std::unique_ptr<Tree> > tree_map;
+
+  if (parameters_.geometry().type!=Parameters::Geometry::Type::External) {
+
+    for (int layer_id = layer_min; layer_id < layer_max; layer_id++) {
+
+      std::vector<double > cell_x;
+      std::vector<double > cell_y;
+      for (const auto& c : geometry_.getCells()) {
+        if (c.second.getLayer() == layer_id) {
+          cell_x.push_back(c.second.getX());
+          cell_y.push_back(c.second.getY());
+        }
+      }
+
+      auto minmax_x = std::minmax_element(cell_x.begin(), cell_x.end());
+      auto minmax_y = std::minmax_element(cell_y.begin(), cell_y.end());
+      double x_min = *minmax_x.first;
+      double x_max = *minmax_x.second;
+      double y_min = *minmax_y.first;
+      double y_max = *minmax_y.second;
+
+      // Geometry build with the cell center position, add a margin for the
+      // square corners containing the boarder cells
+      x_min -= parameters_.geometry().small_cell_side;
+      x_max += parameters_.geometry().large_cell_side;
+      y_min -= parameters_.geometry().large_cell_side * 2;
+      y_max += parameters_.geometry().large_cell_side * 2;
+
+      Rectangle plan = Rectangle(
+        Point((float)x_min, (float)y_max),
+        Point((float)x_max, (float)y_min)
+      );
+
+      std::unique_ptr<Tree> tree(new Tree(plan, 5));
+      float x_c, y_c;
+      double side;
+      for (const auto& c : geometry_.getCells()) {
+
+        if (c.second.getLayer() == layer_id) {
+
+          x_c = float(c.second.getX());
+          y_c = float(c.second.getY());
+          float cell_radius = sqrt((x_c*x_c)+(y_c*y_c));
+
+          if (cell_radius <= float(parameters_.geometry().limit_first_zone)) {
+            side = parameters_.geometry().small_cell_side;
+          }
+          else {
+            side = parameters_.geometry().large_cell_side;
+          }
+
+          Point cornerA(x_c - float(side*sqrt(3)/2), y_c + float(side));
+          Point cornerB(x_c + float(side*sqrt(3)/2), y_c + float(side));
+          Point cornerC(x_c + float(side*sqrt(3)/2), y_c - float(side));
+          Point cornerD(x_c - float(side*sqrt(3)/2), y_c - float(side));
+
+          std::set<Tree*> alreadyAdded;
+
+          Tree* leafA = tree->getLeaf(cornerA);
+          leafA->addCell(&(c.second));
+          alreadyAdded.insert(leafA);
+
+          Tree* leafB = tree->getLeaf(cornerB);
+
+          if(alreadyAdded.count(leafB) == 0) {
+            leafB->addCell(&(c.second));
+            alreadyAdded.insert(leafB);
+          }
+
+          Tree* leafC = tree->getLeaf(cornerC);
+
+          if(alreadyAdded.count(leafC) == 0) {
+            leafC->addCell(&(c.second));
+            alreadyAdded.insert(leafC);
+          }
+
+          Tree* leafD = tree->getLeaf(cornerD);
+
+          if(alreadyAdded.count(leafD) == 0) {
+            leafD->addCell(&(c.second));
+            alreadyAdded.insert(leafD);
+          }
+        }
+      }
+
+      tree_map.insert(std::make_pair(layer_id, std::move(tree)));
+    }
+  }
 
   // some initializations
   double energygen=0.;
   double energygenincells=0.;
   double energyrec=0.;
 
+  int thickness = 0;
 
-
-  TStopwatch t;
-  t.Start();   
-
-  if (parameters_.geometry().type!=Parameters::Geometry::Type::External) {
-    geometry_.constructFromParameters(parameters_.general().debug); 
-  } else {
-    geometry_.constructFromJson(parameters_.general().debug);
-  }
-  if(debug) geometry_.print();
-
-  // The output file has the ownership
-  TH2Poly* geometry_histo = (TH2Poly*)geometry_.cellHistogram()->Clone("geometry");
-  geometry_histo->Write();
-
-  // incident direction
-  double phiinc = parameters_.generation().incident_phi;
-  double thetainc = 2.*std::atan(std::exp(-parameters_.generation().incident_eta));
-  double r = geometry_.getZlayer()*tan(thetainc); 
-  double incident_x = r*cos(phiinc);
-  double incident_y = r*sin(phiinc);
-
-
+  // Shower parametrization
   ShowerParametrization aShowerParametrization(parameters_.shower());
 
-  // book the histograms  
-  // FIXME: Manage the histograms in OutputService
-  TH1F hTransverseProfile("hTransverseProfile","Generated transverse profile (cm)",100,0.,20.);
-  TH1F hPhiProfile("hPhiProfile","Generated azimuthal profile (cm)",100,0.,6.3);
-  TH1F hEnergyGen("hEnergyGen","Generated total energy",100,0.,300.);
-  TH1F hSpotEnergy("hSpotEnergy","Generated spot energy",100,0.,0.1);
-  TH1F hLandau("hLandau","Landau fluctations",100,0.,5.);
-  TH1F hCellEnergyDist("hCellEnergyDist","Cell energy",1000,0.,100.);
-  TH1F hEnergySum("hEnergySum","Energy sum",120,0.,120.);
-
-  std::unordered_map<uint32_t, TH1F> hCellEnergyMap;
-  std::unordered_map<uint32_t, TH1F> hCellEnergyEvtMap;
-
-  std::string hName; 
-  for (const auto& id_cell : geometry_.getCells()) { 
-    int i = id_cell.second.getIIndex();
-    int j = id_cell.second.getJIndex();
-    hName="hCellEnergy[";
-    hName += std::to_string(i);
-    hName += ",";
-    hName += std::to_string(j);
-    hName += "]";
-    hCellEnergyMap.emplace(id_cell.first, TH1F(hName.c_str(),"Energy in cell [i,j])",100,0.,100.));
-  }
-
-  if (parameters_.display().events>0) {
-    for (const auto& id_cell : geometry_.getCells()) { 
-      int i = id_cell.second.getIIndex();
-      int j = id_cell.second.getJIndex();
-      hName="hCellEnergyEvt[";
-      hName += std::to_string(i);
-      hName += ",";
-      hName += std::to_string(j);
-      hName += "]";
-      hCellEnergyEvtMap.emplace(id_cell.first,TH1F(hName.c_str(),"Event Energy in cell [i,j])",100,0.,100.));
-    } 
-  }
-
-  if (debug)
-  {
-    std::cout << " " << std::endl;
-    std::cout << "incident direction: " <<"("<<
-      parameters_.generation().incident_eta<<","<<
-      parameters_.generation().incident_phi<<")"<<std::endl; 
-    std::cout << "incident energy: " <<parameters_.generation().energy<<" GeV"<<std::endl; 
-    std::cout << "requested layer: " <<parameters_.geometry().layer<<std::endl; 
-    std::cout<< "hexagon side: " <<parameters_.geometry().cell_side<< std::endl;
-
-    std::cout<< "moliere radius: " << aShowerParametrization.getMoliereRadius()  << " cm" << std::endl;
-    std::cout<< "nbr hits per GeV: " << parameters_.generation().number_of_hits_per_gev << std::endl;
-
-    std::cout<< "requested events: " << nevents << std::endl;
-  }
-
-
-
+  // Canvas for the geometry map in rootfile
   std::vector<std::unique_ptr<TCanvas>> canvas;
-  // start main loop on all events
-  for (unsigned iev=1; iev<=nevents; iev++) {
 
-    // generate new event
-    std::cout << "================ Simulating event: " << iev << " ================" << std::endl;    
 
-    const auto& cells = geometry_.getCells();
+  for (unsigned iev=1; iev <= nevents; iev++) {
+    std::cout << "================ Simulating event: " << iev << " ================" << std::endl;
+
     // initialize event
     Event event(0, iev); // default run number =0
-
-    event.setGenerated(parameters_.generation().energy, 
-        parameters_.generation().incident_eta,
-        parameters_.generation().incident_phi
-        );
 
     energygen = 0.;
     energygenincells = 0.;
     energyrec = 0.;
 
-    if (parameters_.generation().noise) {
-      double calibratednoise = parameters_.generation().noise_sigma*parameters_.generation().mip_energy/parameters_.generation().sampling;
-      for (auto& id_cell : cells) {
-        double enoise = gun_.Gaus(0.,calibratednoise);
-        event.fillHit(id_cell.first, enoise);
-        energyrec += enoise;
-        if (debug) std::cout << "adding " << enoise << " GeV noise in cell " << std::endl;      
+    // Particles generation
+    unsigned npart = parameters_.general().part_type.size();
+    event.setnPart(npart);
+
+    for (auto& ip : parameters_.general().part_type) {
+
+      // particle incidents parameters
+      double eta_incident, phi_incident;
+      double energy_incident;
+
+      if (parameters_.generation().eta_fluctuation) {
+        eta_incident = gun_.Uniform(parameters_.generation().eta_range_min, parameters_.generation().eta_range_max);
       }
-    }
-      
-    // generate energy spots according to transverse profile
-    double r0 = aShowerParametrization.r0(parameters_.geometry().layer);
-    // take longitudinal profile as mean energy per layer for fixed energy
-    double layer_weight = 1.;
-    if (parameters_.geometry().layer!=-1) layer_weight = aShowerParametrization.getLayerProfile()[parameters_.geometry().layer];
-
-    // energy spot 
-    // no fluctuations: fixed energy = 1. / nhitspergev
-    // fluctuations: alpha/sqrt(E) -> Poissonian nbr hits of energy 1/alpha^2
-    // where alpha is the stochastic term of the resolution
-    int nhits;
-    double denrj;
-    if (!parameters_.generation().fluctuation) {
-      nhits = int(parameters_.generation().energy*layer_weight*parameters_.generation().number_of_hits_per_gev);
-      denrj = 1./parameters_.generation().number_of_hits_per_gev;
-    } else {
-      denrj = aShowerParametrization.spotEnergy();
-      nhits = gun_.Poisson(parameters_.generation().energy*layer_weight/denrj); 
-    }  
-
-    if (debug) {
-      std::cout << " number of generated hits " << nhits << " with energy " << denrj <<
-        std::endl;
-    }
-
-
-    for (int i=0; i<nhits; i++) {
-
-      double r_shower = gun_.Exp(r0); // exponential exp(-r/r0)
-      double phi_shower = gun_.Rndm()*TMath::TwoPi();
-      double x = r_shower*cos(phi_shower) + incident_x;
-      double y = r_shower*sin(phi_shower) + incident_y;
-
-      TVectorD pos(2);
-      pos(0)=x;
-      pos(1)=y;
-
-      if (debug) {
-        std::cout << " new simulated hit with energy " << denrj << " and position(x,y) " 
-          <<"("<<x<<","<<y<<")"<< " cell(i,j) " 
-          <<"("<<geometry_.closestCell(x,y).getIIndex()
-          <<","<<geometry_.closestCell(x,y).getJIndex()
-          <<")"<<" cell(x,y) "
-          <<"("<<geometry_.closestCell(x,y).getPosition()(0)
-          <<","<<geometry_.closestCell(x,y).getPosition()(1)
-          <<")"
-          <<" isincell(cell) "<<geometry_.isInCell(pos, geometry_.closestCell(x,y))
-          <<" position in cell " 
-          <<"("<<geometry_.positionInCell(pos)(0)
-          <<","<<geometry_.positionInCell(pos)(1)
-          <<")"
-          <<std::endl;
+      else {
+        eta_incident = parameters_.generation().incident_eta;
       }
 
-      energygen += denrj;
-
-      // map generated point into geometry
-      const Cell& cell = geometry_.closestCell(x,y);
-
-      // for half-cell or boarder cells, check it is within the cell
-      bool isincell = geometry_.isInCell(pos, cell);
-      if (!isincell) { 
-        std::cout << "[main] point is not inside the closest cell!  x,y" << x << " " << y << 
-          " cell position " << cell.getPosition()(0) << " " << cell.getPosition()(1) << 
-          " closest cell indices " << cell.getIIndex() << " " <<  cell.getJIndex()<< std::endl;
+      if (parameters_.generation().phi_fluctuation) {
+        phi_incident = gun_.Uniform(parameters_.generation().phi_range_min, parameters_.generation().phi_range_max);
+      }
+      else {
+        phi_incident = parameters_.generation().incident_phi;
       }
 
-      // add energy to corresponding cell
-      if (isincell) {
-        event.fillHit(cell.id(), denrj);
-        energygenincells += denrj;  
-        energyrec += denrj; 
-      }	
+      if (parameters_.generation().fluctuation_energy) {
+        double rand_energy = gun_.Uniform(parameters_.generation().E_range_min, parameters_.generation().E_range_max);
+        if (parameters_.generation().gun_type == "E") {
+          energy_incident = rand_energy;
+        }
+        else{
+          energy_incident = rand_energy*((exp(eta_incident*eta_incident)+1)/(exp(eta_incident*eta_incident)-1));
+        }
+      }
+      else {
+        if (parameters_.generation().gun_type == "E") {
+          energy_incident = parameters_.generation().energy;
+        }
+        else {
+          energy_incident = parameters_.generation().energy*((exp(eta_incident*eta_incident)+1)/(exp(eta_incident*eta_incident)-1));
+        }
+      }
 
-     // fill shower histograms
-      hTransverseProfile.Fill(r_shower,denrj);
-      hPhiProfile.Fill(phi_shower,denrj);
-      hSpotEnergy.Fill(denrj);
+      event.fillGenEn(energy_incident);
+      event.fillGenEta(eta_incident);
+      event.fillGenPhi(phi_incident);
+      event.fillPDGid(ip);
 
+      // Number of hits
+      // as the hits are not generated yet, the energy is computed with the smaller energy
+      // resolution in order to have the bigger number of hits per events
+      // energy spot
+      // no fluctuations: fixed energy = 1. / nhitspergev
+      // fluctuations: alpha/sqrt(E) -> Poissonian nbr hits of energy 1/alpha^2
+      // where alpha is the stochastic term of the resolution
+
+      for (int layer_id = layer_min; layer_id < layer_max; layer_id++) {
+
+        // incident direction
+        double thetainc = 2.*std::atan(std::exp(-eta_incident));
+        double r = parameters_.geometry().layers_z[layer_id]*tan(thetainc); 
+        double incident_x = r*cos(phi_incident);
+        double incident_y = r*sin(phi_incident);
+
+        double r0_electro = aShowerParametrization.r0_electro_(layer_id, ip);
+        double r0_hadro = aShowerParametrization.r0_hadro_(layer_id, ip);
+
+        // take longitudinal profile as mean energy per layer for fixed energy
+        double layer_weight = aShowerParametrization.getLayerProfile(ip)[layer_id];
+
+        double denrj;
+        int nhits;
+
+        if (!parameters_.generation().fluctuation){
+          denrj = 1./parameters_.generation().number_of_hits_per_gev;
+          nhits = int(energy_incident*layer_weight*parameters_.generation().number_of_hits_per_gev);
+        }
+        else {
+          denrj = aShowerParametrization.spotEnergy(ip, 300);
+          nhits = gun_.Poisson(energy_incident*layer_weight/denrj);
+        }
+        tot_hits += nhits;
+
+        double real_energy = 0;
+
+        // loop over hits
+        for (int i = 0; i < nhits; i++) {
+          // Compute the position of each hit
+
+          double r_shower = 0;
+          if (ip == 11 || ip == 22) {
+            r_shower = gun_.Exp(r0_electro); // exponential exp(-r/r0)
+          }
+          else { // for hadronic shower templates parametrization
+            r_shower = parameters_.shower().a_core * gun_.Exp(r0_hadro/parameters_.shower().b_core)
+                     + parameters_.shower().a_halo * gun_.Exp(r0_hadro/parameters_.shower().b_halo);
+          }
+
+          double phi_shower = gun_.Rndm()*TMath::TwoPi();
+          double x = r_shower*cos(phi_shower) + incident_x;
+          double y = r_shower*sin(phi_shower) + incident_y;
+
+          TVectorD pos(2);
+          pos(0)=x;
+          pos(1)=y;
+
+          // double side = 0;
+          const Cell* closestCells = nullptr;
+
+          if (parameters_.geometry().type!=Parameters::Geometry::Type::External) {
+
+            // hit position on layer (EE, FH or BH). Energy attribution
+            int hit_pos = sqrt(x*x+y*y);
+            if (hit_pos <= parameters_.geometry().limit_first_zone) {
+              thickness = 100;
+              real_energy = aShowerParametrization.spotEnergy(ip, thickness);
+              // side = parameters_.geometry().small_cell_side;
+            }
+            else if (hit_pos >= parameters_.geometry().limit_first_zone &&
+                     hit_pos <= parameters_.geometry().limit_second_zone){
+              thickness = 200;
+              real_energy = aShowerParametrization.spotEnergy(ip, thickness);
+              // side = parameters_.geometry().large_cell_side;
+            }
+            else {
+              real_energy = denrj;
+              thickness = 300;
+              // side = parameters_.geometry().large_cell_side;
+            }
+            energygen += real_energy;
+
+            double rmin = std::numeric_limits<double>::max();
+
+            std::vector<const Cell*> leafCells;
+
+            try {
+              leafCells = tree_map[layer_id]->getLeaf(float(x), float(y))->getCells();
+            } catch(std::string errorString) {
+              std::cout << "WARNING: " << errorString << std::endl;
+              std::cout << "WARNING: not processing this hit." << std::endl;
+              continue;
+            }
+
+            for (const auto& leafCell : leafCells) {
+              double leafCell_x = leafCell->getX();
+              double leafCell_y = leafCell->getY();
+              double r = sqrt((leafCell_x - x) * (leafCell_x - x)
+                          + (leafCell_y - y) * (leafCell_y - y));
+
+              if (r < rmin) {
+                rmin = r;
+                closestCells = leafCell;
+              }
+            }
+          }
+          else {
+            energygen += denrj;
+            closestCells = geometry_.closestCell(x,y);
+          }
+          // for half-cell or boarder cells, check it is within the cell
+          // add energy to corresponding cell
+          // Note : isincell search the position of the hit in the closest cell. When it finds the
+          // cell it stop : remove the limit line problem because the hit is attributed to the 
+          // first cell found
+
+          if (closestCells == nullptr) {
+            std::cout << "closestCells is null; not processing this hit" << std::endl;
+            continue;
+          }
+
+          const Cell& cell = *closestCells;
+
+          bool isincell = geometry_.isInCell(pos, cell);
+
+          double enoise = 0;
+          if (!isincell) {
+            if (parameters_.general().debug) {
+              std::cout << "[main] point is not inside the closest cell (hit in boarder cells or in hole at the limit)  x,y " << x << " " << y <<
+                      " cell position " << cell.getX() << " " << cell.getY() <<
+                      " closest cell indices " << cell.getIIndex() << " " <<  cell.getJIndex()<<
+                      " layer Id : "<<layer_id + 1<< std::endl;
+            }
+            hit_outside_geom++;
+          }
+          else {
+
+            energyrec += real_energy;
+            energygenincells += real_energy;
+
+            // loop on cells for the noise generation from the cells calibration
+            if (parameters_.generation().noise) {
+              enoise = gun_.Gaus(0., calibratednoise[layer_id][thickness/100 - 1]);
+              event.fillHit(closestCells->getId(), enoise);
+              energyrec += enoise;
+            }
+
+            event.fillHit(closestCells->getId(), energyrec);
+            event.fillThickness(closestCells->getId(), thickness);
+          }
+
+          // // fill shower histograms
+          // double deltaR = side*sqrt(3);
+          // double deltaS = 2*TMath::Pi()*r_shower*deltaR;
+          // if (ip == 211) {
+          //   hTransverseProfile[layer_id]->Fill(abs(r_shower), abs((real_energy + enoise)/deltaS));
+          // }
+          // else {
+          //   hTransverseProfile[layer_id]->Fill(abs(r_shower), real_energy + enoise);
+          // }
+
+          //  hPhiProfile.Fill(phi_shower,real_energy);
+          //  hSpotEnergy.Fill(real_energy);
+        }
+      }
     }
 
     std::cout << "simulated energy " << energygen << std::endl;
     std::cout << "simulated energy inside cells " << energygenincells << std::endl;
     std::cout << "reconstructed energy inside cells (includes noise) " << energyrec << std::endl;
-    
-    std::unique_ptr<ShowerShape> aShowerShape;
-    if (parameters_.geometry().type!=Parameters::Geometry::Type::Triangles) { // hexagons
-      aShowerShape.reset(new ShowerShapeHexagon(event.hits(), geometry_.getCells()));
-    } else { // triangles
-      aShowerShape.reset(new ShowerShapeTriangle(event.hits(), geometry_.getCells()));   
-    }  
-    std::cout << "cell max i,j " << aShowerShape->maxCell()->getIIndex() << " " << aShowerShape->maxCell()->getJIndex()
-    << " with energy " << aShowerShape->maxE1() << std::endl;
-    std::cout << "energy in first neighboors " << aShowerShape->firstNeighboors() << std::endl;
 
-    // fill histograms
-    hEnergyGen.Fill(energygen,1.);
-    hEnergySum.Fill(energyrec,1.);
+    //Not changed since all layers implementation. 
+    //FIX ME: Change the following lines in order to return for each layer or one layer the 
+    //bigger energy deposit.
+    // std::unique_ptr<ShowerShape> aShowerShape;
+    // if (parameters_.geometry().type!=Parameters::Geometry::Type::Triangles) { // hexagons
+    //   aShowerShape.reset(new ShowerShapeHexagon(event.hits(), geometry_.getCells()));
+    // } else { // triangles
+    //   aShowerShape.reset(new ShowerShapeTriangle(event.hits(), geometry_.getCells()));
+    // }  
+    // std::cout << "cell max i,j " << aShowerShape->maxCell()->getIIndex() << " " << aShowerShape->maxCell()->getJIndex()
+    // << " with energy " << aShowerShape->maxE1() << std::endl;
+    // std::cout << "energy in first neighboors " << aShowerShape->firstNeighboors() << std::endl;
 
-    for (const auto& id_energy : event.hits()) { 
-      hCellEnergyMap.at(id_energy.first).Fill(id_energy.second);
-    }
+    if (!hCellEnergyMap.empty() && !hCellEnergyEvtMap.empty()) {
 
-    if (debug) std::cout << " incident energy: " << parameters_.generation().energy << " simulated energy: " << energygen << std::endl;    
+      for (const auto& hit : event.hits()) {
 
-    // if requested display a few events
-    if (iev<=parameters_.display().events) {
-      for (const auto& id_energy : event.hits()) { 
-        hCellEnergyEvtMap.at(id_energy.first).Reset();
-        hCellEnergyEvtMap.at(id_energy.first).Fill(id_energy.second);
+        const auto& cell = geometry_.getCells().at(hit.first);
+
+        if (cell.getLayer() == display_layer) {
+          hCellEnergyMap.at(hit.first).Fill(hit.second);
+        }
       }
-      canvas.emplace_back(display(hCellEnergyEvtMap,iev));    
 
+      // if requested display a few events
+      if (iev<=parameters_.display().events) {
+        for (const auto& hit : event.hits()) {
+
+        const auto& cell = geometry_.getCells().at(hit.first);
+
+        if (cell.getLayer() == display_layer) {
+            hCellEnergyEvtMap.at(hit.first).Reset();
+            hCellEnergyEvtMap.at(hit.first).Fill(hit.second);
+          }
+        }
+
+        canvas.emplace_back(display(hCellEnergyEvtMap, iev));
+      }
     }
+
+    // fill global histograms
+    // hEnergySum.Fill(energyrec,1.);
+    // hEnergyGen.Fill(energygenincells,1.);
     output_.fillTree(event, geometry_);
-
   }
-  std::cout << std::endl;
-  std::cout << nevents << " events generated " << std::endl;  
-  std::cout << std::endl;
 
-  // Exporting histograms to file
-  //hEnergyGen.Write();
-  //hTransverseProfile.Write();
-  //hPhiProfile.Write();
-  //hSpotEnergy.Write();
-  //hCellEnergyDist.Write();
-  //hEnergySum.Write();
+  // // Exporting histograms to file
+  // for (int i = layer_min; i < layer_max; i++) {
+  //   hTransverseProfile[i]->Write();
+  // }
 
-  //for (const auto& id_hist : hCellEnergyMap) { 
-    //id_hist.second.Write();
-  //}  
+  if (!hCellEnergyMap.empty()) {
+    canvas.emplace_back(display(hCellEnergyMap));
+    // Writing energy map plots
+    for(const auto& canvas_ptr : canvas) {
+      canvas_ptr->Write();
+    }
+  }
 
+  output_.saveTree();
+  // hEnergyGen.Write();
+  // hPhiProfile.Write();
+  // hSpotEnergy.Write();
+  // hEnergySum.Write();
+
+  std::cout<<std::endl;
+  std::cout<< "---------> Simulation information : "<<std::endl;
+  std::cout << nevents << " events generated " << std::endl;
+  std::cout<<hit_outside_geom<<" hits are outside or at the boarder of the geometry for a total of "
+      <<tot_hits<<" hits ("<<hit_outside_geom*100./tot_hits<<"\%)."<< std::endl;
 
   t.Stop();
   t.Print();
-
-  canvas.emplace_back(display(hCellEnergyMap));    
-
-  // Writing energy map plots
-  for(const auto& canvas_ptr : canvas) {
-    canvas_ptr->Write();
-  }
-
+  std::cout << std::endl;
 }
-
 
 
 std::unique_ptr<TCanvas> Generator::display(const std::unordered_map<uint32_t,TH1F>& hCellEnergyEvtMap, int ievt) {
@@ -305,9 +670,14 @@ std::unique_ptr<TCanvas> Generator::display(const std::unordered_map<uint32_t,TH
   // FIXME: build titles without using char[]
   std::string title1, title2, title4;
   char str[20];
-  if (ievt == 0) title1 = "Mean energy profile in layer ";
-  else title1 = "Event " + std::to_string(ievt) + " energy profile in layer ";
-  title1 = title1 + std::to_string(parameters_.geometry().layer);
+  if (ievt == 0) {
+    title1 = "Mean energy profile in layer ";
+  }
+  else {
+    title1 = "Event " + std::to_string(ievt) + " energy profile in layer ";
+  }
+
+  title1 = title1 + std::to_string(parameters_.display().layer + 1);
   title2 = "E = ";
   sprintf(str,"%4.1f",parameters_.generation().energy);
   std::string string=str;
@@ -315,7 +685,7 @@ std::unique_ptr<TCanvas> Generator::display(const std::unordered_map<uint32_t,TH
   title2 = title2 + " GeV", 
   title4 = "eta = ";
   sprintf(str,"%3.1f",parameters_.generation().incident_eta);
-  string=str;   
+  string=str;
   title4 = title4 + string;
   std::string title = title1 + ", ";
   title = title + title2;
@@ -324,28 +694,14 @@ std::unique_ptr<TCanvas> Generator::display(const std::unordered_map<uint32_t,TH
 
   std::unique_ptr<TCanvas> c1(new TCanvas(title.c_str(),title.c_str(),700,700));
   TH2Poly* energy_map = (TH2Poly*)geometry_.cellHistogram()->Clone(std::string("test"+std::to_string(ievt)).c_str());
-  //geometry_.draw(parameters_.display());
 
-  for (const auto& id_hist : hCellEnergyEvtMap) {
-    const auto& cell = geometry_.getCells().at(id_hist.first);
-    // print mean energies
-    double enrj = id_hist.second.GetMean();
-    energy_map->Fill(cell.getPosition()(0), cell.getPosition()(1), enrj);
-    // FIXME: no sprintf
-    sprintf(str,"%4.1f",id_hist.second.GetMean());
-    // Calling Draw makes the current pad take the ownership of the object
-    // So raw pointers are used, and the objects are deleted when the pad is deleted (here c1)
-    //TText* t = new TText(cell.getPosition()(0)*scale+xdisplayoffset,
-        //cell.getPosition()(1)*scale+ydisplayoffset,
-        //str);
-    //t->SetTextAlign(22);
-    //t->SetTextColor(kBlack);
-    //if (enrj>=1.) t->SetTextColor(kRed);
-    //t->SetTextFont(43);
-    //t->SetTextSize(20*11/parameters_.display().size);
-    ////t->SetTextSize(0.02);
-    //t->Draw();
-  } 
+  for (const auto& hist : hCellEnergyEvtMap) {
+    const auto& cell = geometry_.getCells().at(hist.first);
+        double enrj = hist.second.GetMean();
+        energy_map->Fill(cell.getX(), cell.getY(), enrj);
+        // FIXME: no sprintf
+        sprintf(str,"%4.1f",hist.second.GetMean());
+  }
 
   energy_map->Draw("colz");
 

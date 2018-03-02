@@ -11,17 +11,17 @@
 class ShowerShapeTriangle: public ShowerShape {
 
   // a class for groups of cells
-  
+
   public:
-  
+
   ShowerShapeTriangle(const std::unordered_map<uint32_t,double>& enrjMap,
         const std::unordered_map<uint32_t,Cell>& cellMap): ShowerShape(enrjMap, cellMap) {}
   ~ShowerShapeTriangle() {}
-  
-  double firstNeighboors(int i, int j);
-  
+
+  double firstNeighboors(int i, int j, int k);
+
   private:
-  
+
 };
 
 #endif

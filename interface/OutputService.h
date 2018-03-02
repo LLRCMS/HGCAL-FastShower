@@ -16,13 +16,15 @@
 #endif
 
 
-class OutputService
-{
+class OutputService {
   public:
     OutputService(const std::string&);
     ~OutputService();
 
     void fillTree(const Event&, const Geometry&);
+    void saveTree();
+    void clear();
+
 
   private:
     std::unique_ptr<TFile> file_;
@@ -31,18 +33,22 @@ class OutputService
     // tree branches
     unsigned run_;
     unsigned event_;
-    float gen_energy_;
-    float gen_eta_;
-    float gen_phi_;
-    unsigned cell_n_;
-    std::vector<float> cell_energy_;
-    std::vector<float> cell_x_;
-    std::vector<float> cell_y_;
-    std::vector<float> cell_z_;
-    std::vector<float> cell_eta_;
-    std::vector<float> cell_phi_;
+    unsigned npart_;
 
-    void clear();
+    std::vector<int> gen_PDGid_;
+    std::vector<double> gen_energy_;
+    std::vector<double> gen_eta_;
+    std::vector<double> gen_phi_;
+
+    std::vector<int> cell_thickness_;
+    unsigned cell_n_;
+    std::vector<double> cell_energy_;
+    std::vector<double> cell_x_;
+    std::vector<double> cell_y_;
+    std::vector<double> cell_z_;
+    std::vector<double> cell_eta_;
+    std::vector<double> cell_phi_;
+    std::vector<int> cell_layer_;
 
 
 };

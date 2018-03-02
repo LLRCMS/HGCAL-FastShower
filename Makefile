@@ -7,8 +7,14 @@ CCVERSIONGTEQ48 := $(shell expr `g++ -dumpversion | cut -f1,2 -d.` \>= 4.8)
 #UCFLAGS = -O0 -g3 -Wall -gstabs+ -DSTANDALONE
 UCFLAGS = -O3 -Wall -DSTANDALONE
 
-RUCFLAGS := $(shell root-config --cflags) -I./interface/ -I/usr/include/python2.7/ 
-LIBS :=  $(shell root-config --libs) -lpython2.7 -lboost_python 
+# RUCFLAGS := $(shell root-config --cflags) -I./interface/ -I/usr/include/python2.6/ -std=c++14
+# LIBS :=  $(shell root-config --libs) -lpython2.6 -lboost_python 
+
+
+PYTHONPATH :=$(shell dirname `which python`)/../
+
+RUCFLAGS := $(shell root-config --cflags) -I./interface/ -I$(PYTHONPATH)/include/python2.7 -std=c++14
+LIBS := $(shell root-config --libs) -L$(PYTHONPATH)/lib64 -lpython2.7 -lboost_python
 
 vpath %.cpp ./src/json
 vpath %.cpp ./src
@@ -16,17 +22,20 @@ vpath %.cpp ./bin
 
 SRCPP = main.cpp\
 	Cell.cpp\
+	Point.cpp\
+	Rectangle.cpp\
+	Tree.cpp\
 	Geometry.cpp\
 	Generator.cpp\
 	Parameters.cpp\
+	ShowerParametrization.cpp\
 	ShowerShape.cpp\
 	ShowerShapeHexagon.cpp\
 	ShowerShapeTriangle.cpp\
 	Event.cpp\
 	OutputService.cpp\
-	jsoncpp.cpp
+	jsoncpp.cpp\
 
-         
 #OBJCPP = $(SRCPP:.cpp=.o)
 OBJCPP = $(patsubst %.cpp,lib/%.o,$(SRCPP))
 
@@ -35,7 +44,7 @@ ifeq "$(CCVERSIONGTEQ48)" "0"
   $(error Requires g++ version >= 4.8)
 endif
 
-all : bin/shower_simulation.exe 
+all : bin/shower_simulation.exe
 
 lib/%.o : %.cpp
 	@echo "> compiling $*"

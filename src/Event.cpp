@@ -19,17 +19,50 @@ Event::
 fillHit(uint32_t id, double energy)
 {
   auto itr_insert = hits_.emplace(id, energy);
-  // if id already inserted, add the energy
+  // if id already inserted (noise and hit), add the energy
   if(!itr_insert.second) itr_insert.first->second += energy;
 }
 
 void
 Event::
-setGenerated(double energy, double eta, double phi)
+fillGenEn(double energy)
 {
-  generated_energy_ = energy;
-  generated_eta_ = eta;
-  generated_phi_ = phi;
+  generated_energy_.push_back(energy);
+}
+
+void
+Event::
+fillGenEta(double eta)
+{
+  generated_eta_.push_back(eta);
+}
+
+void
+Event::
+fillGenPhi(double phi)
+{
+  generated_phi_.push_back(phi);
+}
+
+void
+Event::
+fillPDGid(int PDGid)
+{
+  pdgid_.push_back(PDGid);
+}
+
+void
+Event::
+fillThickness(uint32_t id, int thickness)
+{
+  thickness_.emplace(id, thickness);
+}
+
+void
+Event::
+setnPart(uint32_t part)
+{
+  npart_ = part;
 }
 
 void

@@ -1,0 +1,10 @@
+# ignore the pdf file corresponding to plot
+# write the name of each file
+*.pyc
+*.pdf
+*.root
+*.exe
+*.py
+
+Selection/
+lib/

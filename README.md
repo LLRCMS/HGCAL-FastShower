@@ -1,3 +1,9 @@
+This Fast simulation tool allows to simulate electromagnetic or hadronic shower in the HGCal. The documentation for the new input parameters and the improvements is not available yet but you will find it here soon. Meanwhile, find below the documentation of the first version of this tool.
+
+Please note that simulations with triangle cells and external geometry are implemented but not tested since the new implementation. Use these geometries can lead to compilation/simulation issues.
+
+
+
 # Fast simulation tool for HGCAL geometry studies
 
 * [Installation](#installation)
