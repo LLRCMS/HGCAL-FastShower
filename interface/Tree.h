@@ -21,7 +21,7 @@ class Tree {
     bool empty();
     void addCell(const Cell*);
     int countCells();
-    const std::vector<const Cell*> getCells();
+    const std::vector<const Cell*>& getCells();
     Tree* getLeaf(const Point);
     Tree* getLeaf(float, float);
 
